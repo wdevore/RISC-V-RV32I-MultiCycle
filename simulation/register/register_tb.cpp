@@ -82,20 +82,6 @@ int main(int argc, char *argv[])
         sampleAndClock(reg, m_trace);
     }
 
-    // while (!Verilated::gotFinish())
-    // {
-    //     // cycle the clock
-    //     reg->clk_i ^= 1;
-    //     reg->eval();
-    // }
-
-    // while (sim_time < MAX_SIM_TIME) {
-    //     reg->clk_i ^= 1;
-    //     reg->eval();
-    //     m_trace->dump(sim_time);
-    //     sim_time++;
-    // }
-
     std::cout << "(" << sim_time << ") "
               << "TBcpp: finished." << std::endl;
 
