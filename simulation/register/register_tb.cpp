@@ -64,6 +64,7 @@ int main(int argc, char *argv[])
         std::cout << "FAILED: expected 000000A0 got " << reg->data_o << std::endl;
     }
 
+    reg->data_i = 0x00000000; // Setup data
     for (int i = 0; i < 4; i++)
     {
         sampleAndClock(reg, m_trace);
@@ -78,6 +79,7 @@ int main(int argc, char *argv[])
     reg->ld_ni = 1; // disable loading
     sampleAndClock(reg, m_trace);
 
+    reg->data_i = 0x00000000; // Setup data
     // Add some trailing clocks
     for (int i = 0; i < 5; i++)
     {
