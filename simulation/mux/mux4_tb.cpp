@@ -30,12 +30,11 @@ int main(int argc, char *argv[])
     mux->trace(m_trace, 5);
     m_trace->open("/media/RAMDisk/waveform.vcd");
 
-    // Initially low clock level
     mux->select_i = 0b00;
-    mux->data0_i  = 0x000000A0; // Setup data
-    mux->data1_i  = 0x000000B0;
-    mux->data2_i  = 0x000000C0;
-    mux->data3_i  = 0x000000D0;
+    mux->data0_i = 0x000000A0; // Setup data
+    mux->data1_i = 0x000000B0;
+    mux->data2_i = 0x000000C0;
+    mux->data3_i = 0x000000D0;
 
     sample(mux, m_trace);
 
