@@ -46,12 +46,12 @@ int main(int argc, char *argv[])
 
     sample(reg, m_trace);
 
+    // ------------------ 0A --------------------------
     reg->data_i = 0x000000A0; // Setup data
     std::cout << std::hex << "(" << sim_time << ") "
               << "TBcpp: data in = " << reg->data_i << std::endl;
     reg->ld_ni = 0; // enable loading
-    // Pos-edge of clock
-    reg->clk_i = 1;
+    reg->clk_i = 1; // Rising edge
     sample(reg, m_trace);
 
     reg->ld_ni = 1; // disable loading
@@ -69,14 +69,16 @@ int main(int argc, char *argv[])
         sampleAndClock(reg, m_trace);
     }
 
+    // ------------------ 0B --------------------------
     reg->data_i = 0x000000B0; // Setup data
     reg->ld_ni = 0;           // enable loading
-    reg->clk_i = 1; // Rising edge
+    reg->clk_i = 1;           // Rising edge
     sample(reg, m_trace);
 
     reg->ld_ni = 1; // disable loading
     sampleAndClock(reg, m_trace);
 
+    // Add some trailing clocks
     for (int i = 0; i < 5; i++)
     {
         sampleAndClock(reg, m_trace);
