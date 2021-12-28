@@ -110,6 +110,32 @@ int main(int argc, char *argv[])
     {
         sampleAndClock(regFile, m_trace);
     }
+
+    // ------------------ write C0 to Reg 0 --------------------------
+    regFile->data_i = 0x000000C0; // Setup data
+    regFile->reg_we_ni = 0;       // enable writing
+    regFile->reg_dst_i = 0;       // destination = reg 2
+    regFile->reg_srcA_i = 0;      // reg 0 output on A
+    sampleAndClock(regFile, m_trace);
+
+    regFile->reg_we_ni = 1; // disable writing
+    for (int i = 0; i < 2; i++)
+    {
+        sampleAndClock(regFile, m_trace);
+    }
+
+    // Reg 0 always returns a Zero
+    if (regFile->srcA_o != 0x00000000)
+    {
+        std::cout << std::dec << "Reg A (" << sim_time << ") "
+                  << "FAILED: expected 00000000 got '" << std::hex << regFile->srcA_o << "'" << std::endl;
+    }
+
+    for (int i = 0; i < 2; i++)
+    {
+        sampleAndClock(regFile, m_trace);
+    }
+
     std::cout << "(" << sim_time << ") "
               << "TBcpp: finished." << std::endl;
 
