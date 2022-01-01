@@ -1,34 +1,30 @@
 [*]
 [*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
-[*] Mon Dec 27 22:46:52 2021
+[*] Sat Jan  1 18:01:42 2022
 [*]
 [dumpfile] "/media/RAMDisk/waveform.vcd"
-[dumpfile_mtime] "Mon Dec 27 22:46:22 2021"
-[dumpfile_size] 1562
-[savefile] "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/register_file/waveform.gtkw"
-[timestart] 1
-[size] 1782 747
+[dumpfile_mtime] "Sat Jan  1 18:00:06 2022"
+[dumpfile_size] 2979
+[savefile] "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/alu/waveform.gtkw"
+[timestart] 0
+[size] 1989 747
 [pos] -1 -1
-*-1.502033 5 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-1.362353 9 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
 [sst_width] 221
 [signals_width] 240
 [sst_expanded] 1
 [sst_vpaned_height] 197
-@28
-TOP.clk_i
-@22
-[color] 2
-TOP.data_i[31:0]
-TOP.reg_dst_i[4:0]
-@28
+@2022
 [color] 3
-TOP.reg_we_ni
+^1 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/alu/gtkwave_aluop_filter.txt
+TOP.func_op_i[3:0]
+^1 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/alu/gtkwave_aluop_filter.txt
+TOP.a_i[31:0]
 @22
-TOP.reg_srcA_i[4:0]
-TOP.reg_srcB_i[4:0]
-TOP.srcA_o[31:0]
+TOP.b_i[31:0]
 @23
-TOP.srcB_o[31:0]
+[color] 2
+TOP.y_o[31:0]
 [pattern_trace] 1
 [pattern_trace] 0

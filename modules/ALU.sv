@@ -2,135 +2,124 @@
 
 // --------------------------------------------------------------------------
 // ALU
-// Operations:
-//   Add, Sub
-//   Shift left/right
-//   Compare
-// Flags:
-//   Flag        bit
-//   Z zero      0
-//   C carry     1
-//   N negative  2
-//   V Overflow  3
-// The output is tri capable.
+// The ALU only sees two N-bits pieces of data.
+// It doesn't care if one of them is sourced from an Immediate path or
+// register path. The operation could be: "A op B" or "A op Imm", yet the
+// ALU wouldn't know or care, it simply appears as "A op B".
+// In other words the operands have already been prepared prior.
 // --------------------------------------------------------------------------
-
-// Add/Subtract references used for the ALU
-// https://en.wikipedia.org/wiki/Carry_flag#
-// http://teaching.idallen.com/dat2343/10f/notes/040_overflow.txt
 typedef enum logic [3:0] {
     AddOp,
-    SubOp
-} ALU_Operations /*verilator public*/; 
-
-typedef enum logic [1:0] {
-    ZeroFlag,
-    CarryFlag,
-    NegFlag,
-    OverFlag
-} ALU_Flags /*verilator public*/; 
+    SubOp,
+    AndOp,
+    OrOp,
+    XorOp,
+    SltuOp,
+    SltOp,
+    SllOp,
+    SrlOp,
+    SraOp
+} ALU_Ops /*verilator public*/; 
 
 module ALU
 #(
-    parameter DATA_WIDTH = 32, // Bitwidth, Default to 16 bits
-                               // 3 2 1 0
-    parameter FLAG_BITS = 4    // V,N,C,Z
+    parameter DATA_WIDTH = 32
 )
 (
-    input  logic carbor_flag_i,             // Carry or borrow flag
-    input  logic [DATA_WIDTH-1:0] a_i,
-    input  logic [DATA_WIDTH-1:0] b_i,
-    input  logic [3:0] func_op_i,           // Operation
-    output logic [DATA_WIDTH-1:0] y_o,      // Results output
-    output logic [FLAG_BITS-1:0] flags_o    // Flag result
+    input  logic   [DATA_WIDTH-1:0] a_i,  // rs1
+    input  logic   [DATA_WIDTH-1:0] b_i,  // rs2 or (Immediate and/or Extended)
+    input  ALU_Ops func_op_i,             // Operation
+    output logic   [DATA_WIDTH-1:0] y_o   // Results output
 );
 
-reg [DATA_WIDTH-1:0] ORes;
-reg cF;
+logic [DATA_WIDTH-1:0] ORes;
+
+// ^^^---^^^---^^^---^^^---^^^---^^^---^^^---^^^---^^^---^^^---^^^---^^^---
+// Shift right arithmetic (insert high-order sign bit into empty bits)
+// vvv---vvv---vvv---vvv---vvv---vvv---vvv---vvv---vvv---vvv---vvv---vvv---
+// To do this we create a (2*DATA_WIDTH) bit signed extended version of a_i
+logic [2*DATA_WIDTH-1:0] sext_a;
+
+// I add the lint_off directive because the upper 32 bits aren't used.
+// They are merely assigned for shifting.
+/* verilator lint_off UNUSED */
+logic [2*DATA_WIDTH-1:0] sra;
+/* verilator lint_on UNUSED */
 
 always_comb begin
     // Initial conditions
-    ORes = {DATA_WIDTH{1'b0}};// {DATA_WIDTH{1'bx}};
-    cF = 1'b0;
+    ORes = {DATA_WIDTH{1'b0}};
+    sext_a = 0;
+    sra = 0;
 
     case (func_op_i)
         AddOp: begin
-            `ifdef SIMULATE
-                $display("%d Add_OP: A: %h, B: %h", $stime, a_i, b_i);
-            `endif
-
-            // Carry and sum
+            // If Carry or Borrow is involved
+            // {cF, ORes} = a_i + b_i + carbor_flag_i;
             // Using ternary correctly expands flag to data width without
             // issuing warnings
-            // {cF, ORes} = a_i + b_i + carbor_flag_i;
             // {cF, ORes} = a_i + b_i + (carbor_flag_i ? 1 :0);
             // Or this style using replication
-            {cF, ORes} = a_i + b_i + {{DATA_WIDTH-1{1'b0}},carbor_flag_i}; // carbor_flag_i = carry
-            `ifdef SIMULATE
-                $display("%d Add_OP: Carry %b, Sum %h", $stime, cF, ORes);
-            `endif
-        end
-        SubOp: begin  // As if the Carry == 0
-            `ifdef SIMULATE
-                $display("%d Sub_OP: A: %h - B: %h", $stime, a_i, b_i);
-            `endif
+            // {cF, ORes} = a_i + b_i + {{DATA_WIDTH-1{1'b0}},carbor_flag_i}; // carbor_flag_i = carry
 
-            {cF, ORes} = a_i - b_i;  // carbor_flag_i = borrow NOT USED
-            `ifdef SIMULATE
-                $display("%d Sub_OP: Carry %b, Diff %h", $stime, cF, ORes);
-            `endif
+            // RISC-V doesn't work with Carry/Borrow directly
+            ORes = a_i + b_i;
         end
-        // `SHL: begin // Logical shift
-        //     `ifdef SIMULATE
-        //         $display("%d Shl_OP: (%d) << (%d)", $stime, a_i, b_i);
-        //     `endif
-        //     // The left hand side contains the variable to shift,
-        //     // the right hand side contains the number of shifts to perform
-        //     {cF, ORes} = {a_i[DATA_WIDTH-1], a_i << b_i};
-        // end
-        // `SHR: begin // Logical shift (Arithmetic is >>>)
-        //     `ifdef SIMULATE
-        //         $display("%d Shr_OP: (%d) >> (%d)", $stime, a_i, b_i);
-        //     `endif
-        //     {cF, ORes} = {a_i[0], a_i >> b_i};
-        // end
+        
+        SubOp: begin  // As if the Carry == 0
+            ORes = a_i - b_i;
+        end
+        
+        AndOp: begin
+            ORes = a_i & b_i;
+        end
+        
+        OrOp: begin
+            ORes = a_i | b_i;
+        end
+        
+        XorOp: begin
+            ORes = a_i ^ b_i;
+        end
+        
+        SltuOp: begin   // Set less than unsigned
+            // Upper filled with zeroes
+            ORes ={31'b0, a_i < b_i};
+        end
+        
+        SltOp: begin    // Set less than signed
+            // If both sign bits are set then we need to compare.
+            // Otherwise we check the lhs (i.e. a_i)
+            // if a_i sign bit is set then that implies that b_i isn't which means
+            // a_i must be < b_i because signed numbers will always be smaller than
+            // unsigned.
+            // And the inverse applies with similar math rules.
+            ORes = a_i[31] == b_i[31] ? {31'b0, a_i < b_i} : {31'b0, a_i[31]};
+        end
+        
+        SllOp: begin    // Shift left logical a_i by b_i amount
+            ORes = a_i << b_i;
+        end
+
+        SrlOp: begin    // Shift right logical a_i by b_i amount
+            ORes = a_i >> b_i;
+        end
+
+        SraOp: begin    // Shift right arithmetic
+            sext_a = {{32{a_i[31]}}, a_i};  // Sign extend to 64 bits.
+            sra = sext_a >> b_i;    // Shift and pull in sign bits from upper 32 bits
+            ORes = sra[31:0];       // Truncate back to 32 bits for ouput
+        end
+
         default: begin
             `ifdef SIMULATE
                 $display("%d *** ALU UNKNOWN OP: %04b", $stime, func_op_i);
             `endif
-            ORes = {DATA_WIDTH{1'b0}};// {DATA_WIDTH{1'bx}};
+
+            ORes = {DATA_WIDTH{1'bx}};
         end
     endcase
 end
-
-// Set remaining flags
-// assign zF = ORes == {DATA_WIDTH{1'b0}};  // Zero
-// assign nF = ORes[DATA_WIDTH-1];          // Negative
-
-// 2's compliment overflow flag
-// The rules for turning on the overflow flag in binary/integer math are two:
-// 1. If the sum of two numbers with the sign bits off yields a result number
-//    with the sign bit on, the "overflow" flag is turned on.
-// 2. If the sum of two numbers with the sign bits on yields a result number
-//    with the sign bit off, the "overflow" flag is turned on.
-// assign oF = (
-//         // Input Sign-bits Off yet Result sign-bit On 
-//         ((A[DATA_WIDTH-1] == 0) && (B[DATA_WIDTH-1] == 0) && (ORes[DATA_WIDTH-1] == 1)) ||
-//         // Input Sign-bits On yet Result sign-bit Off
-//         ((A[DATA_WIDTH-1] == 1) && (B[DATA_WIDTH-1] == 1) && (ORes[DATA_WIDTH-1] == 0))
-//     );
-
-assign flags_o = {
-    (
-        // Input Sign-bits Off yet Result sign-bit On 
-        ((a_i[DATA_WIDTH-1] == 0) && (b_i[DATA_WIDTH-1] == 0) && (ORes[DATA_WIDTH-1] == 1)) ||
-        // Input Sign-bits On yet Result sign-bit Off
-        ((a_i[DATA_WIDTH-1] == 1) && (b_i[DATA_WIDTH-1] == 1) && (ORes[DATA_WIDTH-1] == 0))
-    ),                          // V
-    ORes[DATA_WIDTH-1],         // N
-    cF,                         // C
-    ORes == {DATA_WIDTH{1'b0}}  // Z
-};
 
 assign y_o = ORes;
 

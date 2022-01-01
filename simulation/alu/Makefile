@@ -3,7 +3,8 @@ TOP = ALU
 
 # A cpp test-bench driver
 TEST_BENCH = ALU_tb.cpp
-
+TEMPLATE_HEADER = ../module.h
+# VERILATOR_PUBLICS = 
 # The vcd data for viewing
 GTKWAVE_SETTINGS = waveform
 
@@ -27,6 +28,7 @@ lint:
 compile:
 	@echo "################## Compiling ##################"
 	cp ${TEST_BENCH} ${BUILD_DIR}
+	cp ${TEMPLATE_HEADER} ${BUILD_DIR}
 	${SIMULATION_TOOLCHAIN} --Mdir ${BUILD_DIR} \
 	-Wall --trace -cc \
 	-DSIMULATE \

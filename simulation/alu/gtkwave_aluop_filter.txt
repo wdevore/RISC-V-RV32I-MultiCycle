@@ -1,0 +1,10 @@
+0 AddOp
+1 SubOp
+2 AndOp
+3 OrOp
+4 XorOp
+5 SltuOp
+6 SltOp
+7 SllOp
+8 SrlOp
+9 SraOp
