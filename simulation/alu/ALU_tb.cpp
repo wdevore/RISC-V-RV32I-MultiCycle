@@ -11,8 +11,6 @@
 // Test bench files
 #include "module.h"
 
-vluint64_t sim_time = 0;
-
 // This file is similar to a Verilog test bench file except
 // is C++
 int main(int argc, char *argv[])
