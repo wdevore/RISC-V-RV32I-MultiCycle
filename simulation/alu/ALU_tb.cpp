@@ -29,11 +29,11 @@ int main(int argc, char *argv[])
 
     tb->show();
 
+    VALU *alu = tb->core();
+
     // --**--**--**--**--**--**--**--**--**--**--**--**--**
     // Add operation
     // --**--**--**--**--**--**--**--**--**--**--**--**--**
-    VALU *alu = tb->core();
-
     alu->a_i = 0x00000005;
     alu->b_i = 0x00000005;
     alu->func_op_i = syms->ALU_Ops::AddOp;
