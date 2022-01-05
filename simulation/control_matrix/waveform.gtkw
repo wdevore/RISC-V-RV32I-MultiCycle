@@ -1,0 +1,47 @@
+[*]
+[*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
+[*] Wed Jan  5 03:48:05 2022
+[*]
+[dumpfile] "/media/RAMDisk/waveform.vcd"
+[dumpfile_mtime] "Wed Jan  5 03:47:04 2022"
+[dumpfile_size] 3310
+[savefile] "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/control_matrix/waveform.gtkw"
+[timestart] 10
+[size] 1891 989
+[pos] -1 -1
+*-4.911203 20 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] TOP.
+[sst_width] 221
+[signals_width] 284
+[sst_expanded] 1
+[sst_vpaned_height] 181
+@28
+[color] 2
+TOP.clk_i
+[color] 3
+TOP.reset_i
+TOP.ControlMatrix.resetComplete
+TOP.ready_o
+[color] 1
+TOP.halt_o
+@22
+TOP.ir_i[31:0]
+@28
+TOP.ir_ld_o
+TOP.pc_ld_o
+TOP.pc_src_o[1:0]
+@2024
+^1 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/control_matrix/gtkwave_matrixstate_filter.txt
+TOP.ControlMatrix.vector_state[4:0]
+@2025
+^1 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/control_matrix/gtkwave_matrixstate_filter.txt
+TOP.ControlMatrix.next_vector_state[4:0]
+@2024
+^1 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/control_matrix/gtkwave_matrixstate_filter.txt
+TOP.ControlMatrix.state[4:0]
+^1 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/control_matrix/gtkwave_matrixstate_filter.txt
+TOP.ControlMatrix.next_state[4:0]
+@28
+TOP.mem_busy_i
+[pattern_trace] 1
+[pattern_trace] 0

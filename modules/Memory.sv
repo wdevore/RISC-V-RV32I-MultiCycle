@@ -20,18 +20,18 @@ module Memory
     parameter WORDS = 10,    // 2^WORDS = 1K
     parameter DATA_WIDTH = 32)
 (
-    input  logic                  clk_i,       // pos-edge
-    input  logic [DATA_WIDTH-1:0] data_i,      // Memory data input
-    input  logic [WORDS-1:0]      address_i,   // Memory address_i
-    input  logic                  write_en_ni, // Write enable (Active Low)
-    output logic [DATA_WIDTH-1:0] data_o       // Memory register data output (ASync)
+    input  logic                  clk_i,     // pos-edge
+    input  logic [DATA_WIDTH-1:0] data_i,    // Memory data input
+    input  logic [WORDS-1:0]      addr_i,    // Memory addr_i
+    input  logic                  wr_i,      // Write enable (Active Low)
+    output logic [DATA_WIDTH-1:0] data_o     // Memory register data output (ASync)
 );
 
 // Memory bank
 reg [DATA_WIDTH-1:0] mem [(1<<WORDS)-1:0]; // The actual memory
 
 initial begin
-    // I can explicitly specify the start/end address_i in order to avoid the
+    // I can explicitly specify the start/end addr_i in order to avoid the
     // warning: "WARNING: memory.v:23: $readmemh: Standard inconsistency, following 1364-2005."
     //     $readmemh (`MEM_CONTENTS, mem, 'h00, 'h04);
     `ifdef USE_ROM
@@ -70,37 +70,37 @@ end
 // Register blobs
 // --------------------------------
 // Force Register blocks. Remove data_o <= ... above as well.
-// assign data_o = mem[address_i];
+// assign data_o = mem[addr_i];
 
 // --------------------------------
 // Single Port RAM -- Ultra+ class chips
 // --------------------------------
 // always_ff @(posedge clk_i) begin
-//     if (~write_en_ni) begin
-//         mem[address_i] <= data_i;
+//     if (~wr_i) begin
+//         mem[addr_i] <= data_i;
 //         `ifdef SIMULATE
-//             $display("%d WRITE data at Addr(0x%h), Mem(0x%h), data_i(0x%h)", $stime, address_i, mem[address_i], data_i);
+//             $display("%d WRITE data at Addr(0x%h), Mem(0x%h), data_i(0x%h)", $stime, addr_i, mem[addr_i], data_i);
 //         `endif
 //     end
-//     data_o <= mem[address_i];  // <-- remove this to simulate Register blobs
+//     data_o <= mem[addr_i];  // <-- remove this to simulate Register blobs
 // end
 
 // --------------------------------
 // Dual Port RAM --  LP/HX and Ultra+ classes
 // --------------------------------
 always_ff @(posedge clk_i) begin
-    if (~write_en_ni) begin
-        mem[address_i] <= data_i;
+    if (~wr_i) begin
+        mem[addr_i] <= data_i;
         `ifdef SIMULATE
-            $display("%d Mem WRITE data Addr (0x%h), Data(0x%h), data_i(0x%h)", $stime, address_i, mem[address_i], data_i);
+            $display("%d Mem WRITE data Addr (0x%h), Data(0x%h), data_i(0x%h)", $stime, addr_i, mem[addr_i], data_i);
         `endif
     end
 end
 
 always_ff @(posedge clk_i) begin
-    data_o <= mem[address_i];
+    data_o <= mem[addr_i];
     `ifdef SIMULATE
-        $display("%d Mem READ data Addr (0x%h), Data(0x%h), data_i(0x%h)", $stime, address_i, mem[address_i], data_i);
+        $display("%d Mem READ data Addr (0x%h), Data(0x%h), data_i(0x%h)", $stime, addr_i, mem[addr_i], data_i);
     `endif
 end
 

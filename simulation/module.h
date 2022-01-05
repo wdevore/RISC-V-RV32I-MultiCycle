@@ -5,6 +5,7 @@ private:
     vluint64_t tickcount;
     MODULE *_core;
     VerilatedVcdC *m_trace;
+    const int nanosecs = 10;
 
 public:
     TESTBENCH(void)
@@ -24,7 +25,7 @@ public:
         std::cout << "Setting up" << std::endl;
         Verilated::traceEverOn(true);
         m_trace = new VerilatedVcdC;
-        _core->trace(m_trace, 5);
+        _core->trace(m_trace, 99);
         m_trace->open("/media/RAMDisk/waveform.vcd");
     }
 
@@ -40,10 +41,27 @@ public:
         return _core;
     }
 
-    virtual void tick(void)
+    virtual vluint64_t time(void)
+    {
+        return tickcount;
+    }
+
+    virtual int tick(void)
     {
         // Increment our own internal time reference
-        tickcount++;
+        return tickcount += nanosecs;
+    }
+
+    virtual void eval(void)
+    {
+        // Increment our own internal time reference
+        _core->eval();
+    }
+
+    virtual void flush(void)
+    {
+        // Increment our own internal time reference
+        m_trace->flush();
     }
 
     virtual void sample(void)
@@ -52,10 +70,15 @@ public:
         m_trace->dump(tickcount);
     }
 
+    virtual void dump(int count)
+    {
+        m_trace->dump(count);
+    }
+
     virtual void sampletick(void)
     {
-        sample();
         tick();
+        sample();
     }
 
     virtual void show(void)

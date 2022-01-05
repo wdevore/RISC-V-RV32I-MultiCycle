@@ -1,8 +1,8 @@
 # Top module is the HDL component being tested.
-TOP = ALU
+TOP = ControlMatrix
 
 # A cpp test-bench driver
-TEST_BENCH = ALU_tb.cpp
+TEST_BENCH = ControlMatrix_tb.cpp
 TEMPLATE_HEADER = ../module.h
 # VERILATOR_PUBLICS = 
 # The vcd data for viewing
@@ -35,7 +35,7 @@ compile:
 	-Wall --trace -cc \
 	--top-module ${TOP} \
 	--exe --build ${TEST_BENCH} ${MODULES_FILES} \
-	-DSIMULATE \
+	-DSIMULATE
 
 run:
 	@echo "################## Simulating ##################"
@@ -54,13 +54,13 @@ clean:
 exe:
 	cp ${TEST_BENCH} ${BUILD_DIR}
 	${SIMULATION_TOOLCHAIN} --cc --Mdir ${BUILD_DIR} \
-	-DSIMULATE \
-	--exe ${TEST_BENCH} ${MODULES_FILES}
+	--exe ${TEST_BENCH} ${MODULES_FILES} \
+	-DSIMULATE
 
 build:
 	${SIMULATION_TOOLCHAIN} --cc --Mdir ${BUILD_DIR} \
-	-DSIMULATE \
-	--build ${TEST_BENCH} ${MODULES_FILES}
+	--build ${TEST_BENCH} ${MODULES_FILES} \
+	-DSIMULATE
 
 archive:
 # Step 1: Generate an xxx.a file for linking

@@ -8,19 +8,6 @@
 // ALU wouldn't know or care, it simply appears as "A op B".
 // In other words the operands have already been prepared prior.
 // --------------------------------------------------------------------------
-typedef enum logic [3:0] {
-    AddOp,
-    SubOp,
-    AndOp,
-    OrOp,
-    XorOp,
-    SltuOp,
-    SltOp,
-    SllOp,
-    SrlOp,
-    SraOp
-} ALU_Ops /*verilator public*/; 
-
 module ALU
 #(
     parameter DATA_WIDTH = 32
