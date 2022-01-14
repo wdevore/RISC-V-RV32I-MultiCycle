@@ -9,8 +9,11 @@ TEMPLATE_HEADER = ../module.h
 GTKWAVE_SETTINGS = waveform
 
 # HDL modules
-MODULES_FILES = ../../modules/TypeEnums.sv ../../modules/${TOP}.sv
-
+MODULES_FILES =  \
+	../../definitions/TypeEnums.sv \
+	../../definitions/definitions.sv \
+	../../modules/${TOP}.sv
+	
 # output build directory
 BUILD_DIR = /media/RAMDisk
 
@@ -32,7 +35,7 @@ compile:
 	cp ${TEST_BENCH} ${BUILD_DIR}
 	cp ${TEMPLATE_HEADER} ${BUILD_DIR}
 	${SIMULATION_TOOLCHAIN} --Mdir ${BUILD_DIR} \
-	-Wall --trace -cc \
+	--trace -cc \
 	--top-module ${TOP} \
 	--exe --build ${TEST_BENCH} ${MODULES_FILES} \
 	-DSIMULATE

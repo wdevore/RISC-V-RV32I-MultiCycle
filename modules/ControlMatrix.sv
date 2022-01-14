@@ -45,23 +45,32 @@ localparam PCSelectSize = 2;
 localparam WDSelectSize = 2;
 localparam AddrSelectSize = 1;
 
-// ---------------------------------------------------
-// IR decode
-// ---------------------------------------------------
-// `define OPCODE ir_i[15:12]    // op-code field
-`define OPCODE ir_i[31:0]    // op-code field
+// **__--**__--**__--**__--**__--**__--**__--**__--**__--**__--
+// IR decoding. This is the largest section.
+// Break down the Instruction in a group of logic blocks
+// and wires.
+// **__--**__--**__--**__--**__--**__--**__--**__--**__--**__--
+// `define RD ir_i[11:7]
+// `define FUNCT3  ir_i[14:12]
+// `define RS1 ir_i[19:15]
+// `define RS2 ir_i[24:20]
+// `define FUNCT7 ir_i[31:25]
 
-`define REG_SRC1 ir_i[2:0]
-`define REG_SRC2 ir_i[5:3]
-`define REG_DEST ir_i[8:6]
+// For RV32I the lower 2 bits are always 11 so we could
+// ignore them--but we won't.
+logic [6:0] ir_opcode = ir_i[6:0];
 
-`define ALUOp  ir_i[15:12]
+// logic [2:0] funct3 = ir_i[14:12];   // R,I,S,B Types
+// logic [6:0] funct7 = ir_i[31:25];   // R       Type
+// logic [4:0] rd = ir_i[11:7];        // R,I,U,J Types
+// logic [4:0] rs1 = ir_i[19:15];      // R,I,S,B Types
+// logic [4:0] rs2 = ir_i[24:20];      // R,S,B   Types
 
 // ---------------------------------------------------
 // Internal state signals
 // ---------------------------------------------------
 MatrixState state /*verilator public*/;        // Current state
-MatrixState next_state /*verilator public*/;   // Next state
+MatrixState next_state;   // Next state
 
 MatrixState vector_state;
 MatrixState next_vector_state;
@@ -69,8 +78,8 @@ MatrixState next_vector_state;
 // ---------------------------------------------------
 // External Functional states (non RISC-V) signals
 // ---------------------------------------------------
-logic halt;
-logic ready; // The "ready" flag is Set when the CPU has completed its reset activities.
+logic halt;     // Debug only
+logic ready;    // The "ready" flag is Set when the CPU has completed its reset activities.
 
 // ---------------------------------------------------
 // Internal signals
@@ -79,7 +88,7 @@ logic ready; // The "ready" flag is Set when the CPU has completed its reset act
 logic resetComplete;
 
 logic pc_ld;
-logic [PCSelectSize-1:0] pc_src;       // MUX_PC selector
+logic [PCSelectSize-1:0] pc_src;
 
 logic ir_ld;
 
@@ -88,14 +97,14 @@ logic out_sel;
 
 logic mem_wr;
 logic mem_rd;
-logic [AddrSelectSize-1:0] addr_src;     // MUX_ADDR selector
+logic [AddrSelectSize-1:0] addr_src;
 
 logic reg_we;
 
 logic [AMuxSelectSize-1:0] a_src;
 logic [BMuxSelectSize-1:0] b_src;
-logic [ImmSelectSize-1:0] imm_src;
 logic [WDSelectSize-1:0] wd_src;
+logic [ImmSelectSize-1:0] imm_src;
 
 logic alu_ld;
 logic jal_ld;
@@ -129,7 +138,6 @@ always_comb begin
     pc_ld =  1'b1;      // Disable PC loading
     pc_src = 2'b00;     // Select ALU out direct
 
-    // Misc: Stack, Output
     ir_ld = 1'b1;       // Disable IR loading
 
     // Output 
@@ -217,10 +225,6 @@ always_comb begin
         end
 
         Fetch: begin
-            // `ifdef SIMULATE
-            //     $display("%d Fetch", $stime);
-            // `endif
-
             // Memory read enabled *default*
             // Disable Loading PC *default*
 
@@ -238,22 +242,31 @@ always_comb begin
 
         Decode: begin
             `ifdef SIMULATE
-                $display("%d Decode : {%b}", $stime, `OPCODE);
+                $display("%d Decode : {%b}", $stime, ir_opcode);
             `endif
 
             // IR is now loaded with 1st instruction.
 
-            case (`OPCODE)
-                0: begin // No operation (a.k.a. do nothing)
-                    // Simply loop back to fetching the next instruction
+            case (ir_opcode)
+                `RTYPE: begin
                     `ifdef SIMULATE
-                        $display("%d OPCODE: NOP", $stime);
+                        $display("%d OPCODE type: RTYPE", $stime);
                     `endif
                 end
+
+                `STYPE: begin
+                    `ifdef SIMULATE
+                        $display("%d OPCODE type: STYPE", $stime);
+                    `endif
+                end
+
+                default:
+                    `ifdef SIMULATE
+                        $display("%d OPCODE type: UNKNOWN", $stime);
+                    `endif
             endcase
 
                 next_state = Fetch;
-
         end
 
         default:

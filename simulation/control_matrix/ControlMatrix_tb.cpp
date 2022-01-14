@@ -6,6 +6,7 @@
 #include <verilated_vcd_c.h>
 #include "VControlMatrix.h"
 // Needed for the exposed public fields via "*verilator public*"
+// and Top module
 #include "VControlMatrix___024unit.h"
 #include "VControlMatrix__Syms.h"
 
@@ -65,33 +66,47 @@ int main(int argc, char *argv[])
     top->ir_i = 0x00000000; // No instruction (invalid)
 
     top->reset_i = 0;
-    clock(top, tb);       // hold reset low for 2 clocks
+    clock(top, tb); // hold reset low for 2 clocks
     clock(top, tb);
     top->reset_i = 1;
-
+    std::cout << "TB reset complete" << std::endl;
 
     // cm->state = cmU->MatrixState::Reset;
 
     // cmU->ALU_Ops::SraOp
-    // std::cout << "state: " << cm->state << std::endl;
 
-    // --**--**--**--**--**--**--**--**--**--**--**--**--**
-    //
-    // --**--**--**--**--**--**--**--**--**--**--**--**--**
-
-    // Padding
-    std::cout << "TB reset complete" << std::endl;
+    // Add an extra clock for visual spacing
     clock(top, tb);
     std::cout << "TB fetch" << std::endl;
-    top->ir_i = 0x000000A0;
+
+    // --**--**--**--**--**--**--**--**--**--**--**--**--**
+    // I-Type: NOP is encoded as ADDI x0, x0, 0
+    // --**--**--**--**--**--**--**--**--**--**--**--**--**
+    // funct7 | rs2 | rs1 | funct3 | rd   |  opcode
+    // 0000000 00000 00000   000    00000   0010011
+    // Nibbles: 0000_0000_0000_0000_0000_0000_0001_0011
+    // Hex: 0x00000013
+    top->ir_i = 0x00000013;
     clock(top, tb);
     clock(top, tb);
+    clock(top, tb);
+
+    // --**--**--**--**--**--**--**--**--**--**--**--**--**
+    // R-Type: add x5, x6, x7   =>   x5 = x6 + x7
+    // From: Nihongo/Hardware/RISC-V/RISC-V Instruction Formats.pdf
+    // --**--**--**--**--**--**--**--**--**--**--**--**--**
+    // funct7 | rs2 | rs1 | funct3 | rd   |  opcode
+    // 0000000 00111 00110   000    00101   0110011
+    // Nibbles: 0000_0000_0111_0011_0000_0010_1011_0011
+    // Hex: 0x007302B3
+    top->ir_i = 0x007302B3;
+
+    // Pad the tail end
     clock(top, tb);
     clock(top, tb);
     clock(top, tb);
     std::cout << "F TB: time (" << tb->time() << ")" << std::endl;
 
-    std::cout << "TB: time (" << tb->time() << ")" << std::endl;
     tb->shutdown();
 
     delete tb;
