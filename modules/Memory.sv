@@ -24,11 +24,11 @@ module Memory
     input  logic [DATA_WIDTH-1:0] data_i,    // Memory data input
     input  logic [WORDS-1:0]      addr_i,    // Memory addr_i
     input  logic                  wr_i,      // Write enable (Active Low)
-    output logic [DATA_WIDTH-1:0] data_o     // Memory register data output (ASync)
+    output logic [DATA_WIDTH-1:0] data_o     // Memory data output
 );
 
 // Memory bank
-reg [DATA_WIDTH-1:0] mem [(1<<WORDS)-1:0]; // The actual memory
+reg [DATA_WIDTH-1:0] mem [(1<<WORDS)-1:0] /*verilator public*/; // The actual memory
 
 initial begin
     // I can explicitly specify the start/end addr_i in order to avoid the
@@ -47,9 +47,19 @@ initial begin
         $readmemh ({`ROM_PATH, ``MEM_CONTENTS, `ROM_EXTENSION}, mem);  // , 0, 6
     `elsif USE_STATIC
         $display("Using STATIC content");
-        mem[0] =   32'h000000ff;       // Simple data for testing
-        mem[1] =   32'h000000f0;
-        mem[2] =   32'h0000000f;
+        mem[0] =   32'h00000002;       // Simple data for testing
+        mem[1] =   32'h00000004;
+        mem[2] =   32'h00000006;
+        mem[3] =   32'h00000008;
+        mem[4] =   32'h0000000A;
+        mem[5] =   32'h0000000B;
+        mem[6] =   32'h0000000C;
+        mem[7] =   32'h0000000D;
+        mem[8] =   32'h0000000E;
+        mem[9] =   32'h0000000F;
+        mem[10] =  32'h55443312;
+        mem[11] =  32'h00009914;
+        mem[12] =  32'h00000016;
         mem[255] = 32'h00000001;
     `endif
 

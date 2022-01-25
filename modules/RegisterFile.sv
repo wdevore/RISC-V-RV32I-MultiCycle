@@ -10,14 +10,14 @@ module RegisterFile
     parameter WORDS = 32,
     parameter SELECT_SIZE = 5)   // 5 bits = 32 = WORDS
 (
-    input  wire logic clk_i,
-    input  wire logic reg_we_ni,                      // Write = Active Low
-    input  wire logic [DATA_WIDTH-1:0] data_i,        // Data input
-    input  wire logic [SELECT_SIZE-1:0] reg_dst_i,    // Reg destination select
-    input  wire logic [SELECT_SIZE-1:0] reg_srcA_i,   // Source #1 select
-    input  wire logic [SELECT_SIZE-1:0] reg_srcB_i,   // Source #2 select
-    output wire logic [DATA_WIDTH-1:0] srcA_o,        // Source 1 output
-    output wire logic [DATA_WIDTH-1:0] srcB_o         // Source 2 output
+    input  logic clk_i,
+    input  logic reg_we_ni,                      // Write = Active Low
+    input  logic [DATA_WIDTH-1:0] data_i,        // Data input
+    input  logic [SELECT_SIZE-1:0] reg_dst_i,    // Reg destination select
+    input  logic [SELECT_SIZE-1:0] reg_srcA_i,   // Source #1 select
+    input  logic [SELECT_SIZE-1:0] reg_srcB_i,   // Source #2 select
+    output logic [DATA_WIDTH-1:0] srcA_o,        // Source 1 output
+    output logic [DATA_WIDTH-1:0] srcB_o         // Source 2 output
 );
 
 // The Registers

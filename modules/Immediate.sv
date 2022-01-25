@@ -9,20 +9,20 @@ module Immediate
     output logic [DATA_WIDTH-1:0] imm_o     // Imm extended or Amount(s)
 );
 
-
 logic sign = ir_i[31];
 logic [6:0] ir_opcode = ir_i[6:0];
 logic [2:0] imm_src;
 logic [2:0] funct3 = ir_i[14:12];
 logic [4:0] shamt = ir_i[24:20];
 
+// Set imm_src 
 always_comb begin
     case (ir_opcode)
         `ITYPE: begin
             imm_src = 3'b000;   // Default to standard I-Type
 
             // Is this a specialization of shifting I-Type
-            if (funct3 == `SLLI || funct3 == `SRLI)
+            if (funct3 == `SLLI || funct3 == `SRLI) // includes SRAI
                 imm_src = 3'b101;   // shift amount = shamt
         end
 

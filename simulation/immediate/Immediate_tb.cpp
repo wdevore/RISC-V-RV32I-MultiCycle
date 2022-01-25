@@ -58,7 +58,6 @@ int main(int argc, char *argv[])
     // Hex: 0x00000013
     top->ir_i = 0x00000013;
     clock(top, tb);
-    clock(top, tb);
 
     // --**--**--**--**--**--**--**--**--**--**--**--**--**
     // I-Type specialization: shift left logical
@@ -69,7 +68,6 @@ int main(int argc, char *argv[])
     // Nibbles: 0000_0000_0011_0000_0001_0000_0001_0011
     // Hex: 0x00301013
     top->ir_i = 0x00301013;
-    clock(top, tb);
     clock(top, tb);
 
     // --**--**--**--**--**--**--**--**--**--**--**--**--**
@@ -83,7 +81,6 @@ int main(int argc, char *argv[])
     // Imm = 0000_0000_1000 = 008
     top->ir_i = 0x00512423;
     clock(top, tb);
-    clock(top, tb);
 
     // --**--**--**--**--**--**--**--**--**--**--**--**--**
     // B-Type
@@ -95,7 +92,6 @@ int main(int argc, char *argv[])
     // Hex: 0x00A98863
     // Imm = 0000_0000_1000 = 008
     top->ir_i = 0x00A98863;
-    clock(top, tb);
     clock(top, tb);
 
     // --**--**--**--**--**--**--**--**--**--**--**--**--**
@@ -110,7 +106,6 @@ int main(int argc, char *argv[])
     // Imm = 87654000
     top->ir_i = 0x87654537;
     clock(top, tb);
-    clock(top, tb);
 
     // --**--**--**--**--**--**--**--**--**--**--**--**--**
     // J-Type
@@ -122,7 +117,6 @@ int main(int argc, char *argv[])
     // Hex: 0x020000EF
     // Imm = 0x00000020
     top->ir_i = 0x020000EF;
-    clock(top, tb);
     clock(top, tb);
 
     std::cout << "F TB: time (" << tb->time() << ")" << std::endl;

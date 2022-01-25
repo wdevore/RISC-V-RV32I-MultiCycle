@@ -1,0 +1,137 @@
+[*]
+[*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
+[*] Tue Jan 25 00:46:26 2022
+[*]
+[dumpfile] "/media/RAMDisk/waveform.vcd"
+[dumpfile_mtime] "Tue Jan 25 00:46:11 2022"
+[dumpfile_size] 5961
+[savefile] "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/pmmu/waveform.gtkw"
+[timestart] 10
+[size] 1361 775
+[pos] -1 -1
+*-3.911203 23 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] TOP.
+[treeopen] TOP.Pmmu.
+[sst_width] 221
+[signals_width] 317
+[sst_expanded] 1
+[sst_vpaned_height] 132
+@28
+[color] 2
+TOP.clk_i
+@c00023
+[color] 1
+TOP.ir_i[31:0]
+@29
+[color] 1
+(0)TOP.ir_i[31:0]
+[color] 1
+(1)TOP.ir_i[31:0]
+[color] 1
+(2)TOP.ir_i[31:0]
+[color] 1
+(3)TOP.ir_i[31:0]
+[color] 1
+(4)TOP.ir_i[31:0]
+[color] 1
+(5)TOP.ir_i[31:0]
+[color] 1
+(6)TOP.ir_i[31:0]
+[color] 1
+(7)TOP.ir_i[31:0]
+[color] 1
+(8)TOP.ir_i[31:0]
+[color] 1
+(9)TOP.ir_i[31:0]
+[color] 1
+(10)TOP.ir_i[31:0]
+[color] 1
+(11)TOP.ir_i[31:0]
+[color] 1
+(12)TOP.ir_i[31:0]
+[color] 1
+(13)TOP.ir_i[31:0]
+[color] 1
+(14)TOP.ir_i[31:0]
+[color] 1
+(15)TOP.ir_i[31:0]
+[color] 1
+(16)TOP.ir_i[31:0]
+[color] 1
+(17)TOP.ir_i[31:0]
+[color] 1
+(18)TOP.ir_i[31:0]
+[color] 1
+(19)TOP.ir_i[31:0]
+[color] 1
+(20)TOP.ir_i[31:0]
+[color] 1
+(21)TOP.ir_i[31:0]
+[color] 1
+(22)TOP.ir_i[31:0]
+[color] 1
+(23)TOP.ir_i[31:0]
+[color] 1
+(24)TOP.ir_i[31:0]
+[color] 1
+(25)TOP.ir_i[31:0]
+[color] 1
+(26)TOP.ir_i[31:0]
+[color] 1
+(27)TOP.ir_i[31:0]
+[color] 1
+(28)TOP.ir_i[31:0]
+[color] 1
+(29)TOP.ir_i[31:0]
+[color] 1
+(30)TOP.ir_i[31:0]
+[color] 1
+(31)TOP.ir_i[31:0]
+@1401201
+-group_end
+@28
+[color] 3
+TOP.Pmmu.addr_i[31:0]
+@22
+TOP.Pmmu.wd_i[31:0]
+@28
+TOP.Pmmu.mwr_i
+TOP.Pmmu.mrd_i
+@22
+[color] 5
+TOP.Pmmu.rd_o[31:0]
+@28
+TOP.Pmmu.mem_rdy_o
+TOP.Pmmu.funct3[2:0]
+TOP.Pmmu.is_byte_size
+TOP.Pmmu.is_halfword_size
+@22
+TOP.Pmmu.word_addr[9:0]
+TOP.Pmmu.storage_data[31:0]
+@200
+-Load
+@28
+TOP.Pmmu.signed_op
+TOP.Pmmu.byte_selector[1:0]
+@22
+TOP.Pmmu.byte_data[7:0]
+@28
+TOP.Pmmu.halfword_selector
+@22
+TOP.Pmmu.halfword_data[15:0]
+@28
+TOP.Pmmu.data_sign
+@200
+-Store
+@22
+TOP.Pmmu.store_data[31:0]
+TOP.Pmmu.store_byte_data[31:0]
+TOP.Pmmu.store_halfword_data[31:0]
+@200
+-ByteMux
+@28
+TOP.Pmmu.byte_mux.select_i[1:0]
+@22
+TOP.Pmmu.byte_mux.data_o[7:0]
+[pattern_trace] 1
+[pattern_trace] 0
