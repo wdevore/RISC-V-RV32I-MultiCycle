@@ -153,7 +153,7 @@ always_comb begin
     reg_we = 1'b1;      // Disable writing to Register-File
 
     a_src = 2'b00;
-    b_src = 2'b00;
+    b_src = 2'b10;
     imm_src = 3'b000;
     wd_src = 2'b00;
     alu_ld = 1'b1;
@@ -248,6 +248,11 @@ always_comb begin
             // IR is now loaded with 1st instruction.
 
             case (ir_opcode)
+                `ITYPE_L: begin
+                    // Load instructions
+                    // Signals that drive sequence
+                end
+
                 `RTYPE: begin
                     `ifdef SIMULATE
                         $display("%d OPCODE type: RTYPE", $stime);

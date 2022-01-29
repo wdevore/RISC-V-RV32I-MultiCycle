@@ -10,6 +10,7 @@ GTKWAVE_SETTINGS = waveform
 
 # HDL modules
 MODULES_FILES =  \
+	../../definitions/definitions.sv \
 	../../modules/Memory.sv \
 	../../modules/Mux2.sv \
 	../../modules/Mux4.sv \
@@ -40,8 +41,8 @@ compile:
 	--top-module ${TOP} \
 	--exe --build ${TEST_BENCH} ${MODULES_FILES} \
 	-DSIMULATE \
-	-DUSE_STATIC \
-	-DSHOW_MEMORY
+	-DUSE_STATIC
+# -DSHOW_MEMORY
 
 run:
 	@echo "################## Simulating ##################"

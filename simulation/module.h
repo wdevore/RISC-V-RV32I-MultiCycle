@@ -5,7 +5,7 @@ private:
     vluint64_t tickcount;
     MODULE *_core;
     VerilatedVcdC *m_trace;
-    const int nanosecs = 10;
+    const int picosecs = 10;
 
 public:
     TESTBENCH(void)
@@ -49,7 +49,11 @@ public:
     virtual int tick(void)
     {
         // Increment our own internal time reference
-        return tickcount += nanosecs;
+        return tickcount += picosecs;
+    }
+
+    virtual int moveBy(vluint64_t by) {
+        return tickcount += by;
     }
 
     virtual void eval(void)
