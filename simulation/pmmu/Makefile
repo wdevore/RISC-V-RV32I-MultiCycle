@@ -2,7 +2,12 @@
 TOP = Pmmu
 
 # A cpp test-bench driver
-TEST_BENCH = Pmmu_tb.cpp
+TEST_BENCH = \
+	misc.cpp \
+	signed_loads.cpp \
+	stype_stores.cpp \
+	unsigned_loads.cpp \
+	Pmmu_tb.cpp
 TEMPLATE_HEADER = ../module.h
 # VERILATOR_PUBLICS = 
 # The vcd data for viewing
