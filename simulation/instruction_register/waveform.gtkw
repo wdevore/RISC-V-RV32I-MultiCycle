@@ -1,0 +1,146 @@
+[*]
+[*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
+[*] Sun Feb  6 04:03:22 2022
+[*]
+[dumpfile] "/media/RAMDisk/waveform.vcd"
+[dumpfile_mtime] "Sun Feb  6 03:51:47 2022"
+[dumpfile_size] 10920
+[savefile] "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/instruction_register/waveform.gtkw"
+[timestart] 0
+[size] 2884 969
+[pos] 1 37
+*-4.911203 150 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] TOP.
+[treeopen] TOP.IRModule.
+[sst_width] 221
+[signals_width] 284
+[sst_expanded] 1
+[sst_vpaned_height] 265
+@28
+[color] 2
+TOP.clk_i
+[color] 3
+TOP.reset_i
+TOP.IRModule.funct3[2:0]
+@200
+-IR
+@28
+TOP.IRModule.cm_to_ir_ld
+@22
+TOP.IRModule.matrix.ir_i[31:0]
+TOP.IRModule.matrix.ir_opcode[6:0]
+TOP.IRModule.ir_out[31:0]
+@200
+-States
+@2024
+^1 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_matrixstate_filter.txt
+TOP.IRModule.matrix.state[4:0]
+^1 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_matrixstate_filter.txt
+TOP.IRModule.matrix.next_state[4:0]
+^2 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_resetstate_filter.txt
+TOP.IRModule.matrix.vector_state[4:0]
+^2 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_resetstate_filter.txt
+TOP.IRModule.matrix.next_vector_state[4:0]
+@200
+-IR
+@28
+TOP.IRModule.ir.ld_i
+@22
+TOP.IRModule.ir.data_i[31:0]
+TOP.IRModule.ir.data_o[31:0]
+@200
+-PC
+@28
+TOP.IRModule.cm_to_pc_ld
+@22
+TOP.IRModule.pc_src_out[31:0]
+TOP.IRModule.pc_out[31:0]
+@200
+-PC_Mux
+@28
+TOP.IRModule.cm_to_pc_src[1:0]
+@22
+TOP.IRModule.pc_src_out[31:0]
+@200
+-Addr_Mux
+@28
+TOP.IRModule.cm_to_addr_src
+@200
+-Rst_mux
+@28
+TOP.IRModule.cm_to_rst_src
+TOP.IRModule.rst_src_out[2:0]
+@201
+-Pmmu
+@28
+TOP.IRModule.pmmu.is_byte_size
+TOP.IRModule.pmmu.is_halfword_size
+@22
+TOP.IRModule.addr_mux_to_pmmu[31:0]
+@28
+TOP.IRModule.cm_to_mem_rd
+TOP.IRModule.cm_to_mem_wr
+@c00022
+TOP.IRModule.pmmu.byte_addr_i[31:0]
+@28
+(0)TOP.IRModule.pmmu.byte_addr_i[31:0]
+(1)TOP.IRModule.pmmu.byte_addr_i[31:0]
+(2)TOP.IRModule.pmmu.byte_addr_i[31:0]
+(3)TOP.IRModule.pmmu.byte_addr_i[31:0]
+(4)TOP.IRModule.pmmu.byte_addr_i[31:0]
+(5)TOP.IRModule.pmmu.byte_addr_i[31:0]
+(6)TOP.IRModule.pmmu.byte_addr_i[31:0]
+(7)TOP.IRModule.pmmu.byte_addr_i[31:0]
+(8)TOP.IRModule.pmmu.byte_addr_i[31:0]
+(9)TOP.IRModule.pmmu.byte_addr_i[31:0]
+(10)TOP.IRModule.pmmu.byte_addr_i[31:0]
+(11)TOP.IRModule.pmmu.byte_addr_i[31:0]
+(12)TOP.IRModule.pmmu.byte_addr_i[31:0]
+(13)TOP.IRModule.pmmu.byte_addr_i[31:0]
+(14)TOP.IRModule.pmmu.byte_addr_i[31:0]
+(15)TOP.IRModule.pmmu.byte_addr_i[31:0]
+(16)TOP.IRModule.pmmu.byte_addr_i[31:0]
+(17)TOP.IRModule.pmmu.byte_addr_i[31:0]
+(18)TOP.IRModule.pmmu.byte_addr_i[31:0]
+(19)TOP.IRModule.pmmu.byte_addr_i[31:0]
+(20)TOP.IRModule.pmmu.byte_addr_i[31:0]
+(21)TOP.IRModule.pmmu.byte_addr_i[31:0]
+(22)TOP.IRModule.pmmu.byte_addr_i[31:0]
+(23)TOP.IRModule.pmmu.byte_addr_i[31:0]
+(24)TOP.IRModule.pmmu.byte_addr_i[31:0]
+(25)TOP.IRModule.pmmu.byte_addr_i[31:0]
+(26)TOP.IRModule.pmmu.byte_addr_i[31:0]
+(27)TOP.IRModule.pmmu.byte_addr_i[31:0]
+(28)TOP.IRModule.pmmu.byte_addr_i[31:0]
+(29)TOP.IRModule.pmmu.byte_addr_i[31:0]
+(30)TOP.IRModule.pmmu.byte_addr_i[31:0]
+(31)TOP.IRModule.pmmu.byte_addr_i[31:0]
+@1401200
+-group_end
+@c00022
+TOP.IRModule.pmmu.word_addr[9:0]
+@28
+(0)TOP.IRModule.pmmu.word_addr[9:0]
+(1)TOP.IRModule.pmmu.word_addr[9:0]
+(2)TOP.IRModule.pmmu.word_addr[9:0]
+(3)TOP.IRModule.pmmu.word_addr[9:0]
+(4)TOP.IRModule.pmmu.word_addr[9:0]
+(5)TOP.IRModule.pmmu.word_addr[9:0]
+(6)TOP.IRModule.pmmu.word_addr[9:0]
+(7)TOP.IRModule.pmmu.word_addr[9:0]
+(8)TOP.IRModule.pmmu.word_addr[9:0]
+(9)TOP.IRModule.pmmu.word_addr[9:0]
+@1401200
+-group_end
+@22
+TOP.IRModule.pmmu_out[31:0]
+@200
+-Matrix
+@2028
+[color] 3
+^3 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_opcode_filter.txt
+TOP.IRModule.matrix.ir_opcode[6:0]
+@28
+TOP.IRModule.matrix.ready
+[pattern_trace] 1
+[pattern_trace] 0

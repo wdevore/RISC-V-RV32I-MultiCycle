@@ -8,7 +8,7 @@
 #include "VPmmu.h"
 // Needed for the exposed public fields via "*verilator public*"
 // and Top module
-#include "VMemory___024root.h"
+#include "VPmmu___024root.h"
 #include "VPmmu__Syms.h"
 
 // Test bench files

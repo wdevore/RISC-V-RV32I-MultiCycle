@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
 
     // Initially low clock level
     reg->clk_i = 0;
-    reg->ld_ni = 1; // disable loading
+    reg->ld_i = 1; // disable loading
 
     sample(reg, m_trace);
 
@@ -50,11 +50,11 @@ int main(int argc, char *argv[])
     reg->data_i = 0x000000A0; // Setup data
     std::cout << std::hex << "(" << sim_time << ") "
               << "TBcpp: data in = " << reg->data_i << std::endl;
-    reg->ld_ni = 0; // enable loading
+    reg->ld_i = 0; // enable loading
     reg->clk_i = 1; // Rising edge
     sample(reg, m_trace);
 
-    reg->ld_ni = 1; // disable loading
+    reg->ld_i = 1; // disable loading
     sampleAndClock(reg, m_trace);
 
     std::cout << std::hex << "(" << sim_time << ") "
@@ -72,11 +72,11 @@ int main(int argc, char *argv[])
 
     // ------------------ 0B --------------------------
     reg->data_i = 0x000000B0; // Setup data
-    reg->ld_ni = 0;           // enable loading
+    reg->ld_i = 0;           // enable loading
     reg->clk_i = 1;           // Rising edge
     sample(reg, m_trace);
 
-    reg->ld_ni = 1; // disable loading
+    reg->ld_i = 1; // disable loading
     sampleAndClock(reg, m_trace);
 
     reg->data_i = 0x00000000; // Setup data

@@ -8,7 +8,7 @@
 #include "VPmmu.h"
 // Needed for the exposed public fields via "*verilator public*"
 // and Top module
-#include "VMemory___024root.h"
+#include "VPmmu___024root.h"
 #include "VPmmu__Syms.h"
 
 // Test bench files
@@ -30,7 +30,7 @@ int sType_sw(int timeStep, int baseTime, int duration, VPmmu_Memory *bram, VPmmu
     //       |                                   |
     //        \----------- = 0x01 --------------/
     //   0    0    E    1   2     0    A   3
-    // 0000 0000 1110 0001 0010 0000 1010 0011
+    // 0000 0000 1110 0001 0010 0000 1010 0011 = 0x00E120A3
 
     unsigned long int rs1 = 0;
     unsigned long int rs2 = 0;
@@ -42,7 +42,7 @@ int sType_sw(int timeStep, int baseTime, int duration, VPmmu_Memory *bram, VPmmu
     {
         if (timeStep - 1 == baseTime)
         {
-            top->ir_i = 0x00E120A3;
+            top->funct3 = 0b010;
             top->mwr_i = 1; // Disable writing/storing
         }
 
@@ -94,7 +94,7 @@ int sType_sh_word1(int timeStep, int baseTime, int duration, VPmmu_Memory *bram,
     //       |                                   |
     //        \----------- = 0x01 --------------/
     //   0    0    E    1   1     0    A   3
-    // 0000 0000 1110 0001 0001 0000 1010 0011
+    // 0000 0000 1110 0001 0001 0000 1010 0011 = 0x00E110A3
 
     unsigned long int rs1 = 0;
     unsigned long int rs2 = 0; // x14 -- just for description.
@@ -105,7 +105,7 @@ int sType_sh_word1(int timeStep, int baseTime, int duration, VPmmu_Memory *bram,
     {
         if (timeStep - 1 == baseTime)
         {
-            top->ir_i = 0x00E110A3;
+            top->funct3 = 0b001;
             top->mwr_i = 1; // Disable writing/storing
         }
 
@@ -162,7 +162,7 @@ int sType_sh_word2(int timeStep, int baseTime, int duration, VPmmu_Memory *bram,
     //       |                                   |
     //        \----------- = 0x01 --------------/
     //   0    0    E    1   1     0    A   3
-    // 0000 0000 1110 0001 0001 0000 1010 0011
+    // 0000 0000 1110 0001 0001 0000 1010 0011 = 0x00E110A3
 
     unsigned long int rs1 = 0;
     unsigned long int rs2 = 0; // x14 -- just for description.
@@ -174,7 +174,7 @@ int sType_sh_word2(int timeStep, int baseTime, int duration, VPmmu_Memory *bram,
     {
         if (timeStep - 1 == baseTime)
         {
-            top->ir_i = 0x00E110A3;
+            top->funct3 = 0b001;
             top->mwr_i = 1; // Disable writing/storing
         }
 
@@ -232,7 +232,7 @@ int sType_sb_byte1(int timeStep, int baseTime, int duration, VPmmu_Memory *bram,
     //       |                                   |
     //        \----------- = 0x01 --------------/
     //   0    0    E    1   0     0    A   3
-    // 0000 0000 1110 0001 0000 0000 1010 0011
+    // 0000 0000 1110 0001 0000 0000 1010 0011 = 0x00E100A3
 
     unsigned long int rs1 = 0;
     unsigned long int rs2 = 0; // x14 -- just for description.
@@ -243,7 +243,7 @@ int sType_sb_byte1(int timeStep, int baseTime, int duration, VPmmu_Memory *bram,
     {
         if (timeStep - 1 == baseTime)
         {
-            top->ir_i = 0x00E100A3;
+            top->funct3 = 0b000;
             top->mwr_i = 1; // Disable writing/storing
         }
 
@@ -300,7 +300,7 @@ int sType_sb_byte2(int timeStep, int baseTime, int duration, VPmmu_Memory *bram,
     //       |                                   |
     //        \----------- = 0x01 --------------/
     //   0    0    E    1   0     0    A   3
-    // 0000 0000 1110 0001 0000 0000 1010 0011
+    // 0000 0000 1110 0001 0000 0000 1010 0011 = 0x00E100A3
 
     unsigned long int rs1 = 0;
     unsigned long int rs2 = 0; // x14 -- just for description.
@@ -312,7 +312,7 @@ int sType_sb_byte2(int timeStep, int baseTime, int duration, VPmmu_Memory *bram,
     {
         if (timeStep - 1 == baseTime)
         {
-            top->ir_i = 0x00E100A3;
+            top->funct3 = 0b000;
             top->mwr_i = 1; // Disable writing/storing
         }
 
@@ -370,7 +370,7 @@ int sType_sb_byte3(int timeStep, int baseTime, int duration, VPmmu_Memory *bram,
     //       |                                   |
     //        \----------- = 0x01 --------------/
     //   0    0    E    1   0     0    A   3
-    // 0000 0000 1110 0001 0000 0000 1010 0011
+    // 0000 0000 1110 0001 0000 0000 1010 0011 = 0x00E100A3
 
     unsigned long int rs1 = 0;
     unsigned long int rs2 = 0; // x14 -- just for description.
@@ -382,7 +382,7 @@ int sType_sb_byte3(int timeStep, int baseTime, int duration, VPmmu_Memory *bram,
     {
         if (timeStep - 1 == baseTime)
         {
-            top->ir_i = 0x00E100A3;
+            top->funct3 = 0b000;
             top->mwr_i = 1; // Disable writing/storing
         }
 
@@ -440,7 +440,7 @@ int sType_sb_byte4(int timeStep, int baseTime, int duration, VPmmu_Memory *bram,
     //       |                                   |
     //        \----------- = 0x01 --------------/
     //   0    0    E    1   0     0    A   3
-    // 0000 0000 1110 0001 0000 0000 1010 0011
+    // 0000 0000 1110 0001 0000 0000 1010 0011 = 0x00E100A3
 
     unsigned long int rs1 = 0;
     unsigned long int rs2 = 0; // x14 -- just for description.
@@ -452,7 +452,7 @@ int sType_sb_byte4(int timeStep, int baseTime, int duration, VPmmu_Memory *bram,
     {
         if (timeStep - 1 == baseTime)
         {
-            top->ir_i = 0x00E100A3;
+            top->funct3 = 0b000;
             top->mwr_i = 1; // Disable writing/storing
         }
 

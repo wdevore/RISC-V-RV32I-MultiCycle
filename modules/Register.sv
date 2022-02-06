@@ -12,15 +12,17 @@ module Register
 #(
     parameter DATA_WIDTH = 32)
 (
-    input  wire logic clk_i,                   // Processor domain clock
-    input  wire logic ld_ni,                   // Active Low
-    input  wire logic [DATA_WIDTH-1:0] data_i, // Input
-    output wire logic [DATA_WIDTH-1:0] data_o  // Output
+    input  logic clk_i,                   // Processor domain clock
+    input  logic ld_i,                    // Active Low
+    input  logic [DATA_WIDTH-1:0] data_i, // Input
+    output logic [DATA_WIDTH-1:0] data_o  // Output
 );
+
+/* verilator public_module */
 
 // The register acts only the negative edge of the clock
 always_ff @(posedge clk_i) begin
-    if (~ld_ni) begin
+    if (~ld_i) begin
         `ifdef SIMULATE
             $display("%d Register Load: (%b) %h", $stime, data_i, data_i);
         `endif

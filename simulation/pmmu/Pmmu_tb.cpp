@@ -9,7 +9,7 @@
 
 // Needed for the exposed public fields via "*verilator public*"
 // and Top module
-#include "VMemory___024root.h"
+#include "VPmmu___024root.h"
 #include "VPmmu__Syms.h"
 
 // Test bench files
@@ -81,11 +81,11 @@ int main(int argc, char *argv[])
     // --**--**--**--**--**--**--**--**--**--**--**--**--**
     // Starting defaults
     // --**--**--**--**--**--**--**--**--**--**--**--**--**
-    top->wd_i = 0x00000000; // No meaningful data
-    top->ir_i = 0x00000000; // No instruction (invalid)
-    top->mwr_i = 1;         // Disable writing/storing
-    top->mrd_i = 1;         // Disable reading/loading
-    top->clk_i = 0;         // Default clock level
+    top->wd_i = 0x00000000;   // No meaningful data
+    top->funct3 = 0b000; // No instruction (invalid)
+    top->mwr_i = 1;           // Disable writing/storing
+    top->mrd_i = 1;           // Disable reading/loading
+    top->clk_i = 0;           // Default clock level
 
     vluint64_t timeStep = 0;
 

@@ -1,3 +1,7 @@
+`ifdef SIMULATE
+`timescale 1ns/1ps
+`endif
+
 module Immediate
 #(
     parameter DATA_WIDTH = 32

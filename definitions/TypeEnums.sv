@@ -12,9 +12,15 @@ typedef enum logic [3:0] {
 } ALU_Ops /*verilator public*/; 
 
 typedef enum logic [4:0] {
-    Reset,
+    Vector0,
     Vector1,
     Vector2,
+    Vector3,
+    Vector4
+} ResetState /*verilator public*/; 
+
+typedef enum logic [4:0] {
+    Reset,
     Fetch,
     Decode,
     STStore,

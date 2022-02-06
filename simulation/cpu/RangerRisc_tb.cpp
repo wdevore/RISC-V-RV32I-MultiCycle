@@ -13,25 +13,20 @@
 // Test bench files
 #include "module.h"
 
-void tick(VControlMatrix___024root *top, TESTBENCH<VControlMatrix> *tb)
-{
-    top->clk_i = 0;
-    tb->eval();
-    tb->dump(tb->tick());
-}
+bool assertionFailure = false;
 
-void tock(VControlMatrix___024root *top, TESTBENCH<VControlMatrix> *tb)
-{
-    top->clk_i = 1;
-    tb->eval();
-    tb->dump(tb->tick());
-}
+// Examples of field access
+// cmU->ALU_Ops::SraOp
 
-void clock(VControlMatrix___024root *top, TESTBENCH<VControlMatrix> *tb)
-{
-    tick(top, tb);
-    tock(top, tb);
-}
+// ------------------------------------------------------------
+// Misc
+// ------------------------------------------------------------
+extern unsigned long int wordToByteAddr(unsigned long int wordaddr);
+extern int step(int timeStep, TESTBENCH<VControlMatrix> *tb, VControlMatrix___024root *top);
+extern void abort(TESTBENCH<VControlMatrix> *tb);
+
+extern int reset_sequence(int timeStep, int baseTime, int duration, VControlMatrix___024root *top, TESTBENCH<VControlMatrix> *tb, VControlMatrix_ControlMatrix *cm, VControlMatrix___024unit *const cmU);
+extern int fetch_sequence(int timeStep, int baseTime, int duration, VControlMatrix___024root *top, TESTBENCH<VControlMatrix> *tb, VControlMatrix_ControlMatrix *cm, VControlMatrix___024unit *const cmU);
 
 // This file is similar to a Verilog test bench file except
 // is C++
@@ -50,14 +45,22 @@ int main(int argc, char *argv[])
 
     // --**--**--**--**--**--**--**--**--**--**--**--**--**
     // Not recommended. This will give you a separate instance.
-    // You want the module's instance that is used for simulation. >------------|
-    // VControlMatrix___024unit *cmU = new VControlMatrix___024unit("cmU");     |
-    //                                                                          |
-    // This XXX___024unit has any publicly exposed constructs                   |
-    // --**--**--**--**--**--**--**--**--**--**--**--**--**                     |
+    // VControlMatrix___024unit *cmU = new VControlMatrix___024unit("cmU");
+    // 
+    // You want the module's instance that is used for simulation. >---------\
+    // This XXX___024unit has any publicly or privately exposed constructs    |
+    // --**--**--**--**--**--**--**--**--**--**--**--**--**                   |
     VControlMatrix___024unit *const cmU = vcm->__PVT____024unit; // <--------/
     VControlMatrix___024root *top = vcm->rootp;
     VControlMatrix_ControlMatrix *cm = vcm->ControlMatrix;
+
+    vluint64_t timeStep = 0;
+
+    int duration = 45;
+    int baseTime = 10;
+
+    // Allow any initial blocks to execute
+    tb->eval();
 
     // --**--**--**--**--**--**--**--**--**--**--**--**--**
     // Starting defaults
@@ -65,19 +68,16 @@ int main(int argc, char *argv[])
     top->mem_busy_i = 0;    // Memory is ready (i.e. not busy)
     top->ir_i = 0x00000000; // No instruction (invalid)
 
-    top->reset_i = 0;
-    clock(top, tb); // hold reset low for 2 clocks
-    clock(top, tb);
-    top->reset_i = 1;
-    std::cout << "TB reset complete" << std::endl;
+    timeStep = reset_sequence(timeStep, baseTime, duration, top, tb, cm, cmU);
+    if (assertionFailure)
+        abort(tb);
 
-    // cm->state = cmU->MatrixState::Reset;
+    duration = 45;
+    baseTime = timeStep;
 
-    // cmU->ALU_Ops::SraOp
-
-    // Add an extra clock for visual spacing
-    clock(top, tb);
-    std::cout << "TB fetch" << std::endl;
+    timeStep = fetch_sequence(timeStep, baseTime, duration, top, tb, cm, cmU);
+    if (assertionFailure)
+        abort(tb);
 
     // --**--**--**--**--**--**--**--**--**--**--**--**--**
     // I-Type: NOP is encoded as ADDI x0, x0, 0
@@ -86,10 +86,7 @@ int main(int argc, char *argv[])
     // 0000000 00000 00000   000    00000   0010011
     // Nibbles: 0000_0000_0000_0000_0000_0000_0001_0011
     // Hex: 0x00000013
-    top->ir_i = 0x00000013;
-    clock(top, tb);
-    clock(top, tb);
-    clock(top, tb);
+    // top->ir_i = 0x00000013;
 
     // --**--**--**--**--**--**--**--**--**--**--**--**--**
     // R-Type: add x5, x6, x7   =>   x5 = x6 + x7
@@ -99,13 +96,18 @@ int main(int argc, char *argv[])
     // 0000000 00111 00110   000    00101   0110011
     // Nibbles: 0000_0000_0111_0011_0000_0010_1011_0011
     // Hex: 0x007302B3
-    top->ir_i = 0x007302B3;
+    // top->ir_i = 0x007302B3;
 
-    // Pad the tail end
-    clock(top, tb);
-    clock(top, tb);
-    clock(top, tb);
-    std::cout << "F TB: time (" << tb->time() << ")" << std::endl;
+    std::cout << "Running to duration" << std::endl;
+    int testDuration = timeStep + 75;
+    while (timeStep < testDuration)
+    {
+        timeStep = step(timeStep, tb, top);
+    }
+
+    // :--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--
+    std::cout << "Finish TB." << std::endl;
+    // :--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--
 
     tb->shutdown();
 

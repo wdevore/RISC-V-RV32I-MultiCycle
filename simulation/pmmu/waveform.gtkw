@@ -1,105 +1,41 @@
 [*]
 [*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
-[*] Sat Jan 29 19:18:32 2022
+[*] Fri Feb  4 22:54:06 2022
 [*]
 [dumpfile] "/media/RAMDisk/waveform.vcd"
-[dumpfile_mtime] "Sat Jan 29 19:17:55 2022"
-[dumpfile_size] 18882
+[dumpfile_mtime] "Fri Feb  4 22:49:03 2022"
+[dumpfile_size] 18416
 [savefile] "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/pmmu/waveform.gtkw"
-[timestart] 402
-[size] 2114 760
+[timestart] 0
+[size] 2299 760
 [pos] 0 0
-*-3.911203 499 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-3.911203 37 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
 [treeopen] TOP.Pmmu.
 [sst_width] 277
 [signals_width] 317
 [sst_expanded] 1
-[sst_vpaned_height] 126
+[sst_vpaned_height] 164
 @28
 [color] 2
 TOP.clk_i
-@c00022
-[color] 1
-TOP.ir_i[31:0]
-@28
-[color] 1
-(0)TOP.ir_i[31:0]
-[color] 1
-(1)TOP.ir_i[31:0]
-[color] 1
-(2)TOP.ir_i[31:0]
-[color] 1
-(3)TOP.ir_i[31:0]
-[color] 1
-(4)TOP.ir_i[31:0]
-[color] 1
-(5)TOP.ir_i[31:0]
-[color] 1
-(6)TOP.ir_i[31:0]
-[color] 1
-(7)TOP.ir_i[31:0]
-[color] 1
-(8)TOP.ir_i[31:0]
-[color] 1
-(9)TOP.ir_i[31:0]
-[color] 1
-(10)TOP.ir_i[31:0]
-[color] 1
-(11)TOP.ir_i[31:0]
-[color] 1
-(12)TOP.ir_i[31:0]
-[color] 1
-(13)TOP.ir_i[31:0]
-[color] 1
-(14)TOP.ir_i[31:0]
-[color] 1
-(15)TOP.ir_i[31:0]
-[color] 1
-(16)TOP.ir_i[31:0]
-[color] 1
-(17)TOP.ir_i[31:0]
-[color] 1
-(18)TOP.ir_i[31:0]
-[color] 1
-(19)TOP.ir_i[31:0]
-[color] 1
-(20)TOP.ir_i[31:0]
-[color] 1
-(21)TOP.ir_i[31:0]
-[color] 1
-(22)TOP.ir_i[31:0]
-[color] 1
-(23)TOP.ir_i[31:0]
-[color] 1
-(24)TOP.ir_i[31:0]
-[color] 1
-(25)TOP.ir_i[31:0]
-[color] 1
-(26)TOP.ir_i[31:0]
-[color] 1
-(27)TOP.ir_i[31:0]
-[color] 1
-(28)TOP.ir_i[31:0]
-[color] 1
-(29)TOP.ir_i[31:0]
-[color] 1
-(30)TOP.ir_i[31:0]
-[color] 1
-(31)TOP.ir_i[31:0]
-@1401200
--group_end
+TOP.Pmmu.funct3[2:0]
 @22
+[color] 7
 TOP.Pmmu.byte_addr_i[31:0]
 TOP.Pmmu.wd_i[31:0]
 [color] 3
 TOP.Pmmu.rd_o[31:0]
 @28
-[color] 5
 TOP.Pmmu.mem_rdy_o
-TOP.Pmmu.funct3[2:0]
-TOP.Pmmu.signed_op
-TOP.Pmmu.data_sign
+@200
+-Halfword
+@28
+TOP.Pmmu.is_halfword_size
+TOP.Pmmu.halfword_selector
+@22
+TOP.Pmmu.halfword_data[15:0]
+TOP.Pmmu.store_halfword_data[31:0]
 @200
 -Byte
 @28
@@ -108,30 +44,15 @@ TOP.Pmmu.byte_selector[1:0]
 @22
 TOP.Pmmu.byte_addr_i[31:0]
 TOP.Pmmu.byte_data[7:0]
-@200
--Halfword
-@28
-TOP.Pmmu.is_halfword_size
-TOP.Pmmu.halfword_selector
-@22
-TOP.Pmmu.word_addr[9:0]
-TOP.Pmmu.halfword_data[15:0]
+TOP.Pmmu.store_byte_data[31:0]
 @200
 -Storage
-@28
-[color] 2
-TOP.Pmmu.mrd_i
-[color] 2
+@29
 TOP.Pmmu.mwr_i
-TOP.Pmmu.data_sign
-@23
-[color] 7
+@28
+TOP.Pmmu.mrd_i
+@22
 TOP.Pmmu.storage_data_in[31:0]
-[color] 7
 TOP.Pmmu.storage_data_out[31:0]
-[color] 7
-TOP.Pmmu.store_byte_data[31:0]
-[color] 7
-TOP.Pmmu.store_halfword_data[31:0]
 [pattern_trace] 1
 [pattern_trace] 0

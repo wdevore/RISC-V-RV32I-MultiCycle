@@ -1,0 +1,2 @@
+0 PC
+1 ALU-out

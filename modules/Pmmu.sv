@@ -1,4 +1,7 @@
 `default_nettype none
+`ifdef SIMULATE
+`timescale 1ns/1ps
+`endif
 
 // --------------------------------------------------------------------------
 // Pseudo memory management unit
@@ -6,13 +9,13 @@
 
 module Pmmu
 #(
-    parameter WORDS = 10,    // 2^WORDS = 1K
+    parameter WORDS = 10,    // 10-bits 2^WORDS = 1K
     parameter DATA_WIDTH = 32)
 (
     input  logic                  clk_i,     // pos-edge
 
     /* verilator lint_off UNUSED */          // suppress unused bits warning
-    input  logic [DATA_WIDTH-1:0] ir_i,      // Instruction register
+    input  logic [2:0]            funct3,    // funct3 = ir_i[14:12] of Instruction register
     // "byte_addr_i" will be either PC or a ALU computed value.
     input  logic [DATA_WIDTH-1:0] byte_addr_i,    // Memory byte_addr_i (Byte addressing format)
     /* verilator lint_on UNUSED */
@@ -25,11 +28,12 @@ module Pmmu
     output logic                  mem_rdy_o  // Memory is ready (Active High), busy (Active Low)
 );
 
+/* verilator public_module */
+
 // ^^--^^--^^--^^--^^--^^--^^--^^--^^--^^--^^--^^--^^--^^--^^--^^--
 // Destructure the Instruction:
 // logic for Load/Store operations
 // ^^--^^--^^--^^--^^--^^--^^--^^--^^--^^--^^--^^--^^--^^--^^--^^--
-logic [2:0] funct3 = ir_i[14:12];
 
 // Capture operation type. The upper bit (bit 3) is the sign indicator
 logic signed_op = !funct3[2];       // 0 = signed, 1 = unsigned
@@ -45,7 +49,7 @@ logic is_halfword_size = funct3[1:0] == `HALFWORD_SIZE;
 // from word-addressing to byte-addressing.
 // We do this by logically shifting right by 2.
 // (i.e. ignoring the lower 2 bits)
-logic [WORDS-1:0] word_addr = {byte_addr_i[WORDS-1:2], 2'b00} >> 2; // = {2'b00, byte_addr_i[DATA_WIDTH-1:2]}
+logic [WORDS-1:0] word_addr = byte_addr_i[WORDS+1:2];
 logic [DATA_WIDTH-1:0] storage_data_out;    // Output from BRAM
 
 logic [7:0] byte_data;

@@ -1,4 +1,7 @@
 `default_nettype none
+`ifdef SIMULATE
+`timescale 1ns/1ps
+`endif
 
 // --------------------------------------------------------------------------
 // Register file 32x32

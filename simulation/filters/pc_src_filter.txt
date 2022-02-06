@@ -1,0 +1,4 @@
+00 ALU-imm
+01 ALU-out
+10 ResetVec
+11 ResetAddr

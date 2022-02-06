@@ -1,3 +1,7 @@
+#include <stdio.h>
+#include <iostream>
+#include <iomanip>
+
 template <class MODULE>
 class TESTBENCH
 {

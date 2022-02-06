@@ -1,8 +1,10 @@
 # Top module is the HDL component being tested.
-TOP = ControlMatrix
+TOP = RangerRisc
 
 # A cpp test-bench driver
-TEST_BENCH = ControlMatrix_tb.cpp
+TEST_BENCH = \
+	RangerRisc_tb.cpp
+
 TEMPLATE_HEADER = ../module.h
 # VERILATOR_PUBLICS = 
 # The vcd data for viewing

@@ -1,4 +1,7 @@
 `default_nettype none
+`ifdef SIMULATE
+`timescale 1ns/1ps
+`endif
 
 module ControlMatrix
 #(
@@ -18,19 +21,21 @@ module ControlMatrix
     output logic [PCSelectSize-1:0] pc_src_o,       // PC source select
     output logic mem_wr_o,                          // Memory write (active low)
     output logic mem_rd_o,                          // Memory read (active low)
-    output logic [AddrSelectSize-1:0] addr_src_o,   // Memory address source select
+    output logic addr_src_o,                        // Memory address source select
+    output logic rst_src_o,                         // Reset funct3 source select
     output logic rg_wr_o,                           // Register file write (active low)
     output logic [AMuxSelectSize-1:0] a_src_o,      // A_Mux source select
     output logic [BMuxSelectSize-1:0] b_src_o,      // B_Mux source select
     output logic [ImmSelectSize-1:0] imm_src_o,     // Immediate source select
     output logic alu_id_o,                          // ALU output register load
+    output logic [ALUOpSize-1:0] alu_op_o,                    // ALU operation
     output logic jal_id_o,                          // JAL/R register load
-    output logic [WDSelectSize-1:0] wd_src_o,       // Write-Data source select
+    output logic [WDSelectSize-1:0] wd_src_o        // Write-Data source select
 
     // **--**--**--**--**--**--**--**--**--**--**--**--**--
     // DEBUGGING Outputs
     // **--**--**--**--**--**--**--**--**--**--**--**--**--
-    `ifndef RELEASE_MODE
+    `ifdef DEBUG_MODE
     output logic out_ld_o,
     output logic out_sel_o,
     output logic ready_o,              // Active high
@@ -38,12 +43,14 @@ module ControlMatrix
     `endif
 );
 
+/* verilator public_module */
+
 localparam AMuxSelectSize = 2;
 localparam BMuxSelectSize = 2;
 localparam ImmSelectSize = 3;
 localparam PCSelectSize = 2;
 localparam WDSelectSize = 2;
-localparam AddrSelectSize = 1;
+localparam ALUOpSize = 3;
 
 // **__--**__--**__--**__--**__--**__--**__--**__--**__--**__--
 // IR decoding. This is the largest section.
@@ -72,20 +79,20 @@ logic [6:0] ir_opcode = ir_i[6:0];
 MatrixState state /*verilator public*/;        // Current state
 MatrixState next_state;   // Next state
 
-MatrixState vector_state;
-MatrixState next_vector_state;
+MatrixState vector_state /*verilator public*/;
+MatrixState next_vector_state /*verilator public*/;
 
 // ---------------------------------------------------
 // External Functional states (non RISC-V) signals
 // ---------------------------------------------------
 logic halt;     // Debug only
-logic ready;    // The "ready" flag is Set when the CPU has completed its reset activities.
+logic ready /*verilator public*/;    // The "ready" flag is Set when the CPU has completed its reset activities.
 
 // ---------------------------------------------------
 // Internal signals
 // ---------------------------------------------------
 // Once the reset sequence has completed this flag is Set.
-logic resetComplete;
+logic resetComplete /*verilator public*/;
 
 logic pc_ld;
 logic [PCSelectSize-1:0] pc_src;
@@ -97,7 +104,9 @@ logic out_sel;
 
 logic mem_wr;
 logic mem_rd;
-logic [AddrSelectSize-1:0] addr_src;
+logic addr_src;
+
+logic rst_src;
 
 logic reg_we;
 
@@ -107,6 +116,7 @@ logic [WDSelectSize-1:0] wd_src;
 logic [ImmSelectSize-1:0] imm_src;
 
 logic alu_ld;
+logic [ALUOpSize-1:0] alu_op;
 logic jal_ld;
 
 // ---------------------------------------------------
@@ -116,7 +126,7 @@ initial begin
     // Be default the CPU always attempts to start in Reset mode.
     state = Reset;
     // Also configure the reset sequence start state.
-    vector_state = Vector1;
+    vector_state = Vector0;
 end
 
 // -------------------------------------------------------------
@@ -130,7 +140,7 @@ always_comb begin
     resetComplete = 1'b1;   // Default: Reset is complete
 
     next_state = Reset;
-    next_vector_state = Vector1;
+    next_vector_state = Vector0;
     
     halt = 1'b0;        // Disable halt regardless of state
 
@@ -146,18 +156,22 @@ always_comb begin
 
     // Memory
     mem_wr = 1'b1;      // Disable Write (active low)
-    mem_rd = 1'b0;      // Enable read (active low)
+    mem_rd = 1'b1;      // Disable read (active low)
     addr_src = 1'b0;    // Select PC as source
 
     // Reg-File
     reg_we = 1'b1;      // Disable writing to Register-File
 
     a_src = 2'b00;
-    b_src = 2'b10;
+    b_src = 2'b01;
     imm_src = 3'b000;
     wd_src = 2'b00;
+
     alu_ld = 1'b1;
+    alu_op = 3'b000;    // Default add operation
     jal_ld = 1'b1;
+
+    rst_src = 1'b0;     // Default to IR funct3 source
 
     // ======================================
     // Main state machine
@@ -172,34 +186,60 @@ always_comb begin
 
             ready = 1'b0;               // CPU is not ready while resetting.
             resetComplete = 1'b0;       // Reset not complete
+            rst_src = 1'b1;
 
-            
             // ------------------------------------------------------
             // Vector reset sequence
             // ------------------------------------------------------
             case (vector_state)
-                Vector1: begin
-                    `ifdef SIMULATE
-                        $display("%d ###### Vector1 state ######", $stime);
-                    `endif
+                Vector0: begin
                                         // Memory read enabled *default*
                                         // Select PC as source *default*
                     pc_ld = 1'b0;       // Enable loading PC
                     pc_src = 2'b10;     // Select Reset vector constant
 
+                    next_vector_state = Vector1;
+                end
+
+                Vector1: begin
+                                        // Disable loading PC *default*
+                    mem_rd = 1'b0;      // Enable read (active low)
+                    
                     next_vector_state = Vector2;
                 end
 
                 Vector2: begin
-                    `ifdef SIMULATE
-                        $display("%d ###### Vector2 state ######", $stime);
-                    `endif
+                    // The address of the first instruction is now present
+                    // on the Pmmu output
 
-                    // PC is now loaded with Reset-Vector address
+                    pc_ld = 1'b0;       // Enable loading PC
+                    pc_src = 2'b11;     // Select Reset addr from mem
 
+                    next_vector_state = Vector3;
+                end
+
+                Vector3: begin
+                    // PC is loaded with Reset address contained
+                    // in the bottom memory location
+
+                                        // Disable loading PC *default*
+                    mem_rd = 1'b0;      // Enable read (active low)
+
+                    next_vector_state = Vector4;
+                end
+
+                Vector4: begin
+                    // The instruction at vector address pointed to by the
+                    // Vector address is now present on the Pmmu output
                     ready = 1'b1;
                     resetComplete = 1'b1;
-                    
+
+                    // Vector4 is an artifical "Fetch" that is specific
+                    // to the Reset state. This causes the IR to load
+                    // twice, but that is okay because once the Fetch/Decode
+                    // cycle starts there will only be one instead of two.
+                    ir_ld = 1'b0;   // Enable IR loading
+
                     next_state = Fetch;
                 end
 
@@ -207,7 +247,7 @@ always_comb begin
                     `ifdef SIMULATE
                         $display("%d ###### default Vector state ######", $stime);
                     `endif
-                    next_vector_state = Vector1;
+                    next_vector_state = Vector0;
                 end
             endcase
         end
@@ -234,17 +274,13 @@ always_comb begin
                 next_state = Fetch;
             end
             else begin
-                $display("%d Fetch to decode", $stime);
+                // $display("%d Fetch to decode", $stime);
                 ir_ld = 1'b0;   // Enable IR loading
                 next_state = Decode;
             end
         end
 
         Decode: begin
-            `ifdef SIMULATE
-                $display("%d Decode : {%b}", $stime, ir_opcode);
-            `endif
-
             // IR is now loaded with 1st instruction.
 
             case (ir_opcode)
@@ -265,10 +301,11 @@ always_comb begin
                     `endif
                 end
 
-                default:
-                    `ifdef SIMULATE
-                        $display("%d OPCODE type: UNKNOWN", $stime);
-                    `endif
+                default: begin
+                    // `ifdef SIMULATE
+                    //     $display("%d OPCODE type: UNKNOWN", $stime);
+                    // `endif
+                end
             endcase
 
                 next_state = Fetch;
@@ -287,7 +324,7 @@ end
 always_ff @(posedge clk_i) begin
     if (!reset_i) begin
         state <= Reset;
-        vector_state <= Vector1;
+        vector_state <= Vector0;
     end
     else
         if (resetComplete)
@@ -307,16 +344,20 @@ assign ir_ld_o = ir_ld;
 assign mem_wr_o = mem_wr;
 assign mem_rd_o = mem_rd;
 assign addr_src_o = addr_src;
-assign halt_o = halt;
 assign rg_wr_o = reg_we;
-assign out_ld_o = out_ld;
-assign out_sel_o = out_sel;
-assign ready_o = ready;
 assign a_src_o = a_src;
 assign b_src_o = b_src;
 assign imm_src_o = imm_src;
 assign wd_src_o = wd_src;
 assign alu_id_o = alu_ld;
 assign jal_id_o = jal_ld;
+assign rst_src_o = rst_src;
+
+`ifdef DEBUG_MODE
+assign out_ld_o = out_ld;
+assign out_sel_o = out_sel;
+assign ready_o = ready;
+assign halt_o = halt;
+`endif
 
 endmodule

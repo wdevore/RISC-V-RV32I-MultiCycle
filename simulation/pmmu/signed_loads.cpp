@@ -8,7 +8,7 @@
 #include "VPmmu.h"
 // Needed for the exposed public fields via "*verilator public*"
 // and Top module
-#include "VMemory___024root.h"
+#include "VPmmu___024root.h"
 #include "VPmmu__Syms.h"
 
 // Test bench files
@@ -29,7 +29,7 @@ int iType_lw_addr0x0A(int timeStep, int baseTime, int duration, VPmmu___024root 
     // 000001000000   10000   010     10011    0000011
     //       |
     //       \----- = 0x040
-    // 0000 0100 0000 1000 0010 1001 1000 0011
+    // 0000 0100 0000 1000 0010 1001 1000 0011 = 0x04082983
 
     unsigned long int rs1 = 0;
     unsigned long int imm = 0;
@@ -40,7 +40,7 @@ int iType_lw_addr0x0A(int timeStep, int baseTime, int duration, VPmmu___024root 
     {
         if (timeStep - 1 == baseTime)
         {
-            top->ir_i = 0x04082983;
+            top->funct3 = 0b010;
             top->mrd_i = 1; // Disable reading/loading
         }
 
@@ -85,7 +85,7 @@ int iType_lb_byte1(int timeStep, int baseTime, int duration, VPmmu___024root *to
     // 000001000100   10000   000     10011    0000011
     //       |
     //       \----- = 0x044
-    // 0000 0100 0100 1000 0000 1001 1000 0011
+    // 0000 0100 0100 1000 0000 1001 1000 0011 = 0x04480983
 
     unsigned long int rs1 = 0;
     unsigned long int imm = 0;
@@ -96,7 +96,7 @@ int iType_lb_byte1(int timeStep, int baseTime, int duration, VPmmu___024root *to
     {
         if (timeStep - 1 == baseTime)
         {
-            top->ir_i = 0x04480983;
+            top->funct3 = 0b000;
             top->mrd_i = 1; // Disable reading/loading
         }
 
@@ -141,7 +141,7 @@ int iType_lb_byte2(int timeStep, int baseTime, int duration, VPmmu___024root *to
     // 000001001000   10000   000     10011    0000011
     //       |
     //       \----- = 0x048
-    // 0000 0100 1000 1000 0000 1001 1000 0011
+    // 0000 0100 1000 1000 0000 1001 1000 0011 = 0x04880983
 
     unsigned long int rs1 = 0;
     unsigned long int imm = 0;
@@ -152,7 +152,7 @@ int iType_lb_byte2(int timeStep, int baseTime, int duration, VPmmu___024root *to
     {
         if (timeStep - 1 == baseTime)
         {
-            top->ir_i = 0x04880983;
+            top->funct3 = 0b000;
             top->mrd_i = 1; // Disable reading/loading
         }
 
@@ -197,7 +197,7 @@ int iType_lh_word2_addr_d18(int timeStep, int baseTime, int duration, VPmmu___02
     // 000001001000   10000   001     10011    0000011
     //       |
     //       \----- = 0x048
-    // 0000 0010 1100 1000 0001 1001 1000 0011
+    // 0000 0010 1100 1000 0001 1001 1000 0011 = 0x04881983
 
     unsigned long int rs1 = 0;
     unsigned long int imm = 0;
@@ -208,7 +208,7 @@ int iType_lh_word2_addr_d18(int timeStep, int baseTime, int duration, VPmmu___02
     {
         if (timeStep - 1 == baseTime)
         {
-            top->ir_i = 0x04881983;
+            top->funct3 = 0b001;
             top->mrd_i = 1; // Disable reading/loading
         }
 
@@ -253,7 +253,7 @@ int iType_lh_word2_addr_d19(int timeStep, int baseTime, int duration, VPmmu___02
     // 000001010010   10000   001     10011    0000011
     //       |
     //       \----- = 0x052
-    // 0000 0010 1100 1000 0001 1001 1000 0011
+    // 0000 0010 1100 1000 0001 1001 1000 0011 = 0x05281983
 
     unsigned long int rs1 = 0;
     unsigned long int imm = 0;
@@ -264,7 +264,7 @@ int iType_lh_word2_addr_d19(int timeStep, int baseTime, int duration, VPmmu___02
     {
         if (timeStep - 1 == baseTime)
         {
-            top->ir_i = 0x05281983;
+            top->funct3 = 0b001;
             top->mrd_i = 1; // Disable reading/loading
         }
 
