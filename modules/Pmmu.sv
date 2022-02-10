@@ -107,6 +107,7 @@ logic data_sign;
 
 always_comb begin
     data_sign = 0;      // Default positive number
+    rd_o = storage_data_out; // Default to "word"s
 
     // Capture sign bit
     if (signed_op) begin
@@ -114,12 +115,12 @@ always_comb begin
     end
 
     // Assign output from memory
-    if (is_byte_size)
-        rd_o = {{24{data_sign}}, byte_data};        // Sign extend
-    else if (is_halfword_size)
-        rd_o = {{16{data_sign}}, halfword_data};    // Sign extend
-    else
-        rd_o = storage_data_out; // Passthrough for "word"
+    if (~mrd_i) begin
+        if (is_byte_size)
+            rd_o = {{24{data_sign}}, byte_data};        // Sign extend
+        else if (is_halfword_size)
+            rd_o = {{16{data_sign}}, halfword_data};    // Sign extend
+    end
 
     // Assign input to memory
     if (is_byte_size)

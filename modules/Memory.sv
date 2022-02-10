@@ -31,7 +31,8 @@ module Memory
 /* verilator public_module */
 
 // Memory bank
-logic [DATA_WIDTH-1:0] mem [(1<<WORDS)-1:0] /*verilator public*/; // The actual memory
+//     #  of bits               # cells
+logic [DATA_WIDTH-1:0] mem [(1<<WORDS)-1:0] /*verilator public*/;
 
 initial begin
     // I can explicitly specify the start/end addr_i in order to avoid the
@@ -70,7 +71,9 @@ initial begin
         mem[17] =   32'h00000090;   // 0x00000011
         mem[18] =   32'hD0B0A090;   // 0x00000012
         mem[19] =   32'h1AB0A090;   // 0x00000013
-        mem[20] =   32'h04082983;   // 0x00000014
+        mem[20] =   32'h04082983;   // 0x00000014 = byte-addr 0x50
+        mem[21] =   32'h04480983;   // 0x00000015 =           0x54
+        mem[22] =   32'h00E100A3;   // 0x00000016 =           0x58
         mem[1023] = 32'h00000050;   // 0x000003FF = 0x14*d4 = 0x50
     `endif
 
@@ -96,7 +99,7 @@ end
 // --------------------------------
 // Single Port RAM -- Ultra+ class chips
 // --------------------------------
-// always_ff @(posedge clk_i) begin
+// always_ff @(negedge clk_i) begin
 //     if (~wr_i) begin
 //         mem[addr_i] <= data_i;
 //         `ifdef SIMULATE
@@ -109,7 +112,7 @@ end
 // --------------------------------
 // Dual Port RAM --  LP/HX and Ultra+ classes
 // --------------------------------
-always_ff @(posedge clk_i) begin
+always_ff @(negedge clk_i) begin
     if (~wr_i) begin
         mem[addr_i] <= data_i;
         `ifdef SIMULATE
@@ -118,7 +121,7 @@ always_ff @(posedge clk_i) begin
     end
 end
 
-always_ff @(posedge clk_i) begin
+always_ff @(negedge clk_i) begin
     if (~rd_i) begin
         data_o <= mem[addr_i];
         `ifdef SIMULATE

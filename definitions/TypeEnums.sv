@@ -23,6 +23,11 @@ typedef enum logic [4:0] {
     Reset,
     Fetch,
     Decode,
+    Execute,
+    Halt        // Not technically a RISC-V state
+} MatrixState /*verilator public*/; 
+
+typedef enum logic [4:0] {
     STStore,
     STMemAcc,
     ITLoad,
@@ -40,5 +45,5 @@ typedef enum logic [4:0] {
     JTJalrStr,
     UType,
     UTStr,
-    BugHalt
-} MatrixState /*verilator public*/; 
+    IRSTUnknown
+} InstructionState /*verilator public*/; 

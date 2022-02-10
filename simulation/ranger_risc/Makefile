@@ -1,23 +1,31 @@
 # Top module is the HDL component being tested.
-TOP = Immediate
+TOP = RangerRisc
 
 # A cpp test-bench driver
 TEST_BENCH = \
 	misc.cpp \
+	loop.cpp \
+	reset_sequence.cpp \
 	${TOP}_tb.cpp
 
 TEMPLATE_HEADER = ../module.h
-
 # VERILATOR_PUBLICS = 
 # The vcd data for viewing
 GTKWAVE_SETTINGS = waveform
 
 # HDL modules
-MODULES_FILES = \
+MODULES_FILES =  \
+	../../definitions/TypeEnums.sv \
 	../../definitions/definitions.sv \
-	../../modules/Mux8.sv \
-	../../modules/${TOP}.sv
-
+	../../modules/Mux4.sv \
+	../../modules/Mux2.sv \
+	../../modules/ControlMatrix.sv \
+	../../modules/Register.sv \
+	../../modules/Memory.sv \
+	../../modules/ALU.sv \
+	../../modules/Pmmu.sv \
+	${TOP}.sv
+	
 # output build directory
 BUILD_DIR = /media/RAMDisk
 
@@ -42,7 +50,8 @@ compile:
 	--trace -cc \
 	--top-module ${TOP} \
 	--exe --build ${TEST_BENCH} ${MODULES_FILES} \
-	-DSIMULATE
+	-DSIMULATE \
+	-DUSE_STATIC
 
 run:
 	@echo "################## Simulating ##################"

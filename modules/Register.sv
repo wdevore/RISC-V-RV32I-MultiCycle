@@ -21,7 +21,7 @@ module Register
 /* verilator public_module */
 
 // The register acts only the negative edge of the clock
-always_ff @(posedge clk_i) begin
+always_ff @(negedge clk_i) begin
     if (~ld_i) begin
         `ifdef SIMULATE
             $display("%d Register Load: (%b) %h", $stime, data_i, data_i);

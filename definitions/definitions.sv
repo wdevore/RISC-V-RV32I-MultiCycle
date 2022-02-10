@@ -16,3 +16,18 @@
 `define BYTE_SIZE     2'b00;
 `define HALFWORD_SIZE 2'b01;
 `define WORD_SIZE     2'b10;
+
+`define AMuxSelectSize 2
+`define BMuxSelectSize 2
+`define ImmSelectSize 3
+`define PCSelectSize 2
+`define WDSelectSize 2
+`define ALUOpSize 4
+
+`define SrcZero 32'b0
+`define SrcFour 32'h00000004
+`define SrcUnused 32'bx
+`define SrcUnConnected 32'bx
+
+`define MEM_BUSY 1'b1
+`define MEM_NOT_BUSY 1'b0

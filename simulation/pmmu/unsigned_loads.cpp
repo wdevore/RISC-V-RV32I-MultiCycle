@@ -42,9 +42,9 @@ int iType_lbu_byte4(int timeStep, int baseTime, int duration, VPmmu___024root *t
     int selector = 0b00;
     assertionFailure = false;
 
-    while (timeStep <= baseTime + duration)
+    while (timeStep < baseTime + duration)
     {
-        if (timeStep - 1 == baseTime)
+        if (timeStep == baseTime)
         {
             top->funct3 = 0b100;
             top->mrd_i = 1; // Disable reading/loading
@@ -81,6 +81,10 @@ int iType_lbu_byte3(int timeStep, int baseTime, int duration, VPmmu___024root *t
 {
     // --**--**--**--**--**--**--**--**--**--**--**--**--**
     // I-Type: Load 3rd byte = 0xAA
+    //                           /
+    //                          |
+    // Memory location = 32'h55AA3312
+    // 
     //     rd   rs1   imm
     // lbu x19, x16, 0x00A    x16 = 0
     // rd = M[rs1+imm][0:7]
@@ -101,9 +105,9 @@ int iType_lbu_byte3(int timeStep, int baseTime, int duration, VPmmu___024root *t
     int selector = 0b00;
     assertionFailure = false;
 
-    while (timeStep <= baseTime + duration)
+    while (timeStep < baseTime + duration)
     {
-        if (timeStep - 1 == baseTime)
+        if (timeStep == baseTime)
         {
             top->funct3 = 0b100;
             top->mrd_i = 1; // Disable reading/loading
@@ -151,9 +155,9 @@ int iType_lbu_byte2(int timeStep, int baseTime, int duration, VPmmu___024root *t
     int selector = 0b00;
     assertionFailure = false;
 
-    while (timeStep <= baseTime + duration)
+    while (timeStep < baseTime + duration)
     {
-        if (timeStep - 1 == baseTime)
+        if (timeStep == baseTime)
         {
             top->funct3 = 0b100;
             top->mrd_i = 1; // Disable reading/loading
@@ -201,9 +205,9 @@ int iType_lbu_byte1(int timeStep, int baseTime, int duration, VPmmu___024root *t
     int selector = 0b00;
     assertionFailure = false;
 
-    while (timeStep <= baseTime + duration)
+    while (timeStep < baseTime + duration)
     {
-        if (timeStep - 1 == baseTime)
+        if (timeStep == baseTime)
         {
             top->funct3 = 0b100;
             top->mrd_i = 1; // Disable reading/loading
@@ -254,9 +258,9 @@ int iType_lhu_word2(int timeStep, int baseTime, int duration, VPmmu___024root *t
     int selector = 0b00;
     assertionFailure = false;
 
-    while (timeStep <= baseTime + duration)
+    while (timeStep < baseTime + duration)
     {
-        if (timeStep - 1 == baseTime)
+        if (timeStep == baseTime)
         {
             top->funct3 = 0b101;
             top->mrd_i = 1; // Disable reading/loading
@@ -308,9 +312,9 @@ int iType_lhu_word1(int timeStep, int baseTime, int duration, VPmmu___024root *t
     int selector = 0b00;
     assertionFailure = false;
 
-    while (timeStep <= baseTime + duration)
+    while (timeStep < baseTime + duration)
     {
-        if (timeStep - 1 == baseTime)
+        if (timeStep == baseTime)
         {
             top->funct3 = 0b101;
             top->mrd_i = 1; // Disable reading/loading

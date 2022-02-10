@@ -56,6 +56,7 @@ extern int sType_sb_byte1(int timeStep, int baseTime, int duration, VPmmu_Memory
 extern int sType_sb_byte2(int timeStep, int baseTime, int duration, VPmmu_Memory *bram, VPmmu___024root *top, TESTBENCH<VPmmu> *tb);
 extern int sType_sb_byte3(int timeStep, int baseTime, int duration, VPmmu_Memory *bram, VPmmu___024root *top, TESTBENCH<VPmmu> *tb);
 extern int sType_sb_byte4(int timeStep, int baseTime, int duration, VPmmu_Memory *bram, VPmmu___024root *top, TESTBENCH<VPmmu> *tb);
+extern int sType_sh_single_cycle(int timeStep, int baseTime, int duration, VPmmu_Memory *bram, VPmmu___024root *top, TESTBENCH<VPmmu> *tb);
 
 // ------------------------------------------------------------
 // This file is similar to a Verilog test bench file except is C++
@@ -90,7 +91,7 @@ int main(int argc, char *argv[])
     vluint64_t timeStep = 0;
 
     int duration = 20;
-    int baseTime = 20;
+    int baseTime = 10;
 
     // Allow any initial blocks to execute so we can dump memory
     tb->eval();

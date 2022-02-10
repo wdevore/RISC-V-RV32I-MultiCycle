@@ -5,9 +5,24 @@
 #include <verilated.h>
 #include <verilated_vcd_c.h>
 #include "VMemory.h"
+#include "VMemory___024root.h"
+#include "VMemory_Memory.h"
 
 // Test bench files
 #include "module.h"
+
+extern int step(int timeStep, TESTBENCH<VMemory> *tb, VMemory___024root *top);
+extern void abort(TESTBENCH<VMemory> *tb);
+
+void dumpMem(VMemory_Memory *bram)
+{
+    std::cout << std::setfill('0') << std::hex;
+    for (size_t i = 0; i < 20; i++)
+    {
+        vluint32_t data = bram->mem[i];
+        std::cout << "Memory[" << std::setw(2) << i << "] = 0x" << std::setw(8) << std::uppercase << data << std::endl;
+    }
+}
 
 // This file is similar to a Verilog test bench file except
 // is C++
@@ -22,54 +37,80 @@ int main(int argc, char *argv[])
 
     tb->show();
 
-    VMemory *mem = tb->core();
+    vluint64_t timeStep = 0;
 
-    mem->write_en_ni = 1; // disable writing
-    mem->clk_i = 0;
-    tb->sampletick();
+    VMemory *vcore = tb->core();
+    VMemory___024root *const top = vcore->rootp;
+    // Used for accessing memory, for example, printing a location.
+    VMemory_Memory *const vmem = vcore->rootp->Memory;
 
-    // --**--**--**--**--**--**--**--**--**--**--**--**--**
-    // Read memory at 0x0
-    // --**--**--**--**--**--**--**--**--**--**--**--**--**
-    mem->address_i = 0;
-    mem->clk_i ^= 1;
-    tb->sampletick();
+    // Allow any initial blocks to execute
+    tb->eval();
+    dumpMem(vmem);
 
-    // --**--**--**--**--**--**--**--**--**--**--**--**--**
-    // Read memory at 0x2
-    // --**--**--**--**--**--**--**--**--**--**--**--**--**
-    mem->address_i = 2;
-    mem->clk_i ^= 1;
-    tb->sampletick();
-    mem->clk_i ^= 1;
-    tb->sampletick();
+    // Example showing location 8
+    VL_PRINTF("mem addr 8 %08x\n", vmem->mem[8]);
 
-    // Padding
-    mem->clk_i ^= 1;
-    tb->sampletick();
+    // Don't do this.
+    // vmem->wr_i = 1;
+    // It is not the same as the exposed signal in
+    // the top module. vmem->wr_i != top->wr_i
+    // I call this "shadowing" where the "outer" module
+    // shadows any contained modules.
+    // Use "top" when manipulating the top module fields.
 
-    // --**--**--**--**--**--**--**--**--**--**--**--**--**
-    // Write 0x0000A0A0 to memory at 0x5
-    // --**--**--**--**--**--**--**--**--**--**--**--**--**
-    mem->write_en_ni = 0; // enable writing
-    mem->data_i = 0x0000A0A0;
-    mem->address_i = 5;
-    mem->clk_i ^= 1; // Rising
-    tb->sampletick();
+    for (size_t i = 0; i < 100; i++)
+    {
+        if (timeStep == 10)
+        {
+            top->rd_i = 0; // enable reading
+            top->wr_i = 1; // disable writing
+        }
 
-    // Setup for read and change input to Zero for clarity
-    mem->data_i = 0x00000000;
-    mem->write_en_ni = 1; // disable writing
-    mem->clk_i ^= 1;      // Falling
-    tb->sampletick();
+        if (timeStep == 20)
+        {
+            // --**--**--**--**--**--**--**--**--**--**--**--**--**
+            // Read memory at 0x0 = 0x02
+            // --**--**--**--**--**--**--**--**--**--**--**--**--**
+            top->addr_i = 0x000;
+        }
 
-    // --**--**--**--**--**--**--**--**--**--**--**--**--**
-    // Read memory back at 0x5
-    // --**--**--**--**--**--**--**--**--**--**--**--**--**
-    mem->clk_i ^= 1;
-    tb->sampletick(); // Rising
-    mem->clk_i ^= 1;
-    tb->sampletick(); // Falling
+        if (timeStep == 30)
+        {
+            // --**--**--**--**--**--**--**--**--**--**--**--**--**
+            // Read memory at 0x2 = 0x06
+            // --**--**--**--**--**--**--**--**--**--**--**--**--**
+            top->addr_i = 0x002;
+        }
+
+        if (timeStep == 30)
+        {
+            // --**--**--**--**--**--**--**--**--**--**--**--**--**
+            // Write 0x0000A0A0 to memory at 0x5
+            // --**--**--**--**--**--**--**--**--**--**--**--**--**
+            top->rd_i = 1; // disable reading
+            top->wr_i = 0; // enable writing
+            top->data_i = 0x0000A0A0;
+            top->addr_i = 5;
+        }
+
+        if (timeStep == 50)
+        {
+            // --**--**--**--**--**--**--**--**--**--**--**--**--**
+            // Read memory back at 0x5
+            // --**--**--**--**--**--**--**--**--**--**--**--**--**
+            top->rd_i = 0; // enable reading
+            top->wr_i = 1; // disable writing
+        }
+
+        timeStep = step(timeStep, tb, top);
+    }
+
+    dumpMem(vmem);
+
+    // :--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--
+    std::cout << "Finish TB." << std::endl;
+    // :--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--
 
     tb->shutdown();
 

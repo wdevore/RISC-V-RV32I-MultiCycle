@@ -36,9 +36,9 @@ int iType_lw_addr0x0A(int timeStep, int baseTime, int duration, VPmmu___024root 
     int selector = 0b00;
     assertionFailure = false;
 
-    while (timeStep <= baseTime + duration)
+    while (timeStep < baseTime + duration)
     {
-        if (timeStep - 1 == baseTime)
+        if (timeStep == baseTime)
         {
             top->funct3 = 0b010;
             top->mrd_i = 1; // Disable reading/loading
@@ -92,9 +92,9 @@ int iType_lb_byte1(int timeStep, int baseTime, int duration, VPmmu___024root *to
     int selector = 0b00;
     assertionFailure = false;
 
-    while (timeStep <= baseTime + duration)
+    while (timeStep < baseTime + duration)
     {
-        if (timeStep - 1 == baseTime)
+        if (timeStep == baseTime)
         {
             top->funct3 = 0b000;
             top->mrd_i = 1; // Disable reading/loading
@@ -148,9 +148,9 @@ int iType_lb_byte2(int timeStep, int baseTime, int duration, VPmmu___024root *to
     int selector = 0b00;
     assertionFailure = false;
 
-    while (timeStep <= baseTime + duration)
+    while (timeStep < baseTime + duration)
     {
-        if (timeStep - 1 == baseTime)
+        if (timeStep == baseTime)
         {
             top->funct3 = 0b000;
             top->mrd_i = 1; // Disable reading/loading
@@ -204,9 +204,9 @@ int iType_lh_word2_addr_d18(int timeStep, int baseTime, int duration, VPmmu___02
     int selector = 0b00;
     assertionFailure = false;
 
-    while (timeStep <= baseTime + duration)
+    while (timeStep < baseTime + duration)
     {
-        if (timeStep - 1 == baseTime)
+        if (timeStep == baseTime)
         {
             top->funct3 = 0b001;
             top->mrd_i = 1; // Disable reading/loading
@@ -260,9 +260,9 @@ int iType_lh_word2_addr_d19(int timeStep, int baseTime, int duration, VPmmu___02
     int selector = 0b00;
     assertionFailure = false;
 
-    while (timeStep <= baseTime + duration)
+    while (timeStep < baseTime + duration)
     {
-        if (timeStep - 1 == baseTime)
+        if (timeStep == baseTime)
         {
             top->funct3 = 0b001;
             top->mrd_i = 1; // Disable reading/loading

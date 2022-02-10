@@ -2,13 +2,18 @@
 TOP = Register
 
 # A cpp test-bench driver
-TEST_BENCH = register_tb.cpp
+TEST_BENCH = \
+	misc.cpp \
+	${TOP}_tb.cpp
+
+TEMPLATE_HEADER = ../module.h
 
 # The vcd data for viewing
 GTKWAVE_SETTINGS = waveform
 
 # HDL modules
-MODULES_FILES = ../../modules/${TOP}.sv
+MODULES_FILES = \
+	../../modules/Register.sv
 
 # output build directory
 BUILD_DIR = /media/RAMDisk
@@ -27,10 +32,12 @@ lint:
 compile:
 	@echo "################## Compiling ##################"
 	cp ${TEST_BENCH} ${BUILD_DIR}
+	cp ${TEMPLATE_HEADER} ${BUILD_DIR}
 	${SIMULATION_TOOLCHAIN} --Mdir ${BUILD_DIR} \
-	-Wall --trace -cc \
-	-DSIMULATE \
-	--exe --build ${TEST_BENCH} ${MODULES_FILES}
+	--trace -cc \
+	--top-module ${TOP} \
+	--exe --build ${TEST_BENCH} ${MODULES_FILES} \
+	-DSIMULATE
 
 run:
 	@echo "################## Simulating ##################"
@@ -49,13 +56,13 @@ clean:
 exe:
 	cp ${TEST_BENCH} ${BUILD_DIR}
 	${SIMULATION_TOOLCHAIN} --cc --Mdir ${BUILD_DIR} \
-	-DSIMULATE \
-	--exe ${TEST_BENCH} ${MODULES_FILES}
+	--exe ${TEST_BENCH} ${MODULES_FILES} \
+	-DSIMULATE
 
 build:
 	${SIMULATION_TOOLCHAIN} --cc --Mdir ${BUILD_DIR} \
-	-DSIMULATE \
-	--build ${TEST_BENCH} ${MODULES_FILES}
+	--build ${TEST_BENCH} ${MODULES_FILES} \
+	-DSIMULATE
 
 archive:
 # Step 1: Generate an xxx.a file for linking

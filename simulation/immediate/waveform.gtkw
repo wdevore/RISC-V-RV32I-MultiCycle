@@ -1,12 +1,12 @@
 [*]
 [*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
-[*] Fri Jan 14 15:56:47 2022
+[*] Mon Feb  7 18:39:21 2022
 [*]
 [dumpfile] "/media/RAMDisk/waveform.vcd"
-[dumpfile_mtime] "Fri Jan 14 15:56:43 2022"
-[dumpfile_size] 3096
+[dumpfile_mtime] "Mon Feb  7 18:38:42 2022"
+[dumpfile_size] 3489
 [savefile] "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/immediate/waveform.gtkw"
-[timestart] 10
+[timestart] 0
 [size] 2117 989
 [pos] 0 26
 *-3.911203 140 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
