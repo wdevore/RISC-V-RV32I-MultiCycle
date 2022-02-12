@@ -22,14 +22,15 @@ int iType_lw_addr0x0A(int timeStep, int baseTime, int duration, VPmmu___024root 
 {
     // --**--**--**--**--**--**--**--**--**--**--**--**--**
     // I-Type: Load word from word-address 0x000000000010
-    //     rd   rs1   imm
-    // lw x19, x16,  d16    x16 = 0     (d16)*4 = 0x40
+    // lw => rd = M[rs1+imm][0:31]
+    //     rd  rs1 imm
+    // lw x19, x0, d16    x16 = 0     (d16)*4 = 0x40
     // --**--**--**--**--**--**--**--**--**--**--**--**--**
     //    imm11:0   |  rs1 | funct3 |   rd  |  opcode
-    // 000001000000   10000   010     10011    0000011
+    // 000001000000   00000   010     10011    0000011
     //       |
     //       \----- = 0x040
-    // 0000 0100 0000 1000 0010 1001 1000 0011 = 0x04082983
+    // 0000 0100 0000 0000 0010 1001 1000 0011 = 0x04002983
 
     unsigned long int rs1 = 0;
     unsigned long int imm = 0;

@@ -1,21 +1,21 @@
 [*]
 [*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
-[*] Wed Feb  9 17:40:53 2022
+[*] Sat Feb 12 04:42:14 2022
 [*]
 [dumpfile] "/media/RAMDisk/waveform.vcd"
-[dumpfile_mtime] "Wed Feb  9 17:37:24 2022"
-[dumpfile_size] 15693
+[dumpfile_mtime] "Sat Feb 12 04:32:37 2022"
+[dumpfile_size] 20671
 [savefile] "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/ranger_risc/waveform.gtkw"
-[timestart] 0
-[size] 2406 969
+[timestart] 69
+[size] 2406 1219
 [pos] 1 37
-*-4.911203 113 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-4.911203 200 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
 [treeopen] TOP.RangerRisc.
 [sst_width] 221
 [signals_width] 284
 [sst_expanded] 1
-[sst_vpaned_height] 265
+[sst_vpaned_height] 344
 @28
 [color] 2
 TOP.clk_i
@@ -87,15 +87,48 @@ TOP.RangerRisc.pmmu.word_addr[9:0]
 TOP.RangerRisc.pmmu_out[31:0]
 @200
 -ALU
-@22
+@28
 [color] 2
+TOP.RangerRisc.cm_to_alu_ld
+@23
+[color] 4
 TOP.RangerRisc.alu.func_op_i[3:0]
-TOP.RangerRisc.alu.a_i[31:0]
-TOP.RangerRisc.alu.b_i[31:0]
-TOP.RangerRisc.alu.y_o[31:0]
+@22
+TOP.RangerRisc.a_mux_out[31:0]
+TOP.RangerRisc.b_mux_out[31:0]
+TOP.RangerRisc.alu_imm_out[31:0]
+TOP.RangerRisc.alu_out[31:0]
 @200
 -Matrix
-@29
+@28
+[color] 2
 TOP.RangerRisc.matrix.ready
+@200
+-RegFile
+@28
+[color] 2
+TOP.RangerRisc.rg_wr
+TOP.RangerRisc.wd_src[1:0]
+@200
+-MultiRegs
+@28
+[color] 2
+TOP.RangerRisc.cm_to_mdr_ld
+@22
+TOP.RangerRisc.mdr_out[31:0]
+@200
+-Immediate
+@2024
+[color] 2
+^5 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_immediate_src.txt
+TOP.RangerRisc.imm_ext.imm_src[2:0]
+@22
+TOP.RangerRisc.imm_ext_out[31:0]
+@200
+-A/B Muxes
+@28
+[color] 2
+TOP.RangerRisc.cm_to_a_src[1:0]
+TOP.RangerRisc.cm_to_b_src[1:0]
 [pattern_trace] 1
 [pattern_trace] 0

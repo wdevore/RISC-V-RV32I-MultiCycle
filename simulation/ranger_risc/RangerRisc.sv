@@ -54,14 +54,19 @@ logic mem_rdy;
 logic [DATA_WIDTH-1:0] a_mux_out;
 logic [DATA_WIDTH-1:0] b_mux_out;
 
-logic alu_id;
+logic cm_to_alu_ld;
 logic [`ALUOpSize-1:0] cm_to_alu_op;
 logic [DATA_WIDTH-1:0] alu_imm_out;
+logic [DATA_WIDTH-1:0] alu_out;
 
-logic [DATA_WIDTH-1:0]rsa_out;
-logic [DATA_WIDTH-1:0]rsb_out;
+logic [DATA_WIDTH-1:0] rsa_out;
+logic [DATA_WIDTH-1:0] rsb_out;
 
 logic [DATA_WIDTH-1:0] imm_ext_out;
+
+logic cm_to_mdr_ld;
+logic [DATA_WIDTH-1:0] mdr_out;
+
 
 // Signal sequencer
 ControlMatrix matrix
@@ -81,10 +86,11 @@ ControlMatrix matrix
    .a_src_o(cm_to_a_src),
    .b_src_o(cm_to_b_src),
    .imm_src_o(imm_src),
-   .alu_id_o(alu_id),
+   .alu_ld_o(cm_to_alu_ld),
    .alu_op_o(cm_to_alu_op),
    .jal_id_o(jal_id),
-   .wd_src_o(wd_src)
+   .wd_src_o(wd_src),
+   .mdr_ld_o(cm_to_mdr_ld)
 );
 
 // Memory management
@@ -116,7 +122,7 @@ Mux2 #(.DATA_WIDTH(DATA_WIDTH)) addr_mux
 (
     .select_i(cm_to_addr_src),
     .data0_i(pc_out),
-    .data1_i(`SrcUnConnected),
+    .data1_i(alu_out),
     .data_o(addr_mux_to_pmmu)
 );
 
@@ -156,6 +162,15 @@ ALU #(.DATA_WIDTH(DATA_WIDTH)) alu
    .y_o(alu_imm_out)
 );
 
+// ALUOut register
+Register alu_out_rg
+(
+   .clk_i(clk_i),
+   .ld_i(cm_to_alu_ld),
+   .data_i(alu_imm_out),
+   .data_o(alu_out)
+);
+
 // A Src mux drives SrcA ALU
 Mux4 #(.DATA_WIDTH(DATA_WIDTH)) a_mux
 (
@@ -176,6 +191,22 @@ Mux4 #(.DATA_WIDTH(DATA_WIDTH)) b_mux
     .data2_i(imm_ext_out),
     .data3_i(`SrcUnused),
     .data_o(b_mux_out)
+);
+
+// MDR register
+Register mdr
+(
+   .clk_i(clk_i),
+   .ld_i(cm_to_mdr_ld),
+   .data_i(pmmu_out),
+   .data_o(mdr_out)
+);
+
+// Immediate extender
+Immediate imm_ext
+(
+   .ir_i(ir_out),
+   .imm_o(imm_ext_out)
 );
 
 endmodule

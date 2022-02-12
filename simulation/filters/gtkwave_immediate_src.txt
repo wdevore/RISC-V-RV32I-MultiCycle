@@ -1,0 +1,8 @@
+0 I-Type
+1 S-Type
+2 B-Type
+3 U-Type
+4 J-Type
+5 shamt
+6 unused
+7 unused

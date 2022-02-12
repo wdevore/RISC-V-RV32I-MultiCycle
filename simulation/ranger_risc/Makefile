@@ -17,12 +17,14 @@ GTKWAVE_SETTINGS = waveform
 MODULES_FILES =  \
 	../../definitions/TypeEnums.sv \
 	../../definitions/definitions.sv \
+	../../modules/Mux8.sv \
 	../../modules/Mux4.sv \
 	../../modules/Mux2.sv \
 	../../modules/ControlMatrix.sv \
 	../../modules/Register.sv \
 	../../modules/Memory.sv \
 	../../modules/ALU.sv \
+	../../modules/Immediate.sv \
 	../../modules/Pmmu.sv \
 	${TOP}.sv
 	

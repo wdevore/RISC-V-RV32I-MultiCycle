@@ -18,19 +18,20 @@ module ControlMatrix
     // **--**--**--**--**--**--**--**--**--**--**--**--**--
     output logic ir_ld_o,                           // IR load (active low)
     output logic pc_ld_o,                           // PC load (active low)
-    output logic [`PCSelectSize-1:0] pc_src_o,       // PC source select
+    output logic [`PCSelectSize-1:0] pc_src_o,      // PC source select
     output logic mem_wr_o,                          // Memory write (active low)
     output logic mem_rd_o,                          // Memory read (active low)
     output logic addr_src_o,                        // Memory address source select
     output logic rst_src_o,                         // Reset funct3 source select
     output logic rg_wr_o,                           // Register file write (active low)
-    output logic [`AMuxSelectSize-1:0] a_src_o,      // A_Mux source select
-    output logic [`BMuxSelectSize-1:0] b_src_o,      // B_Mux source select
-    output logic [`ImmSelectSize-1:0] imm_src_o,     // Immediate source select
-    output logic alu_id_o,                          // ALU output register load
-    output logic [`ALUOpSize-1:0] alu_op_o,                    // ALU operation
+    output logic [`AMuxSelectSize-1:0] a_src_o,     // A_Mux source select
+    output logic [`BMuxSelectSize-1:0] b_src_o,     // B_Mux source select
+    output logic [`ImmSelectSize-1:0] imm_src_o,    // Immediate source select
+    output logic alu_ld_o,                          // ALU output register load
+    output logic [`ALUOpSize-1:0] alu_op_o,         // ALU operation
     output logic jal_id_o,                          // JAL/R register load
-    output logic [`WDSelectSize-1:0] wd_src_o        // Write-Data source select
+    output logic [`WDSelectSize-1:0] wd_src_o,       // Write-Data source select
+    output logic mdr_ld_o
 
     // **--**--**--**--**--**--**--**--**--**--**--**--**--
     // DEBUGGING Outputs
@@ -94,6 +95,7 @@ logic pc_ld;
 logic [`PCSelectSize-1:0] pc_src;
 
 logic ir_ld;
+logic mdr_ld;
 
 logic out_ld;
 logic out_sel;
@@ -104,7 +106,7 @@ logic addr_src;
 
 logic rst_src;
 
-logic reg_we;
+logic rg_wr;
 
 logic [`AMuxSelectSize-1:0] a_src;
 logic [`BMuxSelectSize-1:0] b_src;
@@ -139,7 +141,7 @@ always_comb begin
     next_state = Reset;
     next_vector_state = Vector0;
 
-    next_ir_state = ITLDMemAcc;
+    next_ir_state = ITLoad;
 
     halt = 1'b0;        // Disable halt regardless of state
 
@@ -148,6 +150,7 @@ always_comb begin
     pc_src = 2'b00;     // Select ALU out direct
 
     ir_ld = 1'b1;       // Disable IR loading
+    mdr_ld = 1'b1;      // Disable load
 
     // Output 
     out_ld = 1'b1;      // Disable output loading
@@ -159,7 +162,7 @@ always_comb begin
     addr_src = 1'b0;    // Select PC as source
 
     // Reg-File
-    reg_we = 1'b1;      // Disable writing to Register-File
+    rg_wr = 1'b1;      // Disable writing to Register-File
 
     a_src = 2'b00;
     b_src = 2'b01;
@@ -283,9 +286,6 @@ always_comb begin
                     `ifdef SIMULATE
                         $display("%d OPCODE type: ITYPE_L", $stime);
                     `endif
-                    // Compute fetch address and load into ALUOut register.
-                    alu_ld = 1'b0;      // Enabled ALUOut load
-
                 end
 
                 `RTYPE: begin
@@ -316,23 +316,45 @@ always_comb begin
             case (ir_state)
                 // ---------------------------------------------------
                 // I-Type Load
+                // rd = M[rs1+imm][0:N]
                 // Load a value from memory into a register.
                 // ---------------------------------------------------
                 ITLoad: begin
-                    // This requires an address to fetch from which we
-                    // get from the immediate component
+                    // This requires an address to fetch which we
+                    // get from the immediate component.
+
+                    // Compute fetch address and load into ALUOut register.
+                    alu_ld = 1'b0;  // Enabled ALUOut load
+                    a_src = 2'b10;  // Select rs1 (aka RsA) source
+                    b_src = 2'b10;  // Select Immediate source
+                    // The Immediate function is computed by the Immediate module
+                    
                     next_ir_state = ITLDMemAcc;
                 end
 
                 ITLDMemAcc: begin
+                    // ALUOut now holds the address where the data is.
+                    
+                    // Setup to read memory using the computed address.
+                    mem_rd = 1'b0;
+                    // Select the address instead of the PC
+                    addr_src = 1'b1;
+                    
+                    mdr_ld = 1'b0;  // Enable load
+
                     next_ir_state = ITLDMemCmpl;
                 end
 
                 ITLDMemCmpl: begin
+                    // MDR now holds the date for the destination register.
+                    wd_src = 2'b10;
+                    rg_wr = 1'b0;   // Enable loading RegisterFile
+
                     // This is the last state for this instruction, so
                     // we setup to read the next instruction for the
                     // Fetch state.
                     mem_rd = 1'b0;
+
                     next_state = Fetch;
                 end
 
@@ -402,14 +424,15 @@ assign ir_ld_o = ir_ld;
 assign mem_wr_o = mem_wr;
 assign mem_rd_o = mem_rd;
 assign addr_src_o = addr_src;
-assign rg_wr_o = reg_we;
+assign rg_wr_o = rg_wr;
 assign a_src_o = a_src;
 assign b_src_o = b_src;
 assign imm_src_o = imm_src;
 assign wd_src_o = wd_src;
-assign alu_id_o = alu_ld;
+assign alu_ld_o = alu_ld;
 assign jal_id_o = jal_ld;
 assign rst_src_o = rst_src;
+assign mdr_ld_o = mdr_ld;
 
 `ifdef DEBUG_MODE
 assign out_ld_o = out_ld;
