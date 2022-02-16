@@ -1,2 +1,2 @@
 0 PC
-1 ALU-out
+1 ALUOut

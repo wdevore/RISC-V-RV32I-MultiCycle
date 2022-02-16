@@ -31,3 +31,5 @@
 
 `define MEM_BUSY 1'b1
 `define MEM_NOT_BUSY 1'b0
+
+`define ALWAYS_LOAD 1'b0

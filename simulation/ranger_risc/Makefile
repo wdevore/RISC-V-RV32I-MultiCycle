@@ -25,6 +25,7 @@ MODULES_FILES =  \
 	../../modules/Memory.sv \
 	../../modules/ALU.sv \
 	../../modules/Immediate.sv \
+	../../modules/RegisterFile.sv \
 	../../modules/Pmmu.sv \
 	${TOP}.sv
 	
@@ -53,7 +54,8 @@ compile:
 	--top-module ${TOP} \
 	--exe --build ${TEST_BENCH} ${MODULES_FILES} \
 	-DSIMULATE \
-	-DUSE_STATIC
+	-DPOPULATE_REGISTERS \
+	-DUSE_ROM
 
 run:
 	@echo "################## Simulating ##################"

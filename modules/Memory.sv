@@ -11,9 +11,9 @@
 // If the TB is run from this directory then the path would be "ROM.dat"
 // `define MEM_CONTENTS "ROM.dat"
 // Otherwise it is relative to the TB.
-`define ROM_PATH "../../../roms/"
-`define ROM_EXTENSION ".dat"
-// `define MEM_CONTENTS "Nop_Halt"
+`define ROM_PATH "roms/"
+`define ROM_EXTENSION ".ram"
+`define MEM_CONTENTS "SType_sb_4"
 
 module Memory
 #(
@@ -47,8 +47,8 @@ initial begin
         // See: https://www.systemverilog.io/macros
 
         // This only works with BRAM. It generally doesn't work with SPRAM constructs.
-        $display("Using ROM: %s", ``MEM_CONTENTS);
-        $readmemh ({`ROM_PATH, ``MEM_CONTENTS, `ROM_EXTENSION}, mem);  // , 0, 6
+        $display("Using ROM: %s", `MEM_CONTENTS);
+        $readmemh ({`ROM_PATH, `MEM_CONTENTS, `ROM_EXTENSION}, mem);  // , 0, 6
     `elsif USE_STATIC
         $display("Using STATIC content");
         mem[0] =    32'h00000002;       // Simple data for testing
@@ -72,7 +72,7 @@ initial begin
         mem[18] =   32'hD0B0A090;   // 0x00000012
         mem[19] =   32'h1AB0A090;   // 0x00000013
         mem[20] =   32'h04002983;   // 0x00000014 = byte-addr 0x50 = "lw x19, x0,  d16"
-        mem[21] =   32'h04480983;   // 0x00000015 =           0x54
+        mem[21] =   32'h04480983;   // 0x00000015 =           0x54 = "lb x19, x16, 0x...011"
         mem[22] =   32'h00E100A3;   // 0x00000016 =           0x58
         mem[1023] = 32'h00000050;   // 0x000003FF = 0x14*d4 = 0x50
     `endif
@@ -89,25 +89,6 @@ initial begin
             $display("memory[%d] = %b <- %h", index[7:0], mem[index], mem[index]);
     `endif
 end
-
-// --------------------------------
-// Register blobs
-// --------------------------------
-// Force Register blocks. Remove data_o <= ... above as well.
-// assign data_o = mem[addr_i];
-
-// --------------------------------
-// Single Port RAM -- Ultra+ class chips
-// --------------------------------
-// always_ff @(negedge clk_i) begin
-//     if (~wr_i) begin
-//         mem[addr_i] <= data_i;
-//         `ifdef SIMULATE
-//             $display("%d WRITE data at Addr(0x%h), Mem(0x%h), data_i(0x%h)", $stime, addr_i, mem[addr_i], data_i);
-//         `endif
-//     end
-//     data_o <= mem[addr_i];  // <-- remove this to simulate Register blobs
-// end
 
 // --------------------------------
 // Dual Port RAM --  LP/HX and Ultra+ classes

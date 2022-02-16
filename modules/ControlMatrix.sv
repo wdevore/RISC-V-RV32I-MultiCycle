@@ -61,11 +61,9 @@ module ControlMatrix
 // ignore them--but we won't.
 logic [6:0] ir_opcode = ir_i[6:0];
 
-// logic [2:0] funct3 = ir_i[14:12];   // R,I,S,B Types
-// logic [6:0] funct7 = ir_i[31:25];   // R       Type
-// logic [4:0] rd = ir_i[11:7];        // R,I,U,J Types
-// logic [4:0] rs1 = ir_i[19:15];      // R,I,S,B Types
-// logic [4:0] rs2 = ir_i[24:20];      // R,S,B   Types
+// logic [2:0] funct3     = ir_i[14:12];   // R,I,S,B Types
+// logic is_byte_size     = funct3[1:0] == `BYTE_SIZE;
+// logic is_halfword_size = funct3[1:0] == `HALFWORD_SIZE;
 
 // ---------------------------------------------------
 // Internal state signals
@@ -320,7 +318,7 @@ always_comb begin
                 // Load a value from memory into a register.
                 // ---------------------------------------------------
                 ITLoad: begin
-                    // This requires an address to fetch which we
+                    // This requires an address to fetch from which we
                     // get from the immediate component.
 
                     // Compute fetch address and load into ALUOut register.
@@ -340,14 +338,26 @@ always_comb begin
                     // Select the address instead of the PC
                     addr_src = 1'b1;
                     
+                    next_ir_state = ITLDMemMdr;
+                end
+
+                ITLDMemMdr: begin
+                    // Pmmu out now presents the data destine for
+                    // the destination register
+                    mem_rd = 1'b0;
+                    // Maintain source selection
+                    addr_src = 1'b1;
+
+                    // Load into MDR
                     mdr_ld = 1'b0;  // Enable load
 
                     next_ir_state = ITLDMemCmpl;
                 end
 
                 ITLDMemCmpl: begin
-                    // MDR now holds the date for the destination register.
-                    wd_src = 2'b10;
+                    // MDR is now loaded
+
+                    wd_src = 2'b10; // Select MDR output
                     rg_wr = 1'b0;   // Enable loading RegisterFile
 
                     // This is the last state for this instruction, so
@@ -360,12 +370,44 @@ always_comb begin
 
                 // ---------------------------------------------------
                 // S-Type store
+                // M[rs1+imm][0:31] = rs2[0:31]
+                // Store a register file value to memory
                 // ---------------------------------------------------
                 STStore: begin
-                    // This is the last state for this instruction, so
-                    // we setup to read the next instruction for the
-                    // Fetch state.
+                    // First we compute the destination address
+                    alu_ld = 1'b0;  // Enabled ALUOut load
+                    a_src = 2'b10;  // Select rs1 (aka RsA) source
+                    b_src = 2'b10;  // Select Immediate source
+                    // The Immediate function is computed by the Immediate module
+
+                    // Select destination address instead of PC
+                    addr_src = 1'b1;
+
+                    next_ir_state = STMemAcc;
+                end
+
+                STMemAcc: begin
+                    // ALUOut is loaded with the destination address
+                    // RsB is loaded with data to write
+
+                    // Read data so the Pmmu can merge bytes/halfword instructions
                     mem_rd = 1'b0;
+
+                    // Maintain source selection
+                    addr_src = 1'b1;
+
+                    next_ir_state = STMemWrt;
+                end
+
+                STMemWrt: begin
+                    // Pmmu has data for merging if required.
+                    addr_src = 1'b1;
+
+                    mem_rd = 1'b1; // Disable reading
+
+                    // Pmmu will merge data if needed.
+                    mem_wr = 1'b0;
+
                     next_state = Fetch;
                 end
 

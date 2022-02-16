@@ -27,6 +27,44 @@ module RegisterFile
 //     # of bits          # of registers
 logic [DATA_WIDTH-1:0] bank [0:WORDS-1] /*verilator public*/;
 
+initial begin
+    `ifdef POPULATE_REGISTERS
+        $display("------Populating RegisterFile----");
+        bank[0] =  32'h00000002;       // Simple data for testing
+        bank[1] =  32'h00000004;
+        bank[2] =  32'h00000006;
+        bank[3] =  32'h00000008;
+        bank[4] =  32'h0000000A;
+        bank[5] =  32'h0000000B;
+        bank[6] =  32'h0000000C;
+        bank[7] =  32'h0000000D;
+        bank[8] =  32'h0000000E;
+        bank[9] =  32'h0000000F;
+        bank[10] = 32'h00000012;
+        bank[11] = 32'h00000014;
+        bank[12] = 32'h00000016;
+        bank[13] = 32'h00000018;
+        bank[14] = 32'hBEEFDEAD;
+        bank[15] = 32'h0000001B;
+        bank[16] = 32'h0000001C;
+        bank[17] = 32'h0000001E;
+        bank[18] = 32'h0000001F;
+        bank[19] = 32'h00000021;
+        bank[20] = 32'h00000022;
+        bank[21] = 32'h00000023;
+        bank[22] = 32'h00000024;
+        bank[23] = 32'h00000025;
+        bank[24] = 32'h00000026;
+        bank[25] = 32'h00000027;
+        bank[26] = 32'h00000028;
+        bank[27] = 32'h00000029;
+        bank[28] = 32'h0000002A;
+        bank[29] = 32'h0000002B;
+        bank[30] = 32'h0000002C;
+        bank[31] = 32'h0000002D;
+    `endif
+end
+
 always @(negedge clk_i) begin
     // RISC-V Reg 0 is always Zero
     if (~reg_we_i && reg_dst_i != 0) begin

@@ -1,21 +1,21 @@
 [*]
 [*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
-[*] Sat Feb 12 04:42:14 2022
+[*] Tue Feb 15 22:48:59 2022
 [*]
 [dumpfile] "/media/RAMDisk/waveform.vcd"
-[dumpfile_mtime] "Sat Feb 12 04:32:37 2022"
-[dumpfile_size] 20671
+[dumpfile_mtime] "Tue Feb 15 22:46:26 2022"
+[dumpfile_size] 22795
 [savefile] "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/ranger_risc/waveform.gtkw"
-[timestart] 69
-[size] 2406 1219
+[timestart] 0
+[size] 2406 1528
 [pos] 1 37
-*-4.911203 200 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-4.911203 220 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
 [treeopen] TOP.RangerRisc.
 [sst_width] 221
 [signals_width] 284
 [sst_expanded] 1
-[sst_vpaned_height] 344
+[sst_vpaned_height] 443
 @28
 [color] 2
 TOP.clk_i
@@ -57,15 +57,17 @@ TOP.RangerRisc.cm_to_pc_ld
 TOP.RangerRisc.pc_out[31:0]
 @200
 -PC_Mux
-@28
+@2024
 [color] 2
+^5 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_pc_src_filter.txt
 TOP.RangerRisc.cm_to_pc_src[1:0]
 @22
 TOP.RangerRisc.pc_src_out[31:0]
 @200
 -Addr_Mux
-@28
+@2025
 [color] 2
+^6 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_addr_src_filter.txt
 TOP.RangerRisc.cm_to_addr_src
 @22
 TOP.RangerRisc.addr_mux_to_pmmu[31:0]
@@ -81,19 +83,37 @@ TOP.RangerRisc.rst_src_out[2:0]
 [color] 2
 TOP.RangerRisc.cm_to_mem_rd
 TOP.RangerRisc.cm_to_mem_wr
+TOP.RangerRisc.pmmu.signed_op
 @22
-TOP.RangerRisc.pmmu.byte_addr_i[31:0]
-TOP.RangerRisc.pmmu.word_addr[9:0]
+TOP.RangerRisc.pmmu.wd_i[31:0]
+TOP.RangerRisc.pmmu.storage_data_in[31:0]
 TOP.RangerRisc.pmmu_out[31:0]
+@200
+-Byte
+@28
+[color] 3
+TOP.RangerRisc.pmmu.is_byte_size
+TOP.RangerRisc.pmmu.byte_selector[1:0]
+@22
+TOP.RangerRisc.pmmu.byte_data[7:0]
+TOP.RangerRisc.pmmu.byte_addr_i[31:0]
+TOP.RangerRisc.pmmu.store_byte_data[31:0]
+@200
+-Halfword
+@28
+TOP.RangerRisc.pmmu.is_halfword_size
+[color] 3
+TOP.RangerRisc.pmmu.halfword_selector
+@22
+TOP.RangerRisc.pmmu.word_addr[9:0]
 @200
 -ALU
 @28
 [color] 2
 TOP.RangerRisc.cm_to_alu_ld
-@23
+@22
 [color] 4
 TOP.RangerRisc.alu.func_op_i[3:0]
-@22
 TOP.RangerRisc.a_mux_out[31:0]
 TOP.RangerRisc.b_mux_out[31:0]
 TOP.RangerRisc.alu_imm_out[31:0]
@@ -107,8 +127,42 @@ TOP.RangerRisc.matrix.ready
 -RegFile
 @28
 [color] 2
-TOP.RangerRisc.rg_wr
-TOP.RangerRisc.wd_src[1:0]
+TOP.RangerRisc.cm_to_rg_wr
+@c02024
+[color] 4
+^7 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_reg_file.txt
+TOP.RangerRisc.rd[4:0]
+@28
+[color] 4
+(0)TOP.RangerRisc.rd[4:0]
+[color] 4
+(1)TOP.RangerRisc.rd[4:0]
+[color] 4
+(2)TOP.RangerRisc.rd[4:0]
+[color] 4
+(3)TOP.RangerRisc.rd[4:0]
+[color] 4
+(4)TOP.RangerRisc.rd[4:0]
+@1401200
+-group_end
+@2024
+^8 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_wd_mux.txt
+TOP.RangerRisc.cm_to_wd_src[1:0]
+@22
+TOP.RangerRisc.wd_src_out[31:0]
+TOP.RangerRisc.rsa_out[31:0]
+@2024
+^7 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_reg_file.txt
+TOP.RangerRisc.rs1[4:0]
+@22
+TOP.RangerRisc.rsb_out[31:0]
+@2024
+^7 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_reg_file.txt
+TOP.RangerRisc.rs2[4:0]
+@22
+TOP.RangerRisc.rs1_out[31:0]
+TOP.RangerRisc.rs2_out[31:0]
+TOP.RangerRisc.reg_file.bank[19][31:0]
 @200
 -MultiRegs
 @28
@@ -120,15 +174,17 @@ TOP.RangerRisc.mdr_out[31:0]
 -Immediate
 @2024
 [color] 2
-^5 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_immediate_src.txt
+^9 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_immediate_src.txt
 TOP.RangerRisc.imm_ext.imm_src[2:0]
 @22
 TOP.RangerRisc.imm_ext_out[31:0]
 @200
 -A/B Muxes
-@28
+@2024
 [color] 2
+^10 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_a_src_mux.txt
 TOP.RangerRisc.cm_to_a_src[1:0]
+^11 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_b_src_mux.txt
 TOP.RangerRisc.cm_to_b_src[1:0]
 [pattern_trace] 1
 [pattern_trace] 0

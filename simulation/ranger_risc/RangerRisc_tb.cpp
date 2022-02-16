@@ -43,17 +43,17 @@ void dumpMem(VRangerRisc_Memory *bram)
 {
     std::cout << "--------Top Mem-------" << std::endl;
     std::cout << std::setfill('0') << std::hex;
-    for (size_t i = 0; i < 25; i++)
+    for (size_t i = 0; i < 35; i++)
     {
         vluint32_t data = bram->mem[i];
         std::cout << "Memory[" << std::setw(2) << i << "] = 0x" << std::setw(8) << std::uppercase << data << std::endl;
     }
-    std::cout << "--------Bottom Mem-------" << std::endl;
-    for (size_t i = 1020; i < 1024; i++)
-    {
-        vluint32_t data = bram->mem[i];
-        std::cout << "Memory[" << std::setw(2) << i << "] = 0x" << std::setw(8) << std::uppercase << data << std::endl;
-    }
+    // std::cout << "--------Bottom Mem-------" << std::endl;
+    // for (size_t i = 1020; i < 1024; i++)
+    // {
+    //     vluint32_t data = bram->mem[i];
+    //     std::cout << "Memory[" << std::setw(2) << i << "] = 0x" << std::setw(8) << std::uppercase << data << std::endl;
+    // }
 }
 
 // This file is similar to a Verilog test bench file except
@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
         abort(tb);
 
     baseTime = timeStep;
-    duration = 300;
+    duration = 200;
 
     timeStep = loop(timeStep, baseTime, duration, tb, top, irm, unit);
     if (assertionFailure)
@@ -115,6 +115,8 @@ int main(int argc, char *argv[])
     {
         timeStep = step(timeStep, tb, top);
     }
+
+    dumpMem(bram);
 
     // :--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--
     std::cout << "Finish TB." << std::endl;

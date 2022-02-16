@@ -30,8 +30,10 @@ typedef enum logic [4:0] {
 typedef enum logic [4:0] {
     STStore,
     STMemAcc,
+    STMemWrt,
     ITLoad,
     ITLDMemAcc,
+    ITLDMemMdr,
     ITLDMemCmpl,
     RType,
     RTCmpl,
