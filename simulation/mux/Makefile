@@ -12,7 +12,8 @@ TEMPLATE_HEADER = ../module.h
 GTKWAVE_SETTINGS = waveform
 
 # HDL modules
-MODULES_FILES = ../../modules/${TOP}.sv
+MODULES_FILES = \
+	../../modules/${TOP}.sv
 
 # output build directory
 BUILD_DIR = /media/RAMDisk

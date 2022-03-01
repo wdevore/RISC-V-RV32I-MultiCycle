@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
         abort(tb);
 
     baseTime = timeStep;
-    duration = 200;
+    duration = 700;
 
     timeStep = loop(timeStep, baseTime, duration, tb, top, irm, unit);
     if (assertionFailure)

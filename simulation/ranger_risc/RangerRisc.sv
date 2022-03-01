@@ -29,6 +29,8 @@ logic cm_to_ir_ld /*verilator public*/;   // CM to IR
 logic cm_to_pc_ld;
 logic [`PCSelectSize-1:0] cm_to_pc_src;    // CM to PC_Src
 logic [DATA_WIDTH-1:0] pc_out;
+logic cm_to_pcp_ld;
+logic [DATA_WIDTH-1:0] pc_prior_out;
 logic [DATA_WIDTH-1:0] pc_src_out;        // pc_src mux to PC_Mux
 
 logic cm_to_addr_src;
@@ -56,6 +58,7 @@ logic [DATA_WIDTH-1:0] a_mux_out;
 logic [DATA_WIDTH-1:0] b_mux_out;
 
 logic cm_to_alu_ld;
+logic cm_to_alu_flags_ld;
 logic [`ALUOpSize-1:0] cm_to_alu_op;
 logic [DATA_WIDTH-1:0] alu_imm_out;
 logic [DATA_WIDTH-1:0] alu_out;
@@ -76,6 +79,9 @@ logic [DATA_WIDTH-1:0] rs1_out;
 logic [DATA_WIDTH-1:0] rs2_out;
 logic [DATA_WIDTH-1:0] wd_src_out;
 
+logic [`FlagSize-1:0] alu_flags_cm;
+logic [`FlagSize-1:0] alu_flags_out;
+
 // Signal sequencer
 ControlMatrix matrix
 (
@@ -83,8 +89,11 @@ ControlMatrix matrix
    .ir_i(ir_out),
    .reset_i(reset_i),
    .mem_busy_i(`MEM_NOT_BUSY),
+   .flags_i(alu_flags_cm),
    .ir_ld_o(cm_to_ir_ld),
    .pc_ld_o(cm_to_pc_ld),
+   .pcp_ld_o(cm_to_pcp_ld),
+   .flags_ld_o(cm_to_alu_flags_ld),
    .pc_src_o(cm_to_pc_src),
    .mem_wr_o(cm_to_mem_wr),
    .mem_rd_o(cm_to_mem_rd),
@@ -139,7 +148,7 @@ Mux2 #(.DATA_WIDTH(3)) rst_mux
 (
     .select_i(cm_to_rst_src),
     .data0_i(funct3),
-    .data1_i(3'b010),
+    .data1_i(3'b010),      // Simulate funct3
     .data_o(rst_src_out)
 );
 
@@ -150,6 +159,15 @@ Register pc
    .ld_i(cm_to_pc_ld),
    .data_i(pc_src_out),
    .data_o(pc_out)
+);
+
+// PC prior-to-incrementing register
+Register pc_prior
+(
+   .clk_i(clk_i),
+   .ld_i(cm_to_pcp_ld),
+   .data_i(pc_out),
+   .data_o(pc_prior_out)
 );
 
 // IR register
@@ -167,7 +185,8 @@ ALU #(.DATA_WIDTH(DATA_WIDTH)) alu
    .a_i(a_mux_out),
    .b_i(b_mux_out),
    .func_op_i(cm_to_alu_op),
-   .y_o(alu_imm_out)
+   .y_o(alu_imm_out),
+   .flags_o(alu_flags_out)
 );
 
 // ALUOut register
@@ -179,14 +198,23 @@ Register alu_out_rg
    .data_o(alu_out)
 );
 
+// ALU flags register
+Register #(.DATA_WIDTH(`FlagSize)) alu_flags_rg
+(
+   .clk_i(clk_i),
+   .ld_i(cm_to_alu_flags_ld),
+   .data_i(alu_flags_out),
+   .data_o(alu_flags_cm)
+);
+
 // A Src mux drives SrcA ALU
 Mux4 #(.DATA_WIDTH(DATA_WIDTH)) a_mux
 (
     .select_i(cm_to_a_src),
     .data0_i(pc_out),
-    .data1_i(`SrcZero),
-    .data2_i(rsa_out),
-    .data3_i(`SrcUnused),
+    .data1_i(pc_prior_out),
+    .data2_i(`SrcZero),
+    .data3_i(rsa_out),
     .data_o(a_mux_out)
 );
 
@@ -253,7 +281,7 @@ Mux4 #(.DATA_WIDTH(DATA_WIDTH)) wd_mux
 (
     .select_i(cm_to_wd_src),
     .data0_i(`SrcUnused),
-    .data1_i(`SrcUnused),
+    .data1_i(alu_out),
     .data2_i(mdr_out),
     .data3_i(`SrcUnused),
     .data_o(wd_src_out)

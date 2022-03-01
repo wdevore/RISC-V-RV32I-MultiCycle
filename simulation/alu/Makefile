@@ -3,8 +3,9 @@ TOP = ALU
 
 # A cpp test-bench driver
 TEST_BENCH = \
+	../../definitions/definitions.sv \
 	misc.cpp \
-	${TOP}_tb.cpp
+	${TOP}_8bit_tb.cpp
 
 TEMPLATE_HEADER = ../module.h
 

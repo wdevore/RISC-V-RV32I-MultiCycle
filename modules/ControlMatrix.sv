@@ -9,15 +9,18 @@ module ControlMatrix
 )
 (
     input logic clk_i,
-    input logic [DATA_WIDTH-1:0] ir_i,  // Instruction register
-    input logic reset_i,                // CPU reset (active low)
-    input logic mem_busy_i,             // Memory ready (active high)
+    input logic [DATA_WIDTH-1:0] ir_i,    // Instruction register
+    input logic reset_i,                  // CPU reset (active low)
+    input logic mem_busy_i,               // Memory ready (active high)
+    input logic [`FlagSize-1:0] flags_i,  // Flags: V,N,C,Z
     
     // **--**--**--**--**--**--**--**--**--**--**--**--**--
     // Outputs
     // **--**--**--**--**--**--**--**--**--**--**--**--**--
     output logic ir_ld_o,                           // IR load (active low)
     output logic pc_ld_o,                           // PC load (active low)
+    output logic pcp_ld_o,                          // PC Prior load (active low)
+    output logic flags_ld_o,                        // ALU flags load (active low)
     output logic [`PCSelectSize-1:0] pc_src_o,      // PC source select
     output logic mem_wr_o,                          // Memory write (active low)
     output logic mem_rd_o,                          // Memory read (active low)
@@ -46,24 +49,10 @@ module ControlMatrix
 
 /* verilator public_module */
 
-// **__--**__--**__--**__--**__--**__--**__--**__--**__--**__--
-// IR decoding. This is the largest section.
-// Break down the Instruction in a group of logic blocks
-// and wires.
-// **__--**__--**__--**__--**__--**__--**__--**__--**__--**__--
-// `define RD ir_i[11:7]
-// `define FUNCT3  ir_i[14:12]
-// `define RS1 ir_i[19:15]
-// `define RS2 ir_i[24:20]
-// `define FUNCT7 ir_i[31:25]
-
 // For RV32I the lower 2 bits are always 11 so we could
 // ignore them--but we won't.
 logic [6:0] ir_opcode = ir_i[6:0];
-
-// logic [2:0] funct3     = ir_i[14:12];   // R,I,S,B Types
-// logic is_byte_size     = funct3[1:0] == `BYTE_SIZE;
-// logic is_halfword_size = funct3[1:0] == `HALFWORD_SIZE;
+logic [2:0] funct3 = ir_i[14:12];
 
 // ---------------------------------------------------
 // Internal state signals
@@ -90,6 +79,8 @@ logic ready /*verilator public*/;    // The "ready" flag is Set when the CPU has
 logic resetComplete /*verilator public*/;
 
 logic pc_ld;
+logic pcp_ld;
+logic flags_ld;
 logic [`PCSelectSize-1:0] pc_src;
 
 logic ir_ld;
@@ -113,6 +104,8 @@ logic [`ImmSelectSize-1:0] imm_src;
 
 logic alu_ld;
 logic [`ALUOpSize-1:0] alu_op;
+
+logic take_branch;
 logic jal_ld;
 
 // ---------------------------------------------------
@@ -144,15 +137,16 @@ always_comb begin
     halt = 1'b0;        // Disable halt regardless of state
 
     // PC
-    pc_ld =  1'b1;      // Disable PC loading
-    pc_src = 2'b00;     // Select ALU out direct
+    pc_ld = RgLdDisabled;
+    pcp_ld = RgLdDisabled;
+    pc_src = PCSrcAluImm;     // Select ALU out direct
 
-    ir_ld = 1'b1;       // Disable IR loading
-    mdr_ld = 1'b1;      // Disable load
+    ir_ld = RgLdDisabled;       // Disable IR loading
+    mdr_ld = RgLdDisabled;      // Disable load
 
     // Output 
-    out_ld = 1'b1;      // Disable output loading
-    out_sel = 1'b0;     // Reg-File
+    out_ld = RgLdDisabled;
+    out_sel = 1'b0;        // Reg-File
 
     // Memory
     mem_wr = 1'b1;      // Disable Write (active low)
@@ -162,16 +156,18 @@ always_comb begin
     // Reg-File
     rg_wr = 1'b1;      // Disable writing to Register-File
 
-    a_src = 2'b00;
-    b_src = 2'b01;
+    a_src = ASrcPC;
+    b_src = ASrcFour;
 
     imm_src = 3'b000;
     wd_src = 2'b00;
 
-    alu_ld = 1'b1;
-    alu_op = 4'b000;    // Default add operation
-
-    jal_ld = 1'b1;
+    alu_ld = RgLdDisabled;
+    alu_op = AddOp;    // Default add operation
+    flags_ld = RgLdDisabled;
+    
+    jal_ld = RgLdDisabled;
+    take_branch = 1'b0;
 
     rst_src = 1'b0;     // Default to IR funct3 source
 
@@ -195,8 +191,8 @@ always_comb begin
             // ------------------------------------------------------
             case (vector_state)
                 Vector0: begin
-                    pc_ld = 1'b0;       // Enable loading PC
-                    pc_src = 2'b10;     // Select Reset vector constant
+                    pc_ld = RgLdEnabled;
+                    pc_src = PCSrcResetVec; // Select Reset vector constant
 
                     next_vector_state = Vector1;
                 end
@@ -204,8 +200,8 @@ always_comb begin
                 Vector1: begin
                     // PC is loaded with Vector address constant
 
-                                        // Disable loading PC *default*
-                    mem_rd = 1'b0;      // Enable read (active low)
+                                     // Disable loading PC *default*
+                    mem_rd = 1'b0;   // Enable read (active low)
                     
                     next_vector_state = Vector2;
                 end
@@ -214,27 +210,19 @@ always_comb begin
                     // The address of the first instruction is now present
                     // on the Pmmu output
 
-                    pc_ld = 1'b0;       // Enable loading PC
-                    pc_src = 2'b11;     // Select Reset addr from mem
+                    pc_ld = RgLdEnabled;
+                    pc_src = PCSrcResetAdr; // Select Reset addr from mem
 
                     next_vector_state = Vector3;
                 end
 
                 Vector3: begin
-                    // PC is loaded with Reset address contained
-                    // in the bottom memory location
-
-                                        // Disable loading PC *default*
-                    mem_rd = 1'b0;      // Enable read (active low)
-
-                    next_vector_state = Vector4;
-                end
-
-                Vector4: begin
                     // The instruction at vector address pointed to by the
                     // Vector address is now present on the Pmmu output
                     ready = 1'b1;
                     resetComplete = 1'b1;
+
+                    mem_rd = 1'b0;      // Enable read (active low)
 
                     next_state = Fetch;
                 end
@@ -260,48 +248,55 @@ always_comb begin
             end
             else begin
                 // $display("%d Fetch to decode", $stime);
-                ir_ld = 1'b0;   // Enable IR loading
+                ir_ld = RgLdEnabled;
+                pcp_ld = RgLdEnabled;  // Load register prior to incrementing
+
                 next_state = Decode;
             end
         end
 
         Decode: begin
-            // IR is now loaded with instruction.
+            // IR is now loaded with an instruction.
 
             next_state = Execute;
 
             // Also, take advantage of Decode to increment PC using byte-addressing
-            // a_src defaults to 2'b00 = PC
+            // a_src defaults to ASrcPC = PC
             // b_src defaults to 2'b01 = +4
             // alu_op default to "Add"
-            alu_ld = 1'b0;      // Enabled ALUOut load
-            pc_ld = 1'b0;       // Enable PC load
-            pc_src = 2'b00;     // Select ALU direct output
+            alu_ld = RgLdEnabled;
+            pc_ld = RgLdEnabled;
+            pc_src = PCSrcAluImm;     // Select ALU direct output
 
             case (ir_opcode)
                 `ITYPE_L: begin
                     // Load type instructions
-                    `ifdef SIMULATE
-                        $display("%d OPCODE type: ITYPE_L", $stime);
-                    `endif
+                    // `ifdef SIMULATE
+                    //     $display("OPCODE type: ITYPE_L %x", ir_opcode);
+                    // `endif
                 end
 
                 `RTYPE: begin
-                    `ifdef SIMULATE
-                        $display("%d OPCODE type: RTYPE", $stime);
-                    `endif
+                    // `ifdef SIMULATE
+                    //     $display("OPCODE type: RTYPE %x", ir_opcode);
+                    // `endif
+                    next_ir_state = RType;
                 end
 
                 `STYPE: begin
-                    `ifdef SIMULATE
-                        $display("%d OPCODE type: STYPE", $stime);
-                    `endif
+                    // `ifdef SIMULATE
+                    //     $display("OPCODE type: STYPE %x", ir_opcode);
+                    // `endif
                     next_ir_state = STStore;
+                end
+
+                `BTYPE: begin
+                    next_ir_state = BType;
                 end
 
                 default: begin
                     `ifdef SIMULATE
-                        $display("%d OPCODE type: UNKNOWN", $stime);
+                        $display("OPCODE type: UNKNOWN %x", ir_opcode);
                     `endif
                 end
             endcase
@@ -322,9 +317,9 @@ always_comb begin
                     // get from the immediate component.
 
                     // Compute fetch address and load into ALUOut register.
-                    alu_ld = 1'b0;  // Enabled ALUOut load
-                    a_src = 2'b10;  // Select rs1 (aka RsA) source
-                    b_src = 2'b10;  // Select Immediate source
+                    alu_ld = RgLdEnabled;
+                    a_src = ASrcRsa;  // Select rs1 (aka RsA) source
+                    b_src = ASrcImm;  // Select Immediate source
                     // The Immediate function is computed by the Immediate module
                     
                     next_ir_state = ITLDMemAcc;
@@ -349,7 +344,7 @@ always_comb begin
                     addr_src = 1'b1;
 
                     // Load into MDR
-                    mdr_ld = 1'b0;  // Enable load
+                    mdr_ld = RgLdEnabled;
 
                     next_ir_state = ITLDMemCmpl;
                 end
@@ -375,9 +370,9 @@ always_comb begin
                 // ---------------------------------------------------
                 STStore: begin
                     // First we compute the destination address
-                    alu_ld = 1'b0;  // Enabled ALUOut load
-                    a_src = 2'b10;  // Select rs1 (aka RsA) source
-                    b_src = 2'b10;  // Select Immediate source
+                    alu_ld = RgLdEnabled;
+                    a_src = ASrcRsa;  // Select rs1 (aka RsA) source
+                    b_src = ASrcImm;  // Select Immediate source
                     // The Immediate function is computed by the Immediate module
 
                     // Select destination address instead of PC
@@ -400,20 +395,128 @@ always_comb begin
                 end
 
                 STMemWrt: begin
-                    // Pmmu has data for merging if required.
+                    // Pmmu out has data for merging if required.
+
+                    // Maintain source selection
                     addr_src = 1'b1;
 
-                    mem_rd = 1'b1; // Disable reading
+                    // Avoid reading and writing at the same time.
+                    mem_rd = 1'b1;
 
+                    // Write to memory.
                     // Pmmu will merge data if needed.
                     mem_wr = 1'b0;
+
+                    next_ir_state = STMemRrd;
+                end
+
+                STMemRrd: begin
+                    // This is the last state for this instruction, so
+                    // we setup to read the next instruction for the
+                    // Fetch state.
+                    mem_rd = 1'b0;
+
+                    next_state = Fetch;
+                end
+
+                // ---------------------------------------------------
+                // R-Type store
+                // add, sub, xor, slt, sll etc.
+                // ---------------------------------------------------
+                RType: begin
+                    // First we compute the destination address
+                    alu_ld = RgLdEnabled;
+                    a_src = ASrcRsa;  // Select rs1 (aka RsA) source
+                    b_src = ASrcRsb;  // Select rs2 (aka RsB) source
+
+                    // We ignore the lower 4 bits because this is RV32I base
+                    // instructions only.
+                    alu_op = {ir_i[14:12], ir_i[31:29]};
+
+                    next_ir_state = RTCmpl;
+                end
+
+                RTCmpl: begin
+                    // ALUOut is now loaded with the results
+
+                    // Setup for writeback
+                    wd_src = 2'b01;
+                    rg_wr = 1'b0;
+
+                    // Setup Fetch next instruction the PC is pointing at.
+                    mem_rd = 1'b0;
+
+                    next_state = Fetch;
+                end
+
+                // ---------------------------------------------------
+                // B-Type store
+                // Beq, Bne, Blt, Bge, Bltu, Bgeu etc.
+                // For example: rd = rs1 + rs2
+                // ---------------------------------------------------
+                BType: begin
+                    // rsa and rsb are now present.
+
+                    // Compute the flags
+                    alu_ld = RgLdDisabled; // We don't need the result
+                    a_src = ASrcRsa;  // Select rs1 (aka RsA) source
+                    b_src = ASrcRsb;  // Select rs2 (aka RsB) source
+                    flags_ld = RgLdEnabled;
+
+                    // Perform Subtract
+                    alu_op = SubOp;
+
+                    next_ir_state = BTBranch;
+                end
+
+                BTBranch: begin
+                    // ALU flags are loaded
+
+                    // Compute the branch address in case branch is taken
+                    alu_ld = RgLdEnabled;
+                    a_src = ASrcPrior;  // Select PC Prior source
+                    b_src = ASrcImm;    // Select immediate source
+
+                    // Depending on which branch directive, we interpret the
+                    // flags differently.
+                    case (funct3)
+                        BTBeq: begin
+                            take_branch = flags_i[`FLAG_ZERO];
+                        end
+                        
+                        default: begin
+                            `ifdef SIMULATE
+                                $display("IR: BRANCH DIRECTIVE UNKNOWN");
+                            `endif
+                        end
+                    endcase
+
+                    if (take_branch) begin
+                        pc_src = PCSrcAluImm;
+                        pc_ld = RgLdEnabled;
+                        // Need extra state to "re"-load PC with branch
+                        next_ir_state = BTCmpl;
+                    end
+                    else begin
+                        // Branck NOT taken continue to next instruction.
+                        // Fetch next instruction the PC is pointing at.
+                        mem_rd = 1'b0;
+                        next_state = Fetch;
+                    end
+                end
+
+                BTCmpl: begin
+                    // PC now has branch address
+
+                    // Setup Fetch next instruction the PC is pointing at.
+                    mem_rd = 1'b0;
 
                     next_state = Fetch;
                 end
 
                 default:
                     `ifdef SIMULATE
-                        $display("%d IR: UNKNOWN", $stime);
+                        $display("IR: UNKNOWN");
                     `endif
             endcase
         end
@@ -421,7 +524,7 @@ always_comb begin
         Halt: begin
             // E instruction trigger a halt
             `ifdef SIMULATE
-                $display("%d Halt", $stime);
+                $display("Halt");
             `endif
 
             halt = 1'b1;
@@ -461,6 +564,8 @@ end
 // Route internal signals to outputs
 // -------------------------------------------------------------
 assign pc_ld_o = pc_ld;
+assign pcp_ld_o = pcp_ld;
+assign flags_ld_o = flags_ld;
 assign pc_src_o = pc_src;
 assign ir_ld_o = ir_ld;
 assign mem_wr_o = mem_wr;
@@ -475,6 +580,7 @@ assign alu_ld_o = alu_ld;
 assign jal_id_o = jal_ld;
 assign rst_src_o = rst_src;
 assign mdr_ld_o = mdr_ld;
+assign alu_op_o = alu_op;
 
 `ifdef DEBUG_MODE
 assign out_ld_o = out_ld;

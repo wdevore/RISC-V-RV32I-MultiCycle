@@ -12,8 +12,7 @@ extern unsigned long int wordToByteAddr(unsigned long int wordaddr);
 extern int step(int timeStep, TESTBENCH<VMux4> *tb, VMux4___024root *top);
 extern void abort(TESTBENCH<VMux4> *tb);
 
-// This file is similar to a Verilog test bench file except
-// is C++
+// This file is similar to a Verilog test bench file except it's C++
 int main(int argc, char *argv[])
 {
     Verilated::commandArgs(argc, argv);

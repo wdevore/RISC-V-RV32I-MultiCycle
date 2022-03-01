@@ -1,4 +1,4 @@
-`define RTYPE   7'b0110000
+`define RTYPE   7'b0110011
 `define ITYPE   7'b0010011
 `define ITYPE_L 7'b0000011
 `define ITYPE_J 7'b1100111
@@ -22,7 +22,8 @@
 `define ImmSelectSize 3
 `define PCSelectSize 2
 `define WDSelectSize 2
-`define ALUOpSize 4
+`define ALUOpSize 6
+`define FlagSize 4
 
 `define SrcZero 32'b0
 `define SrcFour 32'h00000004
@@ -33,3 +34,10 @@
 `define MEM_NOT_BUSY 1'b0
 
 `define ALWAYS_LOAD 1'b0
+
+`define ALU_ADD 10'b0000000000
+
+`define FLAG_ZERO     0
+`define FLAG_NEGATIVE 1
+`define FLAG_CARRY    2
+`define FLAG_OVERFLOW 3
