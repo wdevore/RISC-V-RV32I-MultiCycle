@@ -37,7 +37,9 @@
 
 `define ALU_ADD 10'b0000000000
 
+// VNCZ
+// 3210
 `define FLAG_ZERO     0
-`define FLAG_NEGATIVE 1
-`define FLAG_CARRY    2
+`define FLAG_CARRY    1
+`define FLAG_NEGATIVE 2
 `define FLAG_OVERFLOW 3

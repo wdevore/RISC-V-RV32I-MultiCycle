@@ -54,11 +54,15 @@ module ControlMatrix
 logic [6:0] ir_opcode = ir_i[6:0];
 logic [2:0] funct3 = ir_i[14:12];
 
+// The Shift operations have additional info in the upper
+// 3 bits. R-Types call this funct7 but I-Types alias it.
+logic [2:0] funct7up = ir_i[31:29];
+
 // ---------------------------------------------------
 // Internal state signals
 // ---------------------------------------------------
-MatrixState state /*verilator public*/;        // Current state
-MatrixState next_state;   // Next state
+MatrixState state /*verilator public*/;  // Current state
+MatrixState next_state;                  // Next state
 
 MatrixState vector_state /*verilator public*/;
 MatrixState next_vector_state /*verilator public*/;
@@ -157,7 +161,7 @@ always_comb begin
     rg_wr = 1'b1;      // Disable writing to Register-File
 
     a_src = ASrcPC;
-    b_src = ASrcFour;
+    b_src = BSrcFour;
 
     imm_src = 3'b000;
     wd_src = 2'b00;
@@ -293,6 +297,10 @@ always_comb begin
                 `BTYPE: begin
                     next_ir_state = BType;
                 end
+                
+                `ITYPE: begin
+                    next_ir_state = ITALU;
+                end
 
                 default: begin
                     `ifdef SIMULATE
@@ -319,7 +327,7 @@ always_comb begin
                     // Compute fetch address and load into ALUOut register.
                     alu_ld = RgLdEnabled;
                     a_src = ASrcRsa;  // Select rs1 (aka RsA) source
-                    b_src = ASrcImm;  // Select Immediate source
+                    b_src = BSrcImm;  // Select Immediate source
                     // The Immediate function is computed by the Immediate module
                     
                     next_ir_state = ITLDMemAcc;
@@ -372,7 +380,7 @@ always_comb begin
                     // First we compute the destination address
                     alu_ld = RgLdEnabled;
                     a_src = ASrcRsa;  // Select rs1 (aka RsA) source
-                    b_src = ASrcImm;  // Select Immediate source
+                    b_src = BSrcImm;  // Select Immediate source
                     // The Immediate function is computed by the Immediate module
 
                     // Select destination address instead of PC
@@ -420,18 +428,18 @@ always_comb begin
                 end
 
                 // ---------------------------------------------------
-                // R-Type store
+                // R-Type ALU
                 // add, sub, xor, slt, sll etc.
                 // ---------------------------------------------------
                 RType: begin
                     // First we compute the destination address
                     alu_ld = RgLdEnabled;
                     a_src = ASrcRsa;  // Select rs1 (aka RsA) source
-                    b_src = ASrcRsb;  // Select rs2 (aka RsB) source
+                    b_src = BSrcRsb;  // Select rs2 (aka RsB) source
 
                     // We ignore the lower 4 bits because this is RV32I base
                     // instructions only.
-                    alu_op = {ir_i[14:12], ir_i[31:29]};
+                    alu_op = {funct3, funct7up};
 
                     next_ir_state = RTCmpl;
                 end
@@ -450,7 +458,7 @@ always_comb begin
                 end
 
                 // ---------------------------------------------------
-                // B-Type store
+                // B-Type branch
                 // Beq, Bne, Blt, Bge, Bltu, Bgeu etc.
                 // For example: rd = rs1 + rs2
                 // ---------------------------------------------------
@@ -460,7 +468,7 @@ always_comb begin
                     // Compute the flags
                     alu_ld = RgLdDisabled; // We don't need the result
                     a_src = ASrcRsa;  // Select rs1 (aka RsA) source
-                    b_src = ASrcRsb;  // Select rs2 (aka RsB) source
+                    b_src = BSrcRsb;  // Select rs2 (aka RsB) source
                     flags_ld = RgLdEnabled;
 
                     // Perform Subtract
@@ -475,15 +483,45 @@ always_comb begin
                     // Compute the branch address in case branch is taken
                     alu_ld = RgLdEnabled;
                     a_src = ASrcPrior;  // Select PC Prior source
-                    b_src = ASrcImm;    // Select immediate source
+                    b_src = BSrcImm;    // Select immediate source
 
                     // Depending on which branch directive, we interpret the
                     // flags differently.
                     case (funct3)
                         BTBeq: begin
+                            // Branch if Z=1
                             take_branch = flags_i[`FLAG_ZERO];
                         end
-                        
+
+                        BTBne: begin
+                            // Branch if Z=0
+                            take_branch = ~flags_i[`FLAG_ZERO];
+                        end
+
+                        BTBlt: begin
+                            // If the two operands are considered signed
+                            // then N!=V is interpreted as "rs1 is less than rs2"
+                            take_branch = flags_i[`FLAG_NEGATIVE] ^ flags_i[`FLAG_OVERFLOW];
+                        end
+
+                        BTBge: begin
+                            // If the two operands are considered signed
+                            // then N==V is interpreted as "rs1 >= rs2"
+                            take_branch = flags_i[`FLAG_NEGATIVE] == flags_i[`FLAG_OVERFLOW];
+                        end
+
+                        BTBltu: begin
+                            // The two operands are considered unsigned, 
+                            // We interpret C=1, for example, "3 < FFFFFFFE".
+                            take_branch = flags_i[`FLAG_CARRY];
+                        end
+
+                        BTBgeu: begin
+                            // The two operands are considered unsigned, 
+                            // We interpret C=0, for example, "FFFFFFFE >= 5".
+                            take_branch = ~flags_i[`FLAG_CARRY];
+                        end
+
                         default: begin
                             `ifdef SIMULATE
                                 $display("IR: BRANCH DIRECTIVE UNKNOWN");
@@ -498,7 +536,7 @@ always_comb begin
                         next_ir_state = BTCmpl;
                     end
                     else begin
-                        // Branck NOT taken continue to next instruction.
+                        // Branch NOT taken continue to next instruction.
                         // Fetch next instruction the PC is pointing at.
                         mem_rd = 1'b0;
                         next_state = Fetch;
@@ -512,6 +550,49 @@ always_comb begin
                     mem_rd = 1'b0;
 
                     next_state = Fetch;
+                end
+
+                // ---------------------------------------------------
+                // I-Type ALU immediate
+                // addi, xori, ori andi, ssli, srli, srai, slti, sltiu
+                // ---------------------------------------------------
+                ITALU: begin
+                    alu_ld = RgLdEnabled;
+                    a_src = ASrcRsa;
+                    b_src = BSrcImm;
+                    flags_ld = RgLdEnabled;
+
+                    // We only need the 3 upper bits when the I-Type is
+                    // slli, (srli, srai) in order to further narrow
+                    // the operation, otherwise use zero.
+                    if (funct3 == ITSlli || funct3 == ITSrli)
+                        alu_op = {funct3, funct7up};
+                    else
+                        alu_op = {funct3, 3'b000};
+
+                    next_ir_state = ITALUCmpl;
+                end
+
+                ITALUCmpl: begin
+                    // ALUOut has results
+
+                    // Setup for writeback
+                    wd_src = 2'b01;
+                    rg_wr = 1'b0;
+
+
+                    // Setup Fetch next instruction the PC is pointing at.
+                    mem_rd = 1'b0;
+
+                    next_state = Fetch;
+                end
+
+                // ---------------------------------------------------
+                // J-Type Jal
+                // ---------------------------------------------------
+                JTJal: begin
+
+                    next_ir_state = ITALUCmpl;
                 end
 
                 default:

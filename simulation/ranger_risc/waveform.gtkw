@@ -1,21 +1,21 @@
 [*]
 [*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
-[*] Tue Mar  1 02:52:02 2022
+[*] Fri Mar  4 01:41:19 2022
 [*]
 [dumpfile] "/media/RAMDisk/waveform.vcd"
-[dumpfile_mtime] "Tue Mar  1 02:16:10 2022"
-[dumpfile_size] 37347
+[dumpfile_mtime] "Fri Mar  4 01:41:03 2022"
+[dumpfile_size] 35051
 [savefile] "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/ranger_risc/waveform.gtkw"
-[timestart] 306
-[size] 1983 1760
+[timestart] 177
+[size] 1983 1772
 [pos] 0 27
-*-4.911203 414 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-4.911203 280 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
 [treeopen] TOP.RangerRisc.
 [sst_width] 221
 [signals_width] 284
 [sst_expanded] 1
-[sst_vpaned_height] 518
+[sst_vpaned_height] 521
 @28
 [color] 2
 TOP.clk_i
@@ -137,6 +137,8 @@ TOP.RangerRisc.alu_flags_cm[3:0]
 [color] 2
 TOP.RangerRisc.matrix.ready
 TOP.RangerRisc.matrix.take_branch
+@29
+TOP.RangerRisc.matrix.funct3[2:0]
 @200
 -RegFile
 @28
@@ -176,9 +178,7 @@ TOP.RangerRisc.rs2_out[31:0]
 TOP.RangerRisc.reg_file.bank[1][31:0]
 TOP.RangerRisc.reg_file.bank[2][31:0]
 TOP.RangerRisc.reg_file.bank[3][31:0]
-@23
 TOP.RangerRisc.reg_file.bank[4][31:0]
-@22
 TOP.RangerRisc.reg_file.bank[5][31:0]
 @200
 -MultiRegs

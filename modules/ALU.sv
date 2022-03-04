@@ -117,6 +117,8 @@ always_comb begin
     endcase
 end
 
+// VNCZ
+// 3210
 assign flags_o = {
     carry_borrow_l ^ carry_borrow_h,  // V
     ORes[DATA_WIDTH-1],               // N
@@ -129,9 +131,10 @@ assign y_o = ORes;
 endmodule
 
 // Flags
-// https://www.reddit.com/r/asm/comments/leyv7g/can_someone_explain_to_me_why_this_is_an_overflow/
 // https://stackoverflow.com/questions/57452447/riscv-how-the-branch-intstructions-are-calculated
 
+
+// https://www.reddit.com/r/asm/comments/leyv7g/can_someone_explain_to_me_why_this_is_an_overflow/
 // https://www.doc.ic.ac.uk/~eedwards/compsys/arithmetic/index.html
 // Add only: http://teaching.idallen.com/dat2343/10f/notes/040_overflow.txt
     // ~(~(a_i[DATA_WIDTH-1] ^ b_i[DATA_WIDTH-1]) & ((a_i[DATA_WIDTH-1] & b_i[DATA_WIDTH-1]) ^ ORes[DATA_WIDTH-1])),  // V = !(!(a^b) & (a&b)^s))

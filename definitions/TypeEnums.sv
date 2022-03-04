@@ -3,14 +3,14 @@
 typedef enum logic [`ALUOpSize-1:0] {
     AddOp  = `ALUOpSize'b000_000,
     SubOp  = `ALUOpSize'b000_010,
-    SllOp  = `ALUOpSize'b001_000,
-    SltOp  = `ALUOpSize'b010_000,
-    SltuOp = `ALUOpSize'b011_000,
     XorOp  = `ALUOpSize'b100_000,
+    OrOp   = `ALUOpSize'b110_000,
+    AndOp  = `ALUOpSize'b111_000,
+    SllOp  = `ALUOpSize'b001_000,
     SrlOp  = `ALUOpSize'b101_000,
     SraOp  = `ALUOpSize'b101_010,
-    OrOp   = `ALUOpSize'b110_000,
-    AndOp  = `ALUOpSize'b111_000
+    SltOp  = `ALUOpSize'b010_000,
+    SltuOp = `ALUOpSize'b011_000
 } ALU_Ops /*verilator public*/; 
 
 typedef enum logic [4:0] {
@@ -55,13 +55,18 @@ typedef enum logic [4:0] {
 } InstructionState /*verilator public*/; 
 
 typedef enum logic [2:0] {
-    BTBeq = 3'b000,
-    BTBne = 3'b001,
-    BTBlt = 3'b100,
-    BTBge = 3'b101,
+    BTBeq  = 3'b000,
+    BTBne  = 3'b001,
+    BTBlt  = 3'b100,
+    BTBge  = 3'b101,
     BTBltu = 3'b110,
     BTBgeu = 3'b111
 } BranchType /*verilator public*/; 
+
+typedef enum logic [2:0] {
+    ITSlli = 3'b001,
+    ITSrli = 3'b101  // srai as well
+} ITypeImm /*verilator public*/; 
 
 typedef enum logic [1:0] {
     ASrcPC     = 2'b00,
@@ -71,9 +76,9 @@ typedef enum logic [1:0] {
 } AMuxSrc /*verilator public*/; 
 
 typedef enum logic [1:0] {
-    ASrcRsb     = 2'b00,
-    ASrcFour    = 2'b01,
-    ASrcImm     = 2'b10
+    BSrcRsb     = 2'b00,
+    BSrcFour    = 2'b01,
+    BSrcImm     = 2'b10
 } BMuxSrc /*verilator public*/; 
 
 typedef enum logic {

@@ -168,11 +168,12 @@ rs1 < rs2 = **false**. Check if N=V
     x1  x2
 Sub 3 - (-2)       x1 - x2    0x00000005
 
-Flags: --C-
+Flags: --C-     3 < FE
+Flags: -N--     FE < 3
 
 If the two operands are considered signed then N=V is interpreted as "3 is NOT less than -2" or "3 is greater than -2"
 
-If the two operands are considered unsigned, "bltu", then we interpret C=0 as "3 is less than FFFFFFFE".
+If the two operands are considered unsigned, "bltu", then we interpret C=0 as "3 is less than FFFFFFFE" or rs1 < rs2
 
 x4 = base = WA:0x0A, BA:0x28  <-- preloaded via initial block
 

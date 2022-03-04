@@ -13,7 +13,7 @@
 // Otherwise it is relative to the TB.
 `define ROM_PATH "roms/rtype/"
 `define ROM_EXTENSION ".ram"
-`define MEM_CONTENTS "BType_beq"
+`define MEM_CONTENTS "IType_sltiu"
 
 module Memory
 #(
