@@ -1,0 +1,12 @@
+{
+    "Assembly": "jal x1, origin",
+    "PC": "0x08",
+    "Labels": [
+        {
+            "jumpto": "0x0000003C"
+        },
+        {
+            "origin": "20"
+        }
+    ]
+}

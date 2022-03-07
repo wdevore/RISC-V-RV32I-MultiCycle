@@ -23,3 +23,7 @@ An intuitive multi-cycle RISC-V RV32I soft-core processor for FPGAs.
 - [ ] RangerRisc
 
 https://www.exploringbinary.com/twos-complement-converter/
+
+```
+([a-z]+) ([\w]+)[, ]*([\w]+)[, ]*([\w]*)
+```

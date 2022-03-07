@@ -32,7 +32,6 @@ module ControlMatrix
     output logic [`ImmSelectSize-1:0] imm_src_o,    // Immediate source select
     output logic alu_ld_o,                          // ALU output register load
     output logic [`ALUOpSize-1:0] alu_op_o,         // ALU operation
-    output logic jal_id_o,                          // JAL/R register load
     output logic [`WDSelectSize-1:0] wd_src_o,       // Write-Data source select
     output logic mdr_ld_o
 
@@ -110,7 +109,6 @@ logic alu_ld;
 logic [`ALUOpSize-1:0] alu_op;
 
 logic take_branch;
-logic jal_ld;
 
 // ---------------------------------------------------
 // Simulation
@@ -158,19 +156,18 @@ always_comb begin
     addr_src = 1'b0;    // Select PC as source
 
     // Reg-File
-    rg_wr = 1'b1;      // Disable writing to Register-File
+    rg_wr = RgLdDisabled;      // Disable writing to Register-File
 
     a_src = ASrcPC;
     b_src = BSrcFour;
 
     imm_src = 3'b000;
-    wd_src = 2'b00;
+    wd_src = WDSrcImm;
 
     alu_ld = RgLdDisabled;
     alu_op = AddOp;    // Default add operation
     flags_ld = RgLdDisabled;
     
-    jal_ld = RgLdDisabled;
     take_branch = 1'b0;
 
     rst_src = 1'b0;     // Default to IR funct3 source
@@ -302,6 +299,10 @@ always_comb begin
                     next_ir_state = ITALU;
                 end
 
+                `JTYPE: begin
+                    next_ir_state = JTJal;
+                end
+
                 default: begin
                     `ifdef SIMULATE
                         $display("OPCODE type: UNKNOWN %x", ir_opcode);
@@ -360,8 +361,8 @@ always_comb begin
                 ITLDMemCmpl: begin
                     // MDR is now loaded
 
-                    wd_src = 2'b10; // Select MDR output
-                    rg_wr = 1'b0;   // Enable loading RegisterFile
+                    wd_src = WDSrcMDR;
+                    rg_wr = RgLdEnabled;   // Enable loading RegisterFile
 
                     // This is the last state for this instruction, so
                     // we setup to read the next instruction for the
@@ -448,8 +449,8 @@ always_comb begin
                     // ALUOut is now loaded with the results
 
                     // Setup for writeback
-                    wd_src = 2'b01;
-                    rg_wr = 1'b0;
+                    wd_src = WDSrcALUOut;
+                    rg_wr = RgLdEnabled;
 
                     // Setup Fetch next instruction the PC is pointing at.
                     mem_rd = 1'b0;
@@ -577,8 +578,8 @@ always_comb begin
                     // ALUOut has results
 
                     // Setup for writeback
-                    wd_src = 2'b01;
-                    rg_wr = 1'b0;
+                    wd_src = WDSrcALUOut;
+                    rg_wr = RgLdEnabled;
 
 
                     // Setup Fetch next instruction the PC is pointing at.
@@ -591,8 +592,34 @@ always_comb begin
                 // J-Type Jal
                 // ---------------------------------------------------
                 JTJal: begin
+                    // Compute the jump address: PC += imm
+                    a_src = ASrcPrior;
+                    b_src = BSrcImm;
 
-                    next_ir_state = ITALUCmpl;
+                    // Load PC
+                    pc_src = PCSrcAluImm;
+                    pc_ld = RgLdEnabled;
+
+                    next_ir_state = JTJalRtr;
+                end
+
+                JTJalRtr: begin
+                    // Compute the return address: rd = PC+4.
+                    a_src = ASrcPrior;
+                    b_src = BSrcFour;
+
+                    // Setup for writeback
+                    wd_src = WDSrcImm;
+                    rg_wr = RgLdEnabled;
+
+                    next_ir_state = JTJalCmpl;
+                end
+
+                JTJalCmpl: begin
+                    // Setup Fetch next instruction the PC is pointing at.
+                    mem_rd = 1'b0;
+
+                    next_state = Fetch;
                 end
 
                 default:
@@ -658,7 +685,6 @@ assign b_src_o = b_src;
 assign imm_src_o = imm_src;
 assign wd_src_o = wd_src;
 assign alu_ld_o = alu_ld;
-assign jal_id_o = jal_ld;
 assign rst_src_o = rst_src;
 assign mdr_ld_o = mdr_ld;
 assign alu_op_o = alu_op;

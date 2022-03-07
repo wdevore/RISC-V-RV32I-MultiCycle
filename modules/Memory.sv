@@ -11,9 +11,9 @@
 // If the TB is run from this directory then the path would be "ROM.dat"
 // `define MEM_CONTENTS "ROM.dat"
 // Otherwise it is relative to the TB.
-`define ROM_PATH "roms/rtype/"
+`define ROM_PATH "rams/"
 `define ROM_EXTENSION ".ram"
-`define MEM_CONTENTS "IType_sltiu"
+`define MEM_CONTENTS "jtype/jal"
 
 module Memory
 #(

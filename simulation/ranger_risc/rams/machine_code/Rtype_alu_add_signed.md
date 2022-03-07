@@ -8,7 +8,7 @@ All operands are consider Signed
 
 ```
 
-# RType_add_1
+# add_1
 Load x1 with byte from word-address **0x0000000A**
 
 Load x2 with byte from word-address **0x0000000B**
@@ -79,7 +79,7 @@ x3 should end up with a value of 0x0000000B
 -----------------------------------------------
 ```
 
-# RType_add_2
+# add_2
 Add 5 + (-7) 
 
 Load x1 with byte from word-address **0x0000000A**
@@ -112,7 +112,7 @@ Flags: -N--
 -----------------------------------------------
 ```
 
-# RType_add_carry
+# add_carry
 Add 0xFFFFFFFF + 1   == -1 + 1
 Flags: --CZ
 
@@ -141,7 +141,7 @@ x3 should = 0x00
 -----------------------------------------------
 ```
 
-# RType_add_overflow
+# add_overflow
 Add 0x7FFFFFFF + 1
 Flags: VN--
 
@@ -170,7 +170,7 @@ x3 should = 0x00
 -----------------------------------------------
 ```
 
-# RType_add_neg
+# add_neg
 Add 0xFFFFFFFF + 0
 Flags: -N--
 
@@ -188,6 +188,35 @@ x3 should = 0x00
 @A FFFFFFFF     <-- data for x1
 @B 00000000
 @C 00000000     <-- data for x2
+...
+@10 00000004    <-- Reset vector
+@11 00000000
+```
+
+```
+-----------------------------------------------
+--
+-----------------------------------------------
+```
+
+# add_neg_2
+Add 0xFFFFFFF8 + 8
+Flags: -N--
+
+x3 should = 0x00
+
+## Memory layout
+```
+@0 00000002
+@1 00022083     <-- lw  x1, x4, 0
+@2 00822103     <-- lw  x2, x4, 2
+@3 002081B3     <-- add x3, x1, x2
+@4 00000008     
+@5 0000000A     
+...
+@A FFFFFFF8     <-- data for x1
+@B 00000000
+@C 00000008     <-- data for x2
 ...
 @10 00000004    <-- Reset vector
 @11 00000000

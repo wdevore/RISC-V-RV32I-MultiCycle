@@ -45,7 +45,8 @@ typedef enum logic [4:0] {
     ITALU,
     ITALUCmpl,
     JTJal,
-    JTJalStr,
+    JTJalRtr,
+    JTJalCmpl,
     JTJalr,
     JTJalrPC,
     JTJalrStr,
@@ -78,8 +79,16 @@ typedef enum logic [1:0] {
 typedef enum logic [1:0] {
     BSrcRsb     = 2'b00,
     BSrcFour    = 2'b01,
-    BSrcImm     = 2'b10
+    BSrcImm     = 2'b10,
+    BSrcZero    = 2'b11
 } BMuxSrc /*verilator public*/; 
+
+typedef enum logic [1:0] {
+    WDSrcImm     = 2'b00,
+    WDSrcALUOut  = 2'b01,
+    WDSrcMDR     = 2'b10,
+    WDSrcXXX     = 2'b11
+} WDMuxSrc /*verilator public*/; 
 
 typedef enum logic {
     RgLdEnabled     = 1'b0,

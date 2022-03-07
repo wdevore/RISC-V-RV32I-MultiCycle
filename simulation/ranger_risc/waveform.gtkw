@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
-[*] Fri Mar  4 01:41:19 2022
+[*] Sat Mar  5 01:39:31 2022
 [*]
 [dumpfile] "/media/RAMDisk/waveform.vcd"
-[dumpfile_mtime] "Fri Mar  4 01:41:03 2022"
-[dumpfile_size] 35051
+[dumpfile_mtime] "Sat Mar  5 01:39:14 2022"
+[dumpfile_size] 34371
 [savefile] "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/ranger_risc/waveform.gtkw"
-[timestart] 177
+[timestart] 137
 [size] 1983 1772
 [pos] 0 27
-*-4.911203 280 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-4.911203 270 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
 [treeopen] TOP.RangerRisc.
 [sst_width] 221

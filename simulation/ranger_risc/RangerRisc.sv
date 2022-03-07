@@ -47,7 +47,7 @@ logic [2:0] rst_src_out;
 logic [`AMuxSelectSize-1:0] cm_to_a_src;
 logic [`BMuxSelectSize-1:0] cm_to_b_src;
 logic [`ImmSelectSize-1:0] imm_src;
-logic jal_id;
+
 logic [`WDSelectSize-1:0] cm_to_wd_src;
 logic [DATA_WIDTH-1:0] ir_out /*verilator public*/;
 
@@ -105,7 +105,6 @@ ControlMatrix matrix
    .imm_src_o(imm_src),
    .alu_ld_o(cm_to_alu_ld),
    .alu_op_o(cm_to_alu_op),
-   .jal_id_o(jal_id),
    .wd_src_o(cm_to_wd_src),
    .mdr_ld_o(cm_to_mdr_ld)
 );
@@ -225,7 +224,7 @@ Mux4 #(.DATA_WIDTH(DATA_WIDTH)) b_mux
     .data0_i(rsb_out),
     .data1_i(`SrcFour),
     .data2_i(imm_ext_out),
-    .data3_i(`SrcUnused),
+    .data3_i(`SrcZero),
     .data_o(b_mux_out)
 );
 
@@ -280,7 +279,7 @@ Register rsb
 Mux4 #(.DATA_WIDTH(DATA_WIDTH)) wd_mux
 (
     .select_i(cm_to_wd_src),
-    .data0_i(`SrcUnused),
+    .data0_i(alu_imm_out),
     .data1_i(alu_out),
     .data2_i(mdr_out),
     .data3_i(`SrcUnused),
