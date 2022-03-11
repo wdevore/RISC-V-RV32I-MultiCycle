@@ -17,7 +17,12 @@
 16 JTJalRtr
 17 JTJalCmpl
 18 JTJalr
-19 JTJalrPC
-20 JTJalrStr
+19 JTJalrRtr
+20 JTJalrCmpl
 21 UType
-22 UTSt
+22 UTCmpl
+23 UTypeAui
+24 UTAuiCmpl
+25 ITEbreak
+26 ITECall
+27 IRUnknown

@@ -25,7 +25,7 @@ func stringRegToInt(reg string) (value int64, err error) {
 	return value, nil
 }
 
-func intToHexString(value int64) string {
+func uintToHexString(value uint64) string {
 	return fmt.Sprintf("0x%08X", value)
 }
 
@@ -73,9 +73,13 @@ func binaryStringToHexString(binary string) string {
 		return "error"
 	}
 
-	return fmt.Sprintf("0x%08X", ui)
+	return uintToHexString(ui)
 }
 
 func binaryArrayToHexString(arr []byte) string {
 	return binaryStringToHexString(binaryArrayToString(arr, false))
+}
+
+func intToBinaryArray(value int64) []byte {
+	return binaryStringToArray(intToBinaryString(value))
 }

@@ -250,7 +250,7 @@ always_comb begin
             else begin
                 // $display("%d Fetch to decode", $stime);
                 ir_ld = RgLdEnabled;
-                pcp_ld = RgLdEnabled;  // Load register prior to incrementing
+                pcp_ld = RgLdEnabled;  // Load register PC-prior before incrementing PC
 
                 next_state = Decode;
             end
@@ -261,33 +261,25 @@ always_comb begin
 
             next_state = Execute;
 
-            // Also, take advantage of Decode to increment PC using byte-addressing
-            // a_src defaults to ASrcPC = PC
-            // b_src defaults to 2'b01 = +4
-            // alu_op default to "Add"
+            // Also, take advantage of Decode to increment PC. This is the
+            // default ALU setup. So we just enable the loads
             alu_ld = RgLdEnabled;
             pc_ld = RgLdEnabled;
             pc_src = PCSrcAluImm;     // Select ALU direct output
 
             case (ir_opcode)
                 `ITYPE_L: begin
-                    // Load type instructions
+                    // Default: Load type instructions
                     // `ifdef SIMULATE
                     //     $display("OPCODE type: ITYPE_L %x", ir_opcode);
                     // `endif
                 end
 
                 `RTYPE: begin
-                    // `ifdef SIMULATE
-                    //     $display("OPCODE type: RTYPE %x", ir_opcode);
-                    // `endif
                     next_ir_state = RType;
                 end
 
                 `STYPE: begin
-                    // `ifdef SIMULATE
-                    //     $display("OPCODE type: STYPE %x", ir_opcode);
-                    // `endif
                     next_ir_state = STStore;
                 end
 
@@ -303,6 +295,26 @@ always_comb begin
                     next_ir_state = JTJal;
                 end
 
+                `ITYPE_J: begin
+                    next_ir_state = JTJalr;
+                end
+
+                `UTYPE_L: begin
+                    next_ir_state = UType;
+                end
+
+                `UTYPE_A: begin
+                    next_ir_state = UTypeAui;
+                end
+
+                `ITYPE_E: begin
+                    if (ir_i[20] == 1'b1)
+                        next_ir_state = ITEbreak;
+                    else begin
+                        next_ir_state = ITECall;
+                    end
+                end
+
                 default: begin
                     `ifdef SIMULATE
                         $display("OPCODE type: UNKNOWN %x", ir_opcode);
@@ -312,6 +324,8 @@ always_comb begin
         end
 
         Execute: begin
+            // PC now equals PC-prior + 4
+
             // Remain in Execute until a sub-state moves us.
             next_state = Execute;
 
@@ -589,7 +603,7 @@ always_comb begin
                 end
 
                 // ---------------------------------------------------
-                // J-Type Jal
+                // J-Type jal
                 // ---------------------------------------------------
                 JTJal: begin
                     // Compute the jump address: PC += imm
@@ -622,24 +636,100 @@ always_comb begin
                     next_state = Fetch;
                 end
 
+                // ---------------------------------------------------
+                // I-Type jalr
+                // ---------------------------------------------------
+                JTJalr: begin
+                    // Compute the jump address: PC = rs1 + imm
+                    a_src = ASrcRsa;
+                    b_src = BSrcImm;
+
+                    // Load PC
+                    pc_src = PCSrcAluImm;
+                    pc_ld = RgLdEnabled;
+
+                    next_ir_state = JTJalRtr;
+                end
+
+                JTJalrRtr: begin
+                    // Compute the return address: rd = PC+4.
+                    a_src = ASrcPrior;
+                    b_src = BSrcFour;
+
+                    // Setup for writeback
+                    wd_src = WDSrcImm;
+                    rg_wr = RgLdEnabled;
+
+                    next_ir_state = JTJalCmpl;
+                end
+
+                JTJalrCmpl: begin
+                    // Setup Fetch next instruction the PC is pointing at.
+                    mem_rd = 1'b0;
+
+                    next_state = Fetch;
+                end
+
+                // ---------------------------------------------------
+                // U-Type lui
+                // ---------------------------------------------------
+                UType: begin
+                    // rd = imm
+                    a_src = ASrcZero;
+                    b_src = BSrcImm;
+
+                    // Setup for writeback
+                    wd_src = WDSrcImm;
+                    rg_wr = RgLdEnabled;
+
+                    next_ir_state = UTCmpl;
+                end
+
+                UTCmpl: begin
+                    // Setup Fetch next instruction the PC is pointing at.
+                    mem_rd = 1'b0;
+
+                    next_state = Fetch;
+                end
+
+                // ---------------------------------------------------
+                // U-Type auipc
+                // ---------------------------------------------------
+                UTypeAui: begin
+                    // rd = PC + imm
+                    a_src = ASrcPrior;
+                    b_src = BSrcImm;
+
+                    // Setup for writeback
+                    wd_src = WDSrcImm;
+                    rg_wr = RgLdEnabled;
+
+                    next_ir_state = UTAuiCmpl;
+                end
+
+                UTAuiCmpl: begin
+                    // Setup Fetch next instruction the PC is pointing at.
+                    mem_rd = 1'b0;
+
+                    next_state = Fetch;
+                end
+
+                // ---------------------------------------------------
+                // I-Type ecall, ebreak 
+                // ---------------------------------------------------
+                ITEbreak: begin
+                    next_ir_state = ITEbreak;
+                end
+
+                ITECall: begin
+                    next_ir_state = ITECall;
+                end
+
                 default:
                     `ifdef SIMULATE
                         $display("IR: UNKNOWN");
                     `endif
             endcase
-        end
-
-        Halt: begin
-            // E instruction trigger a halt
-            `ifdef SIMULATE
-                $display("Halt");
-            `endif
-
-            halt = 1'b1;
-            ready = 1'b0;
-
-            // We can only exit this state on a reset.
-            next_state = Halt;
         end
 
         default:

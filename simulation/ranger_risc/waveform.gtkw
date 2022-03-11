@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
-[*] Sat Mar  5 01:39:31 2022
+[*] Tue Mar  8 22:54:48 2022
 [*]
 [dumpfile] "/media/RAMDisk/waveform.vcd"
-[dumpfile_mtime] "Sat Mar  5 01:39:14 2022"
-[dumpfile_size] 34371
+[dumpfile_mtime] "Tue Mar  8 22:54:07 2022"
+[dumpfile_size] 37832
 [savefile] "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/ranger_risc/waveform.gtkw"
-[timestart] 137
+[timestart] 71
 [size] 1983 1772
 [pos] 0 27
-*-4.911203 270 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-4.911203 137 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
 [treeopen] TOP.RangerRisc.
 [sst_width] 221
@@ -39,7 +39,7 @@ TOP.RangerRisc.matrix.ir_state[4:0]
 TOP.RangerRisc.matrix.next_ir_state[4:0]
 @200
 -IR
-@2028
+@2029
 [color] 2
 ^4 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_opcode_filter.txt
 TOP.RangerRisc.matrix.ir_opcode[6:0]
@@ -137,7 +137,6 @@ TOP.RangerRisc.alu_flags_cm[3:0]
 [color] 2
 TOP.RangerRisc.matrix.ready
 TOP.RangerRisc.matrix.take_branch
-@29
 TOP.RangerRisc.matrix.funct3[2:0]
 @200
 -RegFile

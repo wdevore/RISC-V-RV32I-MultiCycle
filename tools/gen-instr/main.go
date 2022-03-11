@@ -9,11 +9,22 @@ import (
 )
 
 func main() {
+	assemblyPro := os.Args[1:]
+
+	var fileName = "ebreak.json"
+
+	if len(assemblyPro) > 0 {
+		fileName = assemblyPro[0]
+	} else {
+		// panic("Assembly json file required.")
+	}
+
 	// Open our jsonFile
-	jsonFile, err := os.Open("assembly.json")
+	jsonFile, err := os.Open(fileName)
+
 	// if we os.Open returns an error then handle it
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 	fmt.Println("Successfully Opened assembly.json")
 	// defer the closing of our jsonFile so that we can parse it later on
@@ -26,7 +37,7 @@ func main() {
 
 	fmt.Println("Compiling: ", result["Assembly"])
 
-	rxpr, _ := regexp.Compile(`([a-z]+) ([a-z0-9]*)[, ]*([a-z0-9]*)[, ]*([a-z0-9]*)`)
+	rxpr, _ := regexp.Compile(`([a-z]+)`)
 
 	ass := fmt.Sprintf("%s", result["Assembly"])
 	fields := rxpr.FindStringSubmatch(ass)
@@ -36,22 +47,20 @@ func main() {
 	machineCode := ""
 	switch instruction {
 	case "jal":
-		machineCode, err = jal(result, rxpr)
-		if err != nil {
-			panic(err)
-		}
+		machineCode, err = jal(result)
+	case "jalr":
+		machineCode, err = jalr(result)
+	case "lui":
+		machineCode, err = lui(result)
+	case "auipc":
+		machineCode, err = auipc(result)
+	case "ebreak":
+		machineCode, err = ebreak()
+	}
+
+	if err != nil {
+		panic(err)
 	}
 
 	fmt.Println("Machine Code: ", machineCode)
-}
-
-func _main() {
-	hexStr := "0x00000008"
-	intV, _ := stringHexToInt(hexStr)
-
-	binStr := intToBinaryString(intV)
-	binArr := binaryStringToArray(binStr)
-	twosComplement(binArr)
-	fmt.Println(binArr)
-	fmt.Println(binaryArrayToHexString(binArr))
 }

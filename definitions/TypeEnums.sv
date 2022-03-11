@@ -48,11 +48,15 @@ typedef enum logic [4:0] {
     JTJalRtr,
     JTJalCmpl,
     JTJalr,
-    JTJalrPC,
-    JTJalrStr,
+    JTJalrRtr,
+    JTJalrCmpl,
     UType,
-    UTStr,
-    IRSTUnknown
+    UTCmpl,
+    UTypeAui,
+    UTAuiCmpl,
+    ITEbreak,
+    ITECall,
+    IRUnknown
 } InstructionState /*verilator public*/; 
 
 typedef enum logic [2:0] {
