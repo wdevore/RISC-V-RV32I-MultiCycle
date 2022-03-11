@@ -57,19 +57,19 @@ x3 should end up with a value of 0x0000000B
 ## Memory layout
 ```
 @0 00000002
-@1 02800083     <-- lb  x1, x0, 0x0A
-@2 02C00103     <-- lb  x2, x0, 0x0B
-@3 002081B3     <-- add x3, x1, x2
-@4 00000008     
+@1 02800083  lb  x1, x0, 0x0A
+@2 02C00103  lb  x2, x0, 0x0B
+@3 002081B3  add x3, x1, x2
+@4 00100073  ebreak
 @5 0000000A     
 @6 00000000     
 @7 00000000     
 @8 00000000     
 @9 00000000     
-@A 00000005     <-- data for x1
-@B 00000006     <-- data for x2
+@A 00000005  <-- data for x1
+@B 00000006  <-- data for x2
 ...
-@10 00000004    <-- Reset vector
+@10 00000004  Reset vector
 @11 00000000
 ```
 
@@ -93,16 +93,16 @@ Flags: -N--
 ## Memory layout
 ```
 @0 00000002
-@1 02800083     <-- lb  x1, x0, 0x0A
-@2 02C00103     <-- lb  x2, x0, 0x0B
-@3 002081B3     <-- add x3, x1, x2
-@4 00000008     
+@1 02800083  lb  x1, x0, 0x0A
+@2 02C00103  lb  x2, x0, 0x0B
+@3 002081B3  add x3, x1, x2
+@4 00100073  ebreak
 @5 0000000A     
 ...
-@A 00000005     <-- data for x1   +5
-@B 000000F9     <-- data for x2   -7
+@A 00000005  data for x1   +5
+@B 000000F9  data for x2   -7
 ...
-@10 00000004    <-- Reset vector
+@10 00000004 Reset vector
 @11 00000000
 ```
 
@@ -121,17 +121,17 @@ x3 should = 0x00
 ## Memory layout
 ```
 @0 00000002
-@1 00022083     <-- lw  x1, x4, 0
-@2 00822103     <-- lw  x2, x4, 2
-@3 002081B3     <-- add x3, x1, x2
-@4 00000008     
+@1 00022083  lw  x1, x4, 0
+@2 00822103  lw  x2, x4, 2
+@3 002081B3  add x3, x1, x2
+@4 00100073  ebreak
 @5 0000000A     
 ...
 @A FFFFFFFF     <-- data for x1
 @B 00000000
 @C 00000001     <-- data for x2
 ...
-@10 00000004    <-- Reset vector
+@10 00000004  Reset vector
 @11 00000000
 ```
 
@@ -150,17 +150,17 @@ x3 should = 0x00
 ## Memory layout
 ```
 @0 00000002
-@1 00022083     <-- lw  x1, x4, 0
-@2 00822103     <-- lw  x2, x4, 2
-@3 002081B3     <-- add x3, x1, x2
-@4 00000008     
+@1 00022083  lw  x1, x4, 0
+@2 00822103  lw  x2, x4, 2
+@3 002081B3  add x3, x1, x2
+@4 00100073  ebreak
 @5 0000000A     
 ...
 @A 7FFFFFFF     <-- data for x1
 @B 00000000
 @C 00000001     <-- data for x2
 ...
-@10 00000004    <-- Reset vector
+@10 00000004  Reset vector
 @11 00000000
 ```
 
@@ -179,17 +179,17 @@ x3 should = 0x00
 ## Memory layout
 ```
 @0 00000002
-@1 00022083     <-- lw  x1, x4, 0
-@2 00822103     <-- lw  x2, x4, 2
-@3 002081B3     <-- add x3, x1, x2
-@4 00000008     
+@1 00022083  lw  x1, x4, 0
+@2 00822103  lw  x2, x4, 2
+@3 002081B3  add x3, x1, x2
+@4 00100073  ebreak
 @5 0000000A     
 ...
 @A FFFFFFFF     <-- data for x1
 @B 00000000
 @C 00000000     <-- data for x2
 ...
-@10 00000004    <-- Reset vector
+@10 00000004  Reset vector
 @11 00000000
 ```
 
@@ -208,17 +208,17 @@ x3 should = 0x00
 ## Memory layout
 ```
 @0 00000002
-@1 00022083     <-- lw  x1, x4, 0
-@2 00822103     <-- lw  x2, x4, 2
-@3 002081B3     <-- add x3, x1, x2
-@4 00000008     
+@1 00022083  lw  x1, x4, 0
+@2 00822103  lw  x2, x4, 2
+@3 002081B3  add x3, x1, x2
+@4 00100073  ebreak
 @5 0000000A     
 ...
 @A FFFFFFF8     <-- data for x1
 @B 00000000
 @C 00000008     <-- data for x2
 ...
-@10 00000004    <-- Reset vector
+@10 00000004  Reset vector
 @11 00000000
 ```
 

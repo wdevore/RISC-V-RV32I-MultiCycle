@@ -54,7 +54,7 @@ jal  x1, offset = 12 = C
     @03 0x0C  00000000   nothing here because we aren't returning.
     @04 0x10  01022283   lw  x5, x4, 0x10   <-- failed to jump
     @05 0x14  00000099
-    @06 0x18  00000000  
+    @06 0x18  00100073  ebreak  
     @07 0x1C  00000000  
     @08 0x20  00000000  
     @09 0x24  00000000  
@@ -124,7 +124,7 @@ origin:
     @03 0x0C  00000000   nothing here because we aren't returning.
     @04 0x10  01022283   lw  x5, x4, 0x10   <-- failed to jump
     @05 0x14  00000099
-    @06 0x18  00000000  
+    @06 0x18  00100073  ebreak  
     @07 0x1C  00000000  
     @08 0x20  00000000  
     @09 0x24  00000000  
@@ -189,7 +189,7 @@ origin:
     @00 0x00  90909090
     @01 0x04  004200E7   jalr  x1, jumpto(x4)
     @02 0x08  08080808   <-- failed to jump
-    @03 0x0C  00000000
+    @03 0x0C  00100073  ebreak
     @04 0x10  00000000
     @05 0x14  00000000
     @06 0x18  00000000
@@ -201,7 +201,7 @@ base:
 jumpto:
     @0B 0x2C  00C22283   lw  x5, x4, 0x0C   <-- jump to
     @0C 0x30  03030303
-    @0D 0x34  00000000
+    @0D 0x34  00100073  ebreak
     @0E 0x38  00000000
     @0F 0x3C  00000000
     @10 0x40  00000004   Reset vector
