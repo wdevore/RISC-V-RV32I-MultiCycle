@@ -1,15 +1,15 @@
-package main
+package utils
 
-func twosComplement(arr []byte) []byte {
+func TwosComplement(arr []byte) []byte {
 	// Negate all bits
-	negate(arr)
+	Negate(arr)
 
 	// Add 1
-	addOne(arr)
+	AddOne(arr)
 	return arr
 }
 
-func negate(arr []byte) {
+func Negate(arr []byte) {
 	// Negate all bits
 	for i := range arr {
 		if arr[i] == 0 {
@@ -28,7 +28,7 @@ func negate(arr []byte) {
 //  0011  -> 1100
 //              1
 //           1101
-func addOne(arr []byte) {
+func AddOne(arr []byte) {
 	l := len(arr)
 	c := 1
 	for i := l - 1; i > 0; i-- {
@@ -42,13 +42,13 @@ func addOne(arr []byte) {
 	}
 }
 
-func copyArray(arr []byte) []byte {
+func CopyArray(arr []byte) []byte {
 	b := make([]byte, len(arr))
 	copy(b, arr)
 	return b
 }
 
-func reverseArray(arr []byte) []byte {
+func ReverseArray(arr []byte) []byte {
 	for i := 0; i < len(arr)/2; i++ {
 		j := len(arr) - i - 1
 		arr[i], arr[j] = arr[j], arr[i]

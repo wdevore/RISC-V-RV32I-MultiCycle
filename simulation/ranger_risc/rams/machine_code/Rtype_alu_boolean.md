@@ -82,7 +82,7 @@ x4 = base = WA:0x0A, BA:0x28  <-- preloaded via initial block
 
 ```
      rd  rs1&rs2
-or  x3, x1, x2
+xor  x3, x1, x2
 
    func7   |  rs2  |  rs1  | funct3 |   rd  |  opcode
   0000000    00010   00001    100     00011    0110011 = 0x0020C1B3
@@ -94,7 +94,7 @@ or  x3, x1, x2
 @0 00000002
 @1 00020083   lb  x1, x4, 0
 @2 00820103   lb  x2, x4, 8
-@3 0020C1B3   or x3, x1, x2
+@3 0020C1B3   xor x3, x1, x2
 @4 00100073   ebreak
 @5 0000000A     
 ...

@@ -9,8 +9,9 @@ x14 is already preloaded in a *initial* block. See RegisterFile.sv
 M[rs1+imm][0:7] = rs2[0:7]
 
 ```
-   rs2   rs1  imm
-sb x14,  x0   0x00000004 = 4*(4 bytes) = 0x00000010
+   rs2  imm   rs1
+sb x14, 0x010(x0)
+imm = WA:0x00000004 = BA:4*(4 bytes) = 0x00000010
 --**--**--**--**--**--**--**--**--**--**--**--**--**
    imm11:5   |  rs2 |  rs1 |  funct3 |  imm4:0 |  opcode
    0000000     01110  00000    000      10000     0100011
@@ -48,8 +49,10 @@ x14 is already preloaded in a *initial* block. See RegisterFile.sv
 M[rs1+imm][0:7] = rs2[0:7]
 
 ```
-   rs2   rs1  imm
-sb x14,  x0   0x00000004 = 4*(4 bytes) + 1 = 0x00000011
+   rs2    imm   rs1
+sb x14, 0x010+1(x0)
+imm = BA:4*(4 bytes)+1 = 0x00000011
+
 --**--**--**--**--**--**--**--**--**--**--**--**--**
    imm11:5   |  rs2 |  rs1 |  funct3 |  imm4:0 |  opcode
    0000000     01110  00000    000      10001     0100011
@@ -87,8 +90,10 @@ x14 is already preloaded in a *initial* block. See RegisterFile.sv
 M[rs1+imm][0:7] = rs2[0:7]
 
 ```
-   rs2   rs1  imm
-sb x14,  x0   0x00000004 = 4*(4 bytes) + 2 = 0x00000012
+   rs2   imm    rs1
+sb x14, 0x010+2(x0)
+imm = BA:4*(4 bytes)+2 = 0x00000012
+
 --**--**--**--**--**--**--**--**--**--**--**--**--**
    imm11:5   |  rs2 |  rs1 |  funct3 |  imm4:0 |  opcode
    0000000     01110  00000    000      10010     0100011
@@ -126,8 +131,10 @@ x14 is already preloaded in a *initial* block. See RegisterFile.sv
 M[rs1+imm][0:7] = rs2[0:7]
 
 ```
-   rs2   rs1  imm
-sb x14,  x0   0x00000004 = 4*(4 bytes) + 2 = 0x00000012
+   rs2    imm   rs1
+sb x14, 0x010+3(x0)
+imm = BA:4*(4 bytes)+3 = 0x00000013
+
 --**--**--**--**--**--**--**--**--**--**--**--**--**
    imm11:5   |  rs2 |  rs1 |  funct3 |  imm4:0 |  opcode
    0000000     01110  00000    000      10011     0100011
@@ -165,8 +172,10 @@ x14 is already preloaded in a *initial* block. See RegisterFile.sv
 M[rs1+imm][0:15] = rs2[0:15]
 
 ```
-   rs2   rs1  imm
-sh x14,  x0   0x00000004 = 4*(4 bytes) + 0 = 0x00000010
+   rs2   imm  rs1
+sh x14, 0x010(x0)
+imm = BA:4*(4 bytes) = 0x00000010
+
 --**--**--**--**--**--**--**--**--**--**--**--**--**
    imm11:5   |  rs2 |  rs1 |  funct3 |  imm4:0 |  opcode
    0000000     01110  00000    001      10000     0100011
@@ -203,8 +212,10 @@ x14 is already preloaded in a *initial* block. See RegisterFile.sv
 M[rs1+imm][0:15] = rs2[0:15]
 
 ```
-   rs2   rs1  imm
-sh x14,  x0   0x00000004 = 4*(4 bytes) + 2 = 0x00000012
+   rs2    imm   rs1
+sh x14, 0x010+2(x0)
+imm = BA:4*(4 bytes)+2 = 0x00000012
+
 --**--**--**--**--**--**--**--**--**--**--**--**--**
    imm11:5   |  rs2 |  rs1 |  funct3 |  imm4:0 |  opcode
    0000000     01110  00000    001      10010     0100011
@@ -239,13 +250,15 @@ x14 is already preloaded in a *initial* block. See RegisterFile.sv
 M[rs1+imm][0:31] = rs2[0:31]
 
 ```
-   rs2  rs1   imm
-sw x14, x0    0x00000004 = 4*(4 bytes) = 0x00000010  ----->\
+   rs2   imm  rs1
+sw x14, 0x010(x0)
+imm = BA:4*(4 bytes) = 0x00000010                    ----->\
+                                                            |
 --**--**--**--**--**--**--**--**--**--**--**--**--**        |
    imm11:5   |  rs2 |  rs1 |  funct3 |  imm4:0 |  opcode    |
    0000000     01110  00000    010      10000     0100011   |
-      ^                                   ^                 v
-      |-----------------------------------|-----------------/
+      ^                                   ^                 |
+      |-----------------------------------|-----------------.
 
   0    0    E    0    2    8    2    3
 0000 0000 1110 0000 0010 1000 0010 0011 = 0x00E02823
@@ -312,13 +325,11 @@ Which give us: rs1 + imm = 0x28 + 0xFF8 = WA:**0x08** , BA:0x20
 **Description**: M[rs1+imm][0:31] = rs2[0:31]
 
 ```
-   rs2  rs1   imm
-sw x14, x2    0xFF8
-   
+   rs2   imm  rs1
+sw x14, 0xFF8(x2)
+
    imm11:5   |  rs2 |  rs1 |  funct3 |  imm4:0 |  opcode
    1111111     01110  00010    010      11000     0100011
-      ^                                   ^              
-      |-----------------------------------|---- <-- imm
 
 1111 1110 1110 0001 0010 1100 0010 0011 = 0xFEE12C23
 ```
@@ -351,8 +362,8 @@ M[rs1+imm][0:31] = rs2[0:31]
 
 First we load x14 with 0xD0A0DEAD from address @A
 ```
-    rd  rs1 imm
-lw x14, x0, 0x0A     imm = (0x0A)*4 = 0x28
+    rd  imm  rs1 
+lw x14, 0x28(x0)     imm = (0x0A)*4 = 0x28
 
    imm11:0   |  rs1 | funct3 |   rd  |  opcode
 000000101000   00000   010     01110    0000011
@@ -362,8 +373,9 @@ lw x14, x0, 0x0A     imm = (0x0A)*4 = 0x28
 ```
 Then we store it to address @4
 ```
-   rs2  rs1   imm
-sw x14, x0    0x00000004 = 4*(4 bytes) = 0x00000010
+   rs2   imm  rs1
+sw x14, 0x010(x0)
+
 --**--**--**--**--**--**--**--**--**--**--**--**--**
    imm11:5   |  rs2 |  rs1 |  funct3 |  imm4:0 |  opcode
    0000000     01110  00000    010      10000     0100011
@@ -399,8 +411,8 @@ M[rs1+imm][0:31] = rs2[0:31]
 
 First we load x14 with 0xD0A0DEAD from address @A
 ```
-    rd  rs1 imm
-lw x14, x0, 0x0A     imm = (0x0A)*4 = 0x28
+    rd  imm  rs1 
+lw x14, 0x28(x0)     imm = (0x0A)*4 = 0x28
 
    imm11:0   |  rs1 | funct3 |   rd  |  opcode
 000000101000   00000   010     01110    0000011
@@ -410,8 +422,9 @@ lw x14, x0, 0x0A     imm = (0x0A)*4 = 0x28
 ```
 Then we store it to address @4
 ```
-   rs2  rs1   imm
-sw x14, x0    0x00000004 = 4*(4 bytes) = 0x00000010
+   rs2   imm  rs1
+sw x14, 0x010(x0)    0x00000004 = 4*(4 bytes) = 0x00000010
+
 --**--**--**--**--**--**--**--**--**--**--**--**--**
    imm11:5   |  rs2 |  rs1 |  funct3 |  imm4:0 |  opcode
    0000000     01110  00000    010      10000     0100011

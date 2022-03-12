@@ -6,12 +6,14 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
+
+	"github.com/wdevore/gen-instr/assemblers"
 )
 
 func main() {
 	assemblyPro := os.Args[1:]
 
-	var fileName = "ebreak.json"
+	var fileName = "lw.json"
 
 	if len(assemblyPro) > 0 {
 		fileName = assemblyPro[0]
@@ -47,15 +49,25 @@ func main() {
 	machineCode := ""
 	switch instruction {
 	case "jal":
-		machineCode, err = jal(result)
+		machineCode, err = assemblers.Jal(result)
 	case "jalr":
-		machineCode, err = jalr(result)
+		machineCode, err = assemblers.Jalr(result)
 	case "lui":
-		machineCode, err = lui(result)
+		machineCode, err = assemblers.Lui(result)
 	case "auipc":
-		machineCode, err = auipc(result)
+		machineCode, err = assemblers.Auipc(result)
 	case "ebreak":
-		machineCode, err = ebreak()
+		machineCode, err = assemblers.Ebreak()
+	case "lb", "lh", "lw", "lbu", "lhu":
+		machineCode, err = assemblers.Loads(result)
+	case "sb", "sh", "sw":
+		machineCode, err = assemblers.Stores(result)
+	case "add", "sub", "xor", "or", "and", "sll", "srl", "sra", "slt", "sltu":
+		machineCode, err = assemblers.RtypeAlu(result)
+	case "addi", "xori", "ori", "andi", "slli", "srli", "srai", "slti", "sltiu":
+		machineCode, err = assemblers.ItypeAlu(result)
+	case "beq", "bne", "blt", "bge", "bltu", "bgeu":
+		machineCode, err = assemblers.BtypeBranch(result)
 	}
 
 	if err != nil {

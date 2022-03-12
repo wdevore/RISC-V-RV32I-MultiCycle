@@ -7,7 +7,7 @@ rd = M[rs1+imm][0:7]
 ```
 0xEF signed extended with 0's
     rd   rs1   imm
-lb x19,  x0,   (0x0A)*4 + 0 = 0x28 + 0b00
+lbu x19,  x0,   (0x0A)*4 + 0 = 0x28 + 0b00
 
    imm11:0   |  rs1 | funct3 |   rd  |  opcode
 000000101000   00000   100     10011    0000011

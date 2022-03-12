@@ -1,11 +1,13 @@
-package main
+package assemblers
 
 import (
 	"fmt"
 	"regexp"
+
+	"github.com/wdevore/gen-instr/utils"
 )
 
-func jal(json map[string]interface{}) (macCode string, err error) {
+func Jal(json map[string]interface{}) (macCode string, err error) {
 	ass := fmt.Sprintf("%s", json["Assembly"])
 
 	rxpr, _ := regexp.Compile(`([a-z]+)[ ]+([a-z0-9]*),[ ]*([a-z0-9]*)`)
@@ -20,36 +22,36 @@ func jal(json map[string]interface{}) (macCode string, err error) {
 	pc := fmt.Sprintf("%s", json["PC"])
 	fmt.Println("PC: ", pc)
 
-	pcInt, err := stringHexToInt(pc)
+	pcInt, err := utils.StringHexToInt(pc)
 	if err != nil {
 		return "", err
 	}
 
 	labels := json["Labels"]
 
-	target, err := findLabelValue(labels, label)
+	target, err := utils.FindLabelValue(labels, label)
 	if err != nil {
 		return "", err
 	}
 	fmt.Println("Target offset: ", target)
 
-	targetInt, err := stringHexToInt(target)
+	targetInt, err := utils.StringHexToInt(target)
 	if err != nil {
 		return "", err
 	}
 
 	delta := targetInt - pcInt
 
-	bs := intToBinaryString(delta)
-	binArr := binaryStringToArray(bs)
+	bs := utils.IntToBinaryString(delta)
+	binArr := utils.BinaryStringToArray(bs)
 
 	deltaStr := ""
-	deltaStr = intToBinaryString(delta)
+	deltaStr = utils.IntToBinaryString(delta)
 
-	out := fmt.Sprintf("Delta d(%d) : %s : b%s", delta, binaryArrayToHexString(binArr), deltaStr)
+	out := fmt.Sprintf("Delta d(%d) : %s : b%s", delta, utils.BinaryArrayToHexString(binArr), deltaStr)
 	fmt.Println(out)
 
-	produced := binaryStringToArray(deltaStr)
+	produced := utils.BinaryStringToArray(deltaStr)
 
 	instruction := make([]byte, len(produced))
 
@@ -84,12 +86,12 @@ func jal(json map[string]interface{}) (macCode string, err error) {
 	instruction[12] = produced[19]
 
 	// Set destination register
-	rdInt, err := stringRegToInt(rd)
+	rdInt, err := utils.StringRegToInt(rd)
 	if err != nil {
 		return "", err
 	}
 
-	rdArr := binaryStringToArray(intToBinaryString(rdInt))
+	rdArr := utils.BinaryStringToArray(utils.IntToBinaryString(rdInt))
 	instruction[11] = rdArr[27]
 	instruction[10] = rdArr[28]
 	instruction[9] = rdArr[29]
@@ -105,7 +107,7 @@ func jal(json map[string]interface{}) (macCode string, err error) {
 	instruction[1] = 1
 	instruction[0] = 1
 
-	instr := binaryArrayToString(instruction, true)
+	instr := utils.BinaryArrayToString(instruction, true)
 	// fmt.Println("Instruction Bin: ", instr)
 
 	fmt.Println("i20 ----- i10:1 ---- i11 ---i19:12 ------- rd --- opcode")
@@ -113,5 +115,5 @@ func jal(json map[string]interface{}) (macCode string, err error) {
 	// fmt.Println("Instruction Bin: ", instr)
 	fmt.Printf("Nibbles: %v %v %v %v %v %v %v %v\n", instr[0:4], instr[4:8], instr[8:12], instr[12:16], instr[16:20], instr[20:24], instr[24:28], instr[28:32])
 
-	return binaryStringToHexString(instr), nil
+	return utils.BinaryStringToHexString(instr), nil
 }

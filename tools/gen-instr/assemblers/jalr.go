@@ -1,12 +1,14 @@
-package main
+package assemblers
 
 import (
 	"fmt"
 	"regexp"
+
+	"github.com/wdevore/gen-instr/utils"
 )
 
 // Example: jalr x0, jumpto(x1)
-func jalr(json map[string]interface{}) (macCode string, err error) {
+func Jalr(json map[string]interface{}) (macCode string, err error) {
 	ass := fmt.Sprintf("%s", json["Assembly"])
 
 	rxpr, _ := regexp.Compile(`([a-z]+) ([a-z0-9]+),[ ]*([a-z0-9]+)[ ]*\(([a-z0-9]+)\)`)
@@ -23,18 +25,18 @@ func jalr(json map[string]interface{}) (macCode string, err error) {
 
 	labels := json["Labels"]
 
-	target, err := findLabelValue(labels, label)
+	target, err := utils.FindLabelValue(labels, label)
 	if err != nil {
 		return "", err
 	}
 	fmt.Println("Target: ", target)
 
-	targetInt, err := stringHexToInt(target)
+	targetInt, err := utils.StringHexToInt(target)
 	if err != nil {
 		return "", err
 	}
 
-	r, err := getRegValue(json["RegFile"], rs1)
+	r, err := utils.GetRegValue(json["RegFile"], rs1)
 	if err != nil {
 		return "", err
 	}
@@ -42,8 +44,8 @@ func jalr(json map[string]interface{}) (macCode string, err error) {
 	offset := targetInt - r
 	fmt.Println("Offset: ", offset)
 
-	ti := intToBinaryString(offset)
-	produced := binaryStringToArray(ti)
+	ti := utils.IntToBinaryString(offset)
+	produced := utils.BinaryStringToArray(ti)
 
 	instruction := make([]byte, 32)
 
@@ -68,12 +70,12 @@ func jalr(json map[string]interface{}) (macCode string, err error) {
 	instruction[20] = 0
 
 	// Rs1
-	rs1Int, err := stringRegToInt(rs1)
+	rs1Int, err := utils.StringRegToInt(rs1)
 	if err != nil {
 		return "", err
 	}
 
-	rs1Arr := intToBinaryArray(rs1Int)
+	rs1Arr := utils.IntToBinaryArray(rs1Int)
 	instruction[19] = rs1Arr[27]
 	instruction[18] = rs1Arr[28]
 	instruction[17] = rs1Arr[29]
@@ -86,12 +88,12 @@ func jalr(json map[string]interface{}) (macCode string, err error) {
 	instruction[12] = 0
 
 	// Set destination register
-	rdInt, err := stringRegToInt(rd)
+	rdInt, err := utils.StringRegToInt(rd)
 	if err != nil {
 		return "", err
 	}
 
-	rdArr := intToBinaryArray(rdInt)
+	rdArr := utils.IntToBinaryArray(rdInt)
 	instruction[11] = rdArr[27]
 	instruction[10] = rdArr[28]
 	instruction[9] = rdArr[29]
@@ -108,12 +110,12 @@ func jalr(json map[string]interface{}) (macCode string, err error) {
 	instruction[1] = 1
 	instruction[0] = 1
 
-	instr := binaryArrayToString(instruction, true)
+	instr := utils.BinaryArrayToString(instruction, true)
 
 	fmt.Println("------ imm -------- rs1 ----- funct3 ----- rd --- opcode")
 	fmt.Printf("    %v   %v       %v       %v    %v\n", instr[0:12], instr[12:17], instr[17:20], instr[20:25], instr[25:32])
 	// fmt.Println("Instruction Bin: ", instr)
 	fmt.Printf("Nibbles: %v %v %v %v %v %v %v %v\n", instr[0:4], instr[4:8], instr[8:12], instr[12:16], instr[16:20], instr[20:24], instr[24:28], instr[28:32])
 
-	return binaryStringToHexString(instr), nil
+	return utils.BinaryStringToHexString(instr), nil
 }

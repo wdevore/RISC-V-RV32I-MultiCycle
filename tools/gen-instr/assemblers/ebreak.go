@@ -1,11 +1,13 @@
-package main
+package assemblers
 
 import (
 	"fmt"
+
+	"github.com/wdevore/gen-instr/utils"
 )
 
 // Example: ebreak
-func ebreak() (macCode string, err error) {
+func Ebreak() (macCode string, err error) {
 	instruction := make([]byte, 32)
 
 	// The LSB is at [31] (i.e. reversed)
@@ -50,12 +52,12 @@ func ebreak() (macCode string, err error) {
 	instruction[1] = 1
 	instruction[0] = 1
 
-	instr := binaryArrayToString(instruction, true)
+	instr := utils.BinaryArrayToString(instruction, true)
 
 	fmt.Println("------ imm ----------------------    rd   --- opcode")
 	fmt.Printf("    %v           %v      %v\n", instr[0:20], instr[20:25], instr[25:32])
 	// fmt.Println("Instruction Bin: ", instr)
 	fmt.Printf("Nibbles: %v %v %v %v %v %v %v %v\n", instr[0:4], instr[4:8], instr[8:12], instr[12:16], instr[16:20], instr[20:24], instr[24:28], instr[28:32])
 
-	return binaryStringToHexString(instr), nil
+	return utils.BinaryStringToHexString(instr), nil
 }

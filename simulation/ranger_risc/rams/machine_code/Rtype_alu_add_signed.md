@@ -57,8 +57,8 @@ x3 should end up with a value of 0x0000000B
 ## Memory layout
 ```
 @0 00000002
-@1 02800083  lb  x1, x0, 0x0A
-@2 02C00103  lb  x2, x0, 0x0B
+@1 02800083  lb  x1, 0x0A(x0)
+@2 02C00103  lb  x2, 0x0B(x0)
 @3 002081B3  add x3, x1, x2
 @4 00100073  ebreak
 @5 0000000A     

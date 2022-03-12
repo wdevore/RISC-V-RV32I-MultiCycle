@@ -1,0 +1,12 @@
+{
+    "Assembly": "bgeu x1, x2, offset",
+    "PC": "0x0C",
+    "Labels": [
+        {
+            "offset": "0x018"
+        },
+        {
+            "origin": "0"
+        }
+    ]
+}

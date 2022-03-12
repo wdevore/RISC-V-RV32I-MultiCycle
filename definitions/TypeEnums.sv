@@ -1,5 +1,5 @@
 // ALU operations are identified funct combination.
-//                    funct3   +   funct7   = 10 bits (only 6 are used)
+//            funct3   +   funct7   = 10 bits (only 6 are used)
 typedef enum logic [`ALUOpSize-1:0] {
     AddOp  = `ALUOpSize'b000_000,
     SubOp  = `ALUOpSize'b000_010,

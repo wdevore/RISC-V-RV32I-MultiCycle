@@ -1,0 +1,3 @@
+{
+    "Assembly": "lbu x19, 0x28(x0)"
+}

@@ -1,12 +1,14 @@
-package main
+package assemblers
 
 import (
 	"fmt"
 	"regexp"
+
+	"github.com/wdevore/gen-instr/utils"
 )
 
 // Example: auipc x10, 0
-func auipc(json map[string]interface{}) (macCode string, err error) {
+func Auipc(json map[string]interface{}) (macCode string, err error) {
 	ass := fmt.Sprintf("%s", json["Assembly"])
 
 	rxpr, _ := regexp.Compile(`([a-z]+) ([x0-9]+),[ ]*([\w]+)`)
@@ -18,13 +20,13 @@ func auipc(json map[string]interface{}) (macCode string, err error) {
 	imm := fields[3]
 	fmt.Println("Immediate: ", imm)
 
-	immInt, err := stringHexToInt(imm)
+	immInt, err := utils.StringHexToInt(imm)
 	if err != nil {
 		return "", err
 	}
 
-	ti := intToBinaryString(immInt)
-	produced := binaryStringToArray(ti)
+	ti := utils.IntToBinaryString(immInt)
+	produced := utils.BinaryStringToArray(ti)
 
 	instruction := make([]byte, 32)
 
@@ -57,12 +59,12 @@ func auipc(json map[string]interface{}) (macCode string, err error) {
 	instruction[12] = produced[31]
 
 	// Set destination register
-	rdInt, err := stringRegToInt(rd)
+	rdInt, err := utils.StringRegToInt(rd)
 	if err != nil {
 		return "", err
 	}
 
-	rdArr := intToBinaryArray(rdInt)
+	rdArr := utils.IntToBinaryArray(rdInt)
 	instruction[11] = rdArr[27]
 	instruction[10] = rdArr[28]
 	instruction[9] = rdArr[29]
@@ -79,12 +81,12 @@ func auipc(json map[string]interface{}) (macCode string, err error) {
 	instruction[1] = 1
 	instruction[0] = 1
 
-	instr := binaryArrayToString(instruction, true)
+	instr := utils.BinaryArrayToString(instruction, true)
 
 	fmt.Println("------ imm ----------------------    rd   --- opcode")
 	fmt.Printf("    %v           %v      %v\n", instr[0:20], instr[20:25], instr[25:32])
 	// fmt.Println("Instruction Bin: ", instr)
 	fmt.Printf("Nibbles: %v %v %v %v %v %v %v %v\n", instr[0:4], instr[4:8], instr[8:12], instr[12:16], instr[16:20], instr[20:24], instr[24:28], instr[28:32])
 
-	return binaryStringToHexString(instr), nil
+	return utils.BinaryStringToHexString(instr), nil
 }
