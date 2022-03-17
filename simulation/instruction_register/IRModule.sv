@@ -11,7 +11,7 @@ module IRModule
    input logic reset_i
 );
 
-/* verilator public_module */
+/*verilator public_module*/
 
 // logic [DATA_WIDTH-1:0] instruction = 32'h04082983;  // lw x19, x16,  d16
 

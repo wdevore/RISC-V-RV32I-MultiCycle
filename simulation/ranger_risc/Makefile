@@ -12,7 +12,7 @@ TEMPLATE_HEADER = ../module.h
 
 # VERILATOR_PUBLICS = 
 # The vcd data for viewing
-GTKWAVE_SETTINGS = waveform
+GTKWAVE_SETTINGS = countup
 
 # HDL modules
 MODULES_FILES =  \

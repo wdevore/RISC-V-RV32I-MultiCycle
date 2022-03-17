@@ -14,11 +14,11 @@ module Pmmu
 (
     input  logic                  clk_i,     // pos-edge
 
-    /* verilator lint_off UNUSED */          // suppress unused bits warning
+    /*verilator lint_off UNUSED*/          // suppress unused bits warning
     input  logic [2:0]            funct3,    // funct3 = ir_i[14:12] of Instruction register
     // "byte_addr_i" will be either PC or a ALU computed value.
     input  logic [DATA_WIDTH-1:0] byte_addr_i,    // Memory byte_addr_i (Byte addressing format)
-    /* verilator lint_on UNUSED */
+    /*verilator lint_on UNUSED*/
 
     input  logic [DATA_WIDTH-1:0] wd_i,      // Memory data input for writing
     input  logic                  mwr_i,     // Write enable (Active Low)
@@ -28,7 +28,7 @@ module Pmmu
     output logic                  mem_rdy_o  // Memory is ready (Active High), busy (Active Low)
 );
 
-/* verilator public_module */
+/*verilator public_module*/
 
 // ^^--^^--^^--^^--^^--^^--^^--^^--^^--^^--^^--^^--^^--^^--^^--^^--
 // Destructure the Instruction:

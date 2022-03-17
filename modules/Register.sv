@@ -18,7 +18,7 @@ module Register
     output logic [DATA_WIDTH-1:0] data_o  // Output
 );
 
-/* verilator public_module */
+/*verilator public_module*/
 
 // The register acts only the negative edge of the clock
 always_ff @(negedge clk_i) begin

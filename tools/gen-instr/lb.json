@@ -1,3 +1,3 @@
 {
-    "Assembly": "lb x19, 0x28(x0)"
+    "Assembly": "lw  x4, 0x3C(x0)"
 }

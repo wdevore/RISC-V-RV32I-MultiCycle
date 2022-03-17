@@ -1,9 +1,9 @@
 {
-    "Assembly": "bgeu x1, x2, offset",
-    "PC": "0x0C",
+    "Assembly": "bne x3, x1, dec",
+    "PC": "0x18",
     "Labels": [
         {
-            "offset": "0x018"
+            "dec": "0x014"
         },
         {
             "origin": "0"

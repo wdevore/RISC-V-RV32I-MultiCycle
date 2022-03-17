@@ -46,7 +46,7 @@ module ControlMatrix
     `endif
 );
 
-/* verilator public_module */
+/*verilator public_module*/     // <-- redudant
 
 // For RV32I the lower 2 bits are always 11 so we could
 // ignore them--but we won't.
@@ -718,6 +718,7 @@ always_comb begin
                 // I-Type ecall, ebreak 
                 // ---------------------------------------------------
                 ITEbreak: begin
+                    ready = 1'b0; // Signal the great unknown!
                     next_ir_state = ITEbreak;
                 end
 

@@ -40,7 +40,6 @@ int main(int argc, char *argv[])
 
     for (size_t i = 0; i < 50; i++)
     {
-        // ------------------ 0A --------------------------
         if (timeStep == 10)
         {
             top->select_i = 0b00;
@@ -51,7 +50,6 @@ int main(int argc, char *argv[])
             top->select_i = 0b01;
         }
 
-        // ------------------ 0B --------------------------
         if (timeStep == 30)
         {
             top->select_i = 0b10;

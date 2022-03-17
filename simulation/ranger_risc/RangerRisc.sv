@@ -11,7 +11,7 @@ module RangerRisc
    input logic reset_i
 );
 
-/* verilator public_module */
+/*verilator public_module*/
 
 // address d1023 = 0x3FF word-address = 0xFFC byte-address
 // word 0000_0000_0000_0000_0000_0011_1111_1111

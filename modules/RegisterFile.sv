@@ -65,7 +65,7 @@ initial begin
     `endif
 end
 
-always @(negedge clk_i) begin
+always_ff @(negedge clk_i) begin
     // RISC-V Reg 0 is always Zero
     if (~reg_we_i && reg_dst_i != 0) begin
         bank[reg_dst_i] <= data_i;

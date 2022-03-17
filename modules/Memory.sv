@@ -13,7 +13,7 @@
 // Otherwise it is relative to the TB.
 `define ROM_PATH "rams/"
 `define ROM_EXTENSION ".ram"
-`define MEM_CONTENTS "utype/auipc"
+`define MEM_CONTENTS "code_simple/count_down"
 
 module Memory
 #(
@@ -28,7 +28,7 @@ module Memory
     output logic [DATA_WIDTH-1:0] data_o     // Memory data output
 );
 
-/* verilator public_module */
+/*verilator public_module*/
 
 // Memory bank
 //     #  of bits               # cells

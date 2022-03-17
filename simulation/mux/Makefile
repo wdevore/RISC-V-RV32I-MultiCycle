@@ -39,20 +39,6 @@ compile:
 	--exe --build ${TEST_BENCH} ${MODULES_FILES} \
 	-DSIMULATE
 
-run:
-	@echo "################## Simulating ##################"
-	${BUILD_DIR}/V${TOP}
-
-view:
-	@echo "################## Viewing ##################"
-	gtkwave ${BUILD_DIR}/waveform.vcd ${GTKWAVE_SETTINGS}.gtkw
-
-go: compile run view
-	@echo "################## Simulated via Verilator ##################"
-
-clean:
-	rm ${BUILD_DIR}/*
-
 exe:
 	cp ${TEST_BENCH} ${BUILD_DIR}
 	${SIMULATION_TOOLCHAIN} --cc --Mdir ${BUILD_DIR} \
@@ -63,6 +49,20 @@ build:
 	${SIMULATION_TOOLCHAIN} --cc --Mdir ${BUILD_DIR} \
 	--build ${TEST_BENCH} ${MODULES_FILES} \
 	-DSIMULATE
+
+go: compile run view
+	@echo "################## Simulated via Verilator ##################"
+
+view:
+	@echo "################## Viewing ##################"
+	gtkwave ${BUILD_DIR}/waveform.vcd ${GTKWAVE_SETTINGS}.gtkw
+
+run:
+	@echo "################## Simulating ##################"
+	${BUILD_DIR}/V${TOP}
+
+clean:
+	rm ${BUILD_DIR}/*
 
 archive:
 # Step 1: Generate an xxx.a file for linking

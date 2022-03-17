@@ -33,9 +33,9 @@ logic [2*DATA_WIDTH-1:0] sext_a;
 
 // I add the lint_off directive because the upper 32 bits aren't used.
 // They are merely assigned for shifting.
-/* verilator lint_off UNUSED */
+/*verilator lint_off UNUSED*/
 logic [2*DATA_WIDTH-1:0] sra;
-/* verilator lint_on UNUSED */
+/*verilator lint_on UNUSED*/
 
 logic [DATA_WIDTH-2:0] lower_bits;
 logic carry_borrow_l; // DATA_WIDTH-2

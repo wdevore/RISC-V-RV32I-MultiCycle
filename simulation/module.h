@@ -40,24 +40,9 @@ public:
         m_trace->close();
     }
 
-    virtual MODULE *core(void)
+    virtual void show(void)
     {
-        return _core;
-    }
-
-    virtual vluint64_t time(void)
-    {
-        return tickcount;
-    }
-
-    virtual int tick(void)
-    {
-        // Increment our own internal time reference
-        return tickcount += picosecs;
-    }
-
-    virtual int moveBy(vluint64_t by) {
-        return tickcount += by;
+        std::cout << "Time (" << tickcount << ") " << std::endl;
     }
 
     virtual void eval(void)
@@ -66,32 +51,14 @@ public:
         _core->eval();
     }
 
-    virtual void flush(void)
+    virtual MODULE *core(void)
     {
-        // Increment our own internal time reference
-        m_trace->flush();
-    }
-
-    virtual void sample(void)
-    {
-        _core->eval();
-        m_trace->dump(tickcount);
+        return _core;
     }
 
     virtual void dump(int count)
     {
         m_trace->dump(count);
-    }
-
-    virtual void sampletick(void)
-    {
-        tick();
-        sample();
-    }
-
-    virtual void show(void)
-    {
-        std::cout << "Time (" << tickcount << ") " << std::endl;
     }
 
     virtual bool done(void) { return (Verilated::gotFinish()); }

@@ -7,9 +7,9 @@ module Immediate
     parameter DATA_WIDTH = 32
 )
 (
-    /* verilator lint_off UNUSED */     // suppress unused bits warning
+    /*verilator lint_off UNUSED*/     // suppress unused bits warning
     input logic [DATA_WIDTH-1:0] ir_i,      // Instruction register
-    /* verilator lint_on UNUSED */
+    /*verilator lint_on UNUSED*/
     output logic [DATA_WIDTH-1:0] imm_o     // Imm extended or Amount(s)
 );
 
