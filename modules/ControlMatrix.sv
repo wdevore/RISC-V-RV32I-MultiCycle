@@ -52,6 +52,8 @@ module ControlMatrix
 // ignore them--but we won't.
 logic [6:0] ir_opcode = ir_i[6:0];
 logic [2:0] funct3 = ir_i[14:12];
+// Used for Jal optimization
+logic [4:0] dstRg = ir_i[11:7];
 
 // The Shift operations have additional info in the upper
 // 3 bits. R-Types call this funct7 but I-Types alias it.
@@ -475,7 +477,6 @@ always_comb begin
                 // ---------------------------------------------------
                 // B-Type branch
                 // Beq, Bne, Blt, Bge, Bltu, Bgeu etc.
-                // For example: rd = rs1 + rs2
                 // ---------------------------------------------------
                 BType: begin
                     // rsa and rsb are now present.
@@ -614,7 +615,14 @@ always_comb begin
                     pc_src = PCSrcAluImm;
                     pc_ld = RgLdEnabled;
 
-                    next_ir_state = JTJalRtr;
+                    // ------ Optimization ------
+                    // If the destination register is x0 then
+                    // we don't need a writeback cycle so just
+                    // transition to complete.
+                    if (dstRg == 5'b00000)
+                        next_ir_state = JTJalCmpl;
+                    else
+                        next_ir_state = JTJalRtr;
                 end
 
                 JTJalRtr: begin
@@ -648,7 +656,14 @@ always_comb begin
                     pc_src = PCSrcAluImm;
                     pc_ld = RgLdEnabled;
 
-                    next_ir_state = JTJalRtr;
+                    // ------ Optimization ------
+                    // If the destination register is x0 then
+                    // we don't need a writeback cycle so just
+                    // transition to complete.
+                    if (dstRg == 5'b00000)
+                        next_ir_state = JTJalrCmpl;
+                    else
+                        next_ir_state = JTJalrRtr;
                 end
 
                 JTJalrRtr: begin

@@ -1,0 +1,13 @@
+{
+    "Assembly": "lbu x5, 2(x4)",
+    "PC": "0x28",
+    "Labels": [
+        {
+            "SftL": "0x18"
+        },
+        {
+            "origin": "0"
+        }
+    ]
+    
+}

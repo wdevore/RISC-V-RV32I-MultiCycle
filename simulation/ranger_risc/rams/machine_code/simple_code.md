@@ -52,3 +52,78 @@ data:
     @11 0x44  00000000
 ```
 
+## Left-right
+
+## Memory layout
+```
+    @00 0x00  00000002
+    @01 0x04  06802203  lw x4, 0x68(x0)   // set base
+    @02 0x08  00020103  lb x2, 0(x4)      // Shift by N
+    @03 0x0C  00420183  lb x3, 4(x4)      // Start pattern
+    @04 0x10  00420083  lb x1, 4(x4)      // Right pattern
+    @05 0x14  00820283  lb x5, 8(x4)      // Left pattern
+SftL:
+    @06 0x18  002191B3  sll x3, x3, x2    // shift left by x2 amount
+    @07 0x1C  FE519EE3  bne x3, x5, SftL  // branch if x3 != x5
+SftR:
+    @08 0x20  0021D1B3  srl x3, x3, x2    // shift right by x2 amount
+    @09 0x24  FE119EE3  bne x3, x1, SftR  // branch if x3 != x5
+    @0A 0x28  FF1FF06F  jal x0, SftL
+    @0B 0x2C  00100073  ebreak            // unreachable
+    @0C 0x30  00000000
+    @0D 0x34  00000000
+    @0E 0x38  00000000
+    @0F 0x3C  00000000
+    @10 0x40  00000000
+    @11 0x44  00000000
+    @12 0x48  00000000
+    @13 0x4C  00000000
+    @14 0x50  00000000
+Data: 
+    @15 0x54  00000001  shift by 1
+    @16 0x58  00000001  right pattern
+    @17 0x5C  00000008  left pattern
+    @18 0x60  00000000
+    @19 0x64  00000000
+    @1A 0x68  00000054  address of data section
+    @1B 0x6C  00000004  Reset vector
+```
+
+## Left-right-comp
+Uses byte compacted memory.
+
+## Memory layout
+```
+    @00 0x00  00000002
+    @01 0x04  06802203  lw  x4, 0x68(x0)  // set base
+    @02 0x08  00020103  lb  x2, 0(x4)     // Shift by N
+    @03 0x0C  00120183  lb  x3, 1(x4)     // Start pattern
+    @04 0x10  00120083  lb  x1, 1(x4)     // Right pattern
+    @05 0x14  00224283  lbu x5, 2(x4)     // Left pattern
+SftL:
+    @06 0x18  002191B3  sll x3, x3, x2    // shift left by x2 amount
+    @07 0x1C  FE519EE3  bne x3, x5, SftL  // branch if x3 != x5
+SftR:
+    @08 0x20  0021D1B3  srl x3, x3, x2    // shift right by x2 amount
+    @09 0x24  FE119EE3  bne x3, x1, SftR  // branch if x3 != x5
+    @0A 0x28  FF1FF06F  jal x0, SftL
+    @0B 0x2C  00100073  ebreak            // unreachable
+    @0C 0x30  00000000
+    @0D 0x34  00000000
+    @0E 0x38  00000000
+    @0F 0x3C  00000000
+    @10 0x40  00000000
+    @11 0x44  00000000
+    @12 0x48  00000000
+    @13 0x4C  00000000
+    @14 0x50  00000000
+Data: 
+    @15 0x54  00800101  left, right pattern, shift by 1
+    @16 0x58  00000000
+    @17 0x5C  00000000
+    @18 0x60  00000000
+    @19 0x64  00000000
+    @1A 0x68  00000054  address of data section
+    @1B 0x6C  00000004  Reset vector
+```
+

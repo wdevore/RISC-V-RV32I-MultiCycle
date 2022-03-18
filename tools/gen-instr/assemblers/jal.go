@@ -10,7 +10,7 @@ import (
 func Jal(json map[string]interface{}) (macCode string, err error) {
 	ass := fmt.Sprintf("%s", json["Assembly"])
 
-	rxpr, _ := regexp.Compile(`([a-z]+)[ ]+([a-z0-9]*),[ ]*([a-z0-9]*)`)
+	rxpr, _ := regexp.Compile(`([a-z]+)[ ]+(x[0-9]+),[ ]*([\w]+)`)
 
 	fields := rxpr.FindStringSubmatch(ass)
 	rd := fields[2]

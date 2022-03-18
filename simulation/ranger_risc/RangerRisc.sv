@@ -19,7 +19,8 @@ module RangerRisc
 // localparam ResetVector = 32'h00000FFC; // Reset Vector 0x3FF word = 0xFFC byte address
 
 // Instead set ResetVector to address 1A as this makes the rom file smaller.
-localparam ResetVector = 32'h00000010 * 4; // Reset Vector 0x10 word = 0x040 byte address
+// localparam ResetVector = 32'h00000010 * 4; // Reset Vector 0x10 word = 0x040 byte address
+localparam ResetVector = 32'h0000006C; // Reset Vector @1B
 
 // --++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++
 // Wires connecting modules
