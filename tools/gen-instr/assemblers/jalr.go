@@ -11,40 +11,40 @@ import (
 func Jalr(json map[string]interface{}) (macCode string, err error) {
 	ass := fmt.Sprintf("%s", json["Assembly"])
 
-	rxpr, _ := regexp.Compile(`([a-z]+) ([a-z0-9]+),[ ]*([a-z0-9]+)[ ]*\(([a-z0-9]+)\)`)
+	rxpr, _ := regexp.Compile(`([a-z]+) (x[0-9]+),[ ]*(x[0-9]+),[ ]*([\w]+)`)
 
 	fields := rxpr.FindStringSubmatch(ass)
 	rd := fields[2]
 	fmt.Println("Destination register: ", rd)
 
-	rs1 := fields[4]
+	rs1 := fields[3]
 	fmt.Println("Rs1 register: ", rs1)
 
-	label := fields[3]
+	label := fields[4]
 	fmt.Println("Offset label: ", label)
 
 	labels := json["Labels"]
 
-	target, err := utils.FindLabelValue(labels, label)
+	offset, err := utils.FindLabelValue(labels, label)
 	if err != nil {
 		return "", err
 	}
-	fmt.Println("Target: ", target)
-
-	targetInt, err := utils.StringHexToInt(target)
-	if err != nil {
-		return "", err
-	}
-
-	r, err := utils.GetRegValue(json["RegFile"], rs1)
-	if err != nil {
-		return "", err
-	}
-
-	offset := targetInt - r
 	fmt.Println("Offset: ", offset)
 
-	ti := utils.IntToBinaryString(offset)
+	offsetInt, err := utils.StringHexToInt(offset)
+	if err != nil {
+		return "", err
+	}
+
+	// r, err := utils.GetRegValue(json["RegFile"], rs1)
+	// if err != nil {
+	// 	return "", err
+	// }
+
+	// offset := targetInt - r
+	// fmt.Println("Offset: ", offset)
+
+	ti := utils.IntToBinaryString(offsetInt)
 	produced := utils.BinaryStringToArray(ti)
 
 	instruction := make([]byte, 32)
@@ -117,5 +117,5 @@ func Jalr(json map[string]interface{}) (macCode string, err error) {
 	// fmt.Println("Instruction Bin: ", instr)
 	fmt.Printf("Nibbles: %v %v %v %v %v %v %v %v\n", instr[0:4], instr[4:8], instr[8:12], instr[12:16], instr[16:20], instr[20:24], instr[24:28], instr[28:32])
 
-	return utils.BinaryStringToHexString(instr), nil
+	return utils.BinaryStringToHexString(instr, false), nil
 }

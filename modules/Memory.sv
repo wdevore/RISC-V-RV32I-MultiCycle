@@ -13,7 +13,7 @@
 // Otherwise it is relative to the TB.
 `define ROM_PATH "rams/"
 `define ROM_EXTENSION ".ram"
-`define MEM_CONTENTS "code_simple/left_right_comp"
+`define MEM_CONTENTS "code_simple/sub_routine"
 
 module Memory
 #(

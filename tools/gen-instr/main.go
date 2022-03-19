@@ -7,13 +7,14 @@ import (
 	"os"
 	"regexp"
 
+	"github.com/atotto/clipboard"
 	"github.com/wdevore/gen-instr/assemblers"
 )
 
 func main() {
 	assemblyPro := os.Args[1:]
 
-	var fileName = "lw.json"
+	var fileName = "assembly.json"
 
 	if len(assemblyPro) > 0 {
 		fileName = assemblyPro[0]
@@ -75,4 +76,8 @@ func main() {
 	}
 
 	fmt.Println("Machine Code: ", machineCode)
+	err = clipboard.WriteAll(machineCode)
+	if err != nil {
+		panic(err)
+	}
 }

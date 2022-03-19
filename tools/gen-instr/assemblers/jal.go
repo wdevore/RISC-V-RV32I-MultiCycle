@@ -48,7 +48,7 @@ func Jal(json map[string]interface{}) (macCode string, err error) {
 	deltaStr := ""
 	deltaStr = utils.IntToBinaryString(delta)
 
-	out := fmt.Sprintf("Delta d(%d) : %s : b%s", delta, utils.BinaryArrayToHexString(binArr), deltaStr)
+	out := fmt.Sprintf("Delta d(%d) : %s : b%s", delta, utils.BinaryArrayToHexString(binArr, true), deltaStr)
 	fmt.Println(out)
 
 	produced := utils.BinaryStringToArray(deltaStr)
@@ -115,5 +115,5 @@ func Jal(json map[string]interface{}) (macCode string, err error) {
 	// fmt.Println("Instruction Bin: ", instr)
 	fmt.Printf("Nibbles: %v %v %v %v %v %v %v %v\n", instr[0:4], instr[4:8], instr[8:12], instr[12:16], instr[16:20], instr[20:24], instr[24:28], instr[28:32])
 
-	return utils.BinaryStringToHexString(instr), nil
+	return utils.BinaryStringToHexString(instr, false), nil
 }
