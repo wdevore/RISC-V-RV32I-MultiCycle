@@ -15,8 +15,8 @@ GTKWAVE_SETTINGS = waveform
 
 # HDL modules
 MODULES_FILES =  \
-	../../definitions/TypeEnums.sv \
 	../../definitions/definitions.sv \
+	../../definitions/TypeEnums.sv \
 	../../modules/Mux4.sv \
 	../../modules/Mux2.sv \
 	../../modules/ControlMatrix.sv \

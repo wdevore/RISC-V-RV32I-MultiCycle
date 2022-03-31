@@ -35,8 +35,6 @@
 
 `define ALWAYS_LOAD 1'b0
 
-// `define ALU_ADD 10'b0000000000
-
 // VNCZ
 // 3210
 `define FLAG_ZERO     0

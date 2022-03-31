@@ -12,7 +12,7 @@ import (
 func RtypeAlu(json map[string]interface{}) (macCode string, err error) {
 	ass := fmt.Sprintf("%s", json["Assembly"])
 
-	rxpr, _ := regexp.Compile(`([a-z]+)[ ]+(x[0-9]+),[ ]*(x[0-9]+),[ ]*(x[0-9]+)`)
+	rxpr, _ := regexp.Compile(`([a-z]+)[ ]+([xa0-9]+),[ ]*([xa0-9]+),[ ]*([xa0-9]+)`)
 
 	fields := rxpr.FindStringSubmatch(ass)
 

@@ -97,7 +97,7 @@ Flags: -N--
 @2 02C00103  lb  x2, x0, 0x0B
 @3 002081B3  add x3, x1, x2
 @4 00100073  ebreak
-@5 0000000A     
+@5 0000000A  
 ...
 @A 00000005  data for x1   +5
 @B 000000F9  data for x2   -7

@@ -18,9 +18,9 @@ module RangerRisc
 // byte 0000_0000_0000_0000_0000_1111_1111_1100
 // localparam ResetVector = 32'h00000FFC; // Reset Vector 0x3FF word = 0xFFC byte address
 
-// Instead set ResetVector to address 1A as this makes the rom file smaller.
-// localparam ResetVector = 32'h00000010 * 4; // Reset Vector 0x10 word = 0x040 byte address
-localparam ResetVector = 32'h0000006C; // Reset Vector @1B
+// Instead set ResetVector to Low address as this makes the rom file smaller.
+localparam ResetVector = 32'h00000010 * 4; // Reset Vector 0x10 word = 0x040 byte address
+// localparam ResetVector = 32'h0000006C; // Reset Vector @1B
 
 // --++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++
 // Wires connecting modules
@@ -28,11 +28,11 @@ localparam ResetVector = 32'h0000006C; // Reset Vector @1B
 logic cm_to_ir_ld /*verilator public*/;   // CM to IR
 
 logic cm_to_pc_ld;
-logic [`PCSelectSize-1:0] cm_to_pc_src;    // CM to PC_Src
+logic [`PCSelectSize-1:0] cm_to_pc_src;
 logic [DATA_WIDTH-1:0] pc_out;
 logic cm_to_pcp_ld;
 logic [DATA_WIDTH-1:0] pc_prior_out;
-logic [DATA_WIDTH-1:0] pc_src_out;        // pc_src mux to PC_Mux
+logic [DATA_WIDTH-1:0] pc_src_out;
 
 logic cm_to_addr_src;
 logic [DATA_WIDTH-1:0] addr_mux_to_pmmu;
@@ -52,7 +52,6 @@ logic [`ImmSelectSize-1:0] imm_src;
 logic [`WDSelectSize-1:0] cm_to_wd_src;
 logic [DATA_WIDTH-1:0] ir_out /*verilator public*/;
 
-logic mwr;
 logic mem_rdy;
 
 logic [DATA_WIDTH-1:0] a_mux_out;

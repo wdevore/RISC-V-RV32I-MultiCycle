@@ -708,7 +708,6 @@ always_comb begin
                 // ---------------------------------------------------
                 ITEbreak: begin
                     ready = 1'b0; // Signal the great unknown!
-                    halt = 1'b1;
                     next_ir_state = ITEbreak;
                 end
 

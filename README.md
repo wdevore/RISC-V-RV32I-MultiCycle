@@ -20,10 +20,17 @@ An intuitive multi-cycle RISC-V RV32I soft-core processor for FPGAs.
 - [x] Memory
 - [x] Pmmu
 - [x] Instruction Register
-- [ ] RangerRisc
+- [x] RangerRisc
 
 https://www.exploringbinary.com/twos-complement-converter/
 
 ```
 ([a-z]+) ([\w]+)[, ]*([\w]+)[, ]*([\w]*)
 ```
+
+# Verilator
+
+## DPI
+- https://www.doulos.com/knowhow/systemverilog/systemverilog-tutorials/systemverilog-dpi-tutorial/
+- https://en.wikipedia.org/wiki/SystemVerilog_DPI
+- https://www.youtube.com/watch?v=HhSAnApHYkU

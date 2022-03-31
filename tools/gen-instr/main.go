@@ -38,7 +38,7 @@ func main() {
 	var result map[string]interface{}
 	json.Unmarshal([]byte(byteValue), &result)
 
-	fmt.Println("Compiling: ", result["Assembly"])
+	fmt.Println("Assembling: ", result["Assembly"])
 
 	rxpr, _ := regexp.Compile(`([a-z]+)`)
 

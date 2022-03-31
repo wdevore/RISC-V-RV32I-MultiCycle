@@ -19,11 +19,16 @@ func StringHexToInt(hex string) (value int64, err error) {
 
 func StringRegToInt(reg string) (value int64, err error) {
 	r := strings.Replace(reg, "x", "", 1)
+	isABI := strings.Contains(reg, "a")
+	r = strings.Replace(r, "a", "", 1)
 	value, err = strconv.ParseInt(r, 10, 64)
 	if err != nil {
 		return 0, err
 	}
 
+	if isABI {
+		value += 10
+	}
 	return value, nil
 }
 

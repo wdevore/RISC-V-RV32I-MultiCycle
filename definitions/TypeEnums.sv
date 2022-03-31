@@ -56,6 +56,7 @@ typedef enum logic [4:0] {
     UTAuiCmpl,
     ITEbreak,
     ITECall,
+    PreFetch,
     IRUnknown
 } InstructionState /*verilator public*/; 
 

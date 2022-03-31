@@ -53,7 +53,7 @@ int iType_lw_addr0x0A(int timeStep, int baseTime, int duration, VPmmu___024root 
             top->mrd_i = 0; // Enable reading/loading
         }
 
-        if (timeStep == baseTime + 15)
+        if (timeStep == baseTime + 20)
         {
             top->mrd_i = 1; // Disable reading/loading
         }
@@ -110,7 +110,7 @@ int iType_lb_byte1(int timeStep, int baseTime, int duration, VPmmu___024root *to
             top->mrd_i = 0; // Enable reading/loading
         }
 
-        if (timeStep == baseTime + 15)
+        if (timeStep == baseTime + 20)
         {
             top->mrd_i = 1; // Disable reading/loading
         }
@@ -166,7 +166,7 @@ int iType_lb_byte2(int timeStep, int baseTime, int duration, VPmmu___024root *to
             top->mrd_i = 0; // Enable reading/loading
         }
 
-        if (timeStep == baseTime + 15)
+        if (timeStep == baseTime + 20)
         {
             top->mrd_i = 1; // Disable reading/loading
         }
@@ -222,7 +222,7 @@ int iType_lh_word2_addr_d18(int timeStep, int baseTime, int duration, VPmmu___02
             top->mrd_i = 0; // Enable reading/loading
         }
 
-        if (timeStep == baseTime + 15)
+        if (timeStep == baseTime + 20)
         {
             top->mrd_i = 1; // Disable reading/loading
         }
@@ -278,7 +278,7 @@ int iType_lh_word2_addr_d19(int timeStep, int baseTime, int duration, VPmmu___02
             top->mrd_i = 0; // Enable reading/loading
         }
 
-        if (timeStep == baseTime + 15)
+        if (timeStep == baseTime + 20)
         {
             top->mrd_i = 1; // Disable reading/loading
         }

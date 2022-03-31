@@ -23,9 +23,9 @@ module Register
 // The register acts only the negative edge of the clock
 always_ff @(negedge clk_i) begin
     if (~ld_i) begin
-        `ifdef SIMULATE
-            $display("%d Register Load: (%b) %h", $stime, data_i, data_i);
-        `endif
+        // `ifdef SIMULATE
+        //     $display("Register Load: (%b) %h", data_i, data_i);
+        // `endif
         data_o <= data_i;
     end
     else 

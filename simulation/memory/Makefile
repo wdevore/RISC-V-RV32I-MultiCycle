@@ -25,6 +25,7 @@ SIMULATION_TOOLCHAIN = /usr/local/bin/verilator
 # Typically you would use "lint", "compile"+"run"+"view", or just "go"
 # The other target/phonies are for reference and perhaps of some limited functionality.
 .PHONY: all
+#	-DUSE_STATIC \
 
 lint:
 	@echo "############### Linting via Verilator ##################"
@@ -40,8 +41,8 @@ compile:
 	--top-module ${TOP} \
 	--exe --build ${TEST_BENCH} ${MODULES_FILES} \
 	-DSIMULATE \
-	-DUSE_STATIC \
-	-DSHOW_MEMORY
+	-DSHOW_MEMORY \
+	-DUSE_ROM
 
 run:
 	@echo "################## Simulating ##################"

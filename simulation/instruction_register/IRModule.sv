@@ -15,13 +15,6 @@ module IRModule
 
 // logic [DATA_WIDTH-1:0] instruction = 32'h04082983;  // lw x19, x16,  d16
 
-// localparam AMuxSelectSize = 2;
-// localparam BMuxSelectSize = 2;
-// localparam ImmSelectSize = 3;
-// localparam PCSelectSize = 2;
-// localparam WDSelectSize = 2;
-// localparam ALUOpSize = 3;
-
 // address d1023 = 0x3FF word-address = 0xFFC byte-address
 // word 0000_0000_0000_0000_0000_0011_1111_1111
 // byte 0000_0000_0000_0000_0000_1111_1111_1100
@@ -34,6 +27,7 @@ logic cm_to_ir_ld /*verilator public*/;   // CM to IR
 
 logic cm_to_pc_ld;
 logic [`PCSelectSize-1:0] cm_to_pc_src;    // CM to PC_Src
+logic cm_to_pcp_ld;
 logic [DATA_WIDTH-1:0] pc_out;
 logic [DATA_WIDTH-1:0] pc_src_out;        // pc_src mux to PC_Mux
 
@@ -44,23 +38,26 @@ logic [DATA_WIDTH-1:0] pmmu_out;
 logic cm_to_mem_wr;
 logic cm_to_mem_rd;
 
+logic cm_to_rg_wr;
 logic [2:0] funct3 = ir_out[14:12]; //3'b010;
 logic cm_to_rst_src;
 logic [2:0] rst_src_out;
 
-logic rg_wr;
-logic [`AMuxSelectSize-1:0] a_src;
-logic [`BMuxSelectSize-1:0] b_src;
+logic [`AMuxSelectSize-1:0] cm_to_a_src;
+logic [`BMuxSelectSize-1:0] cm_to_b_src;
 logic [`ImmSelectSize-1:0] imm_src;
-logic alu_id;
-logic [`ALUOpSize-1:0] alu_op;
-logic jal_id;
-logic [`WDSelectSize-1:0] wd_src;
+logic [`ALUOpSize-1:0] cm_to_alu_op;
+logic [`WDSelectSize-1:0] cm_to_wd_src;
 logic [DATA_WIDTH-1:0] ir_out /*verilator public*/;
 
+logic cm_to_mdr_ld;
 logic [DATA_WIDTH-1:0] wd;
 logic mwr;
 logic mem_rdy;
+
+logic cm_to_alu_ld;
+logic [`FlagSize-1:0] alu_flags_cm;
+logic cm_to_alu_flags_ld;
 
 // Signal sequencer
 ControlMatrix matrix
@@ -68,22 +65,25 @@ ControlMatrix matrix
    .clk_i(clk_i),
    .ir_i(ir_out),
    .reset_i(reset_i),
-   .mem_busy_i(1'b0),
+   .mem_busy_i(`MEM_NOT_BUSY),
+   .flags_i(alu_flags_cm),
    .ir_ld_o(cm_to_ir_ld),
    .pc_ld_o(cm_to_pc_ld),
+   .pcp_ld_o(cm_to_pcp_ld),
+   .flags_ld_o(cm_to_alu_flags_ld),
    .pc_src_o(cm_to_pc_src),
    .mem_wr_o(cm_to_mem_wr),
    .mem_rd_o(cm_to_mem_rd),
    .addr_src_o(cm_to_addr_src),
    .rst_src_o(cm_to_rst_src),
-   .rg_wr_o(rg_wr),
-   .a_src_o(a_src),
-   .b_src_o(b_src),
+   .rg_wr_o(cm_to_rg_wr),
+   .a_src_o(cm_to_a_src),
+   .b_src_o(cm_to_b_src),
    .imm_src_o(imm_src),
-   .alu_id_o(alu_id),
-   .alu_op_o(alu_op),
-   .jal_id_o(jal_id),
-   .wd_src_o(wd_src)
+   .alu_ld_o(cm_to_alu_ld),
+   .alu_op_o(cm_to_alu_op),
+   .wd_src_o(cm_to_wd_src),
+   .mdr_ld_o(cm_to_mdr_ld)
 );
 
 // Memory management

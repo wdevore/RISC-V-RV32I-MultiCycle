@@ -57,7 +57,7 @@ int sType_sw(int timeStep, int baseTime, int duration, VPmmu_Memory *bram, VPmmu
             top->byte_addr_i = wordToByteAddr(imm + rs1) + selector;
         }
 
-        if (timeStep == baseTime + 15)
+        if (timeStep == baseTime + 20)
         {
             top->mwr_i = 1; // Disable writing/storing
         }
@@ -115,7 +115,7 @@ int sType_sh_word1(int timeStep, int baseTime, int duration, VPmmu_Memory *bram,
             top->byte_addr_i = wordToByteAddr(imm + rs1);
         }
 
-        if (timeStep == baseTime + 15)
+        if (timeStep == baseTime + 20)
         {
             top->mrd_i = 1; // Disable reading
         }
@@ -185,7 +185,7 @@ int sType_sh_word2(int timeStep, int baseTime, int duration, VPmmu_Memory *bram,
             top->byte_addr_i = wordToByteAddr(imm + rs1) + selector;
         }
 
-        if (timeStep == baseTime + 15)
+        if (timeStep == baseTime + 20)
         {
             top->mrd_i = 1; // Disable reading
         }
@@ -253,7 +253,7 @@ int sType_sb_byte1(int timeStep, int baseTime, int duration, VPmmu_Memory *bram,
             top->byte_addr_i = wordToByteAddr(imm + rs1);
         }
 
-        if (timeStep == baseTime + 15)
+        if (timeStep == baseTime + 20)
         {
             top->mrd_i = 1; // Disable reading
         }
@@ -323,7 +323,7 @@ int sType_sb_byte2(int timeStep, int baseTime, int duration, VPmmu_Memory *bram,
             top->byte_addr_i = wordToByteAddr(imm + rs1) + selector;
         }
 
-        if (timeStep == baseTime + 15)
+        if (timeStep == baseTime + 20)
         {
             top->mrd_i = 1; // Disable reading
         }
@@ -393,7 +393,7 @@ int sType_sb_byte3(int timeStep, int baseTime, int duration, VPmmu_Memory *bram,
             top->byte_addr_i = wordToByteAddr(imm + rs1) + selector;
         }
 
-        if (timeStep == baseTime + 15)
+        if (timeStep == baseTime + 20)
         {
             top->mrd_i = 1; // Disable reading
         }
@@ -463,7 +463,7 @@ int sType_sb_byte4(int timeStep, int baseTime, int duration, VPmmu_Memory *bram,
             top->byte_addr_i = wordToByteAddr(imm + rs1) + selector;
         }
 
-        if (timeStep == baseTime + 15)
+        if (timeStep == baseTime + 20)
         {
             top->mrd_i = 1; // Disable reading
         }

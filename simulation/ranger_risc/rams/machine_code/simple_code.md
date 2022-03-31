@@ -52,7 +52,7 @@ data:
     @11 0x44  00000000
 ```
 
-## Left-right
+## Left_right
 
 ## Memory layout
 ```
@@ -91,6 +91,7 @@ Data:
 
 ## Left-right-comp
 Uses byte compacted memory.
+Big-endian demonstration
 
 ## Memory layout
 ```
@@ -158,6 +159,44 @@ IncSub:
 Data: 
     @15 0x54  00020105  (2)Start count:(1)Inc by M:(0)up to N
     @16 0x58  00000000
+    @17 0x5C  00000000
+    @18 0x60  00000000
+    @19 0x64  00000000
+    @1A 0x68  00000054  address of data section
+    @1B 0x6C  00000004  Reset vector
+```
+
+## Count via memory location
+mem_count.ram
+
+## Memory layout
+```
+    @00 0x00  00000002
+    @01 0x04  06802203  lw  x4, 0x68(x0)  // set base
+    @02 0x08  00024083  lbu x1, 0(x4)     // Count up to N
+    @03 0x0C  00124103  lbu x2, 1(x4)     // Inc by M
+    @04 0x10  00224183  lbu x3, 2(x4)     // Starting count value
+Cnt:
+    @05 0x14  030002EF  jal x5, IncStr    // Call subroutine
+    @06 0x18  00422303  lw  x6, 4(x4)     // Get current value
+    @07 0x1C  FE134CE3  blt x6, x1, Cnt   // Check and loop
+    @08 0x20  00100073  ebreak            // Halt
+    @09 0x24  00000000
+    @0A 0x28  00000000
+    @0B 0x2C  00000000
+    @0C 0x30  00000000
+    @0D 0x34  00000000
+    @0E 0x38  00000000
+    @0F 0x3C  00000000
+    @10 0x40  00000000
+IncStr:
+    @11 0x44  002181B3  add  x3, x3, x2   // x3 += M
+    @12 0x48  00322223  sw   x3, 4(x4)    // Store new value
+    @13 0x4C  00028067  jalr x0, x5, Zero // return
+    @14 0x50  00000000
+Data: 
+    @15 0x54  00010104  (2)Start count:(1)Inc by M:(0)up to N
+    @16 0x58  00000000  Count
     @17 0x5C  00000000
     @18 0x60  00000000
     @19 0x64  00000000

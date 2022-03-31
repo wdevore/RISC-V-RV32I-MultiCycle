@@ -1,6 +1,6 @@
 {
-    "Assembly": "jalr x0, x5, Zero",
-    "PC": "0x18",
+    "Assembly": "ebreak",
+    "PC": "0x8",
     "Labels": [
         {
             "Cnt": "0x14"
@@ -10,6 +10,12 @@
         },
         {
             "Zero": "0x0"
+        },
+        {
+            "IncStr": "0x44"
+        },
+        {
+            "10": "0x10"
         }
     ]
     

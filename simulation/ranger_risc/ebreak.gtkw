@@ -1,0 +1,129 @@
+[*]
+[*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
+[*] Thu Mar 31 03:30:31 2022
+[*]
+[dumpfile] "/media/RAMDisk/waveform.vcd"
+[dumpfile_mtime] "Thu Mar 31 03:30:23 2022"
+[dumpfile_size] 50505
+[savefile] "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/ranger_risc/ebreak.gtkw"
+[timestart] 0
+[size] 2266 1225
+[pos] 0 27
+*-4.911203 226 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] TOP.
+[treeopen] TOP.RangerRisc.
+[sst_width] 221
+[signals_width] 284
+[sst_expanded] 1
+[sst_vpaned_height] 342
+@28
+[color] 2
+TOP.clk_i
+[color] 1
+TOP.reset_i
+@29
+[color] 3
+TOP.RangerRisc.matrix.ready
+@28
+[color] 1
+TOP.RangerRisc.matrix.halt
+@200
+-States
+@2024
+[color] 2
+^1 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_matrixstate_filter.txt
+TOP.RangerRisc.matrix.state[4:0]
+^1 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_matrixstate_filter.txt
+TOP.RangerRisc.matrix.next_state[4:0]
+^2 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_resetstate_filter.txt
+TOP.RangerRisc.matrix.vector_state[4:0]
+^2 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_resetstate_filter.txt
+TOP.RangerRisc.matrix.next_vector_state[4:0]
+^3 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_ir_state_filter.txt
+TOP.RangerRisc.matrix.ir_state[4:0]
+^3 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_ir_state_filter.txt
+TOP.RangerRisc.matrix.next_ir_state[4:0]
+@200
+-IR
+@2028
+[color] 2
+^4 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_opcode_filter.txt
+TOP.RangerRisc.matrix.ir_opcode[6:0]
+@28
+[color] 4
+TOP.RangerRisc.cm_to_ir_ld
+@22
+TOP.RangerRisc.ir_out[31:0]
+@200
+-PC
+@28
+[color] 2
+TOP.RangerRisc.cm_to_pc_ld
+@22
+TOP.RangerRisc.pc_out[31:0]
+@28
+TOP.RangerRisc.cm_to_pcp_ld
+@22
+TOP.RangerRisc.pc_prior_out[31:0]
+@200
+-PC_Mux
+@2024
+[color] 2
+^5 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_pc_src_filter.txt
+TOP.RangerRisc.cm_to_pc_src[1:0]
+@22
+TOP.RangerRisc.pc_src_out[31:0]
+@200
+-Addr_Mux
+@2024
+[color] 2
+^6 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_addr_src_filter.txt
+TOP.RangerRisc.cm_to_addr_src
+@22
+TOP.RangerRisc.addr_mux_to_pmmu[31:0]
+@200
+-Rst_mux
+@28
+[color] 2
+TOP.RangerRisc.cm_to_rst_src
+TOP.RangerRisc.rst_src_out[2:0]
+@200
+-Pmmu
+@28
+[color] 2
+TOP.RangerRisc.cm_to_mem_rd
+TOP.RangerRisc.cm_to_mem_wr
+TOP.RangerRisc.pmmu.signed_op
+@22
+TOP.RangerRisc.pmmu.wd_i[31:0]
+TOP.RangerRisc.pmmu.storage_data_in[31:0]
+[color] 7
+TOP.RangerRisc.pmmu_out[31:0]
+@200
+-Byte
+@28
+[color] 3
+TOP.RangerRisc.pmmu.is_byte_size
+TOP.RangerRisc.pmmu.byte_selector[1:0]
+@22
+TOP.RangerRisc.pmmu.byte_data[7:0]
+TOP.RangerRisc.pmmu.byte_addr_i[31:0]
+TOP.RangerRisc.pmmu.store_byte_data[31:0]
+@200
+-Halfword
+@28
+TOP.RangerRisc.pmmu.is_halfword_size
+[color] 3
+TOP.RangerRisc.pmmu.halfword_selector
+@22
+TOP.RangerRisc.pmmu.word_addr[9:0]
+@2028
+^7 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_alu_flags.txt
+TOP.RangerRisc.alu_flags_cm[3:0]
+@200
+-Matrix
+@28
+[color] 2
+TOP.RangerRisc.matrix.ready
+[pattern_trace] 1
+[pattern_trace] 0

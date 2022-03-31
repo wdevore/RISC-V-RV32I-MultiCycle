@@ -5,7 +5,6 @@
 
 // --------------------------------------------------------------------------
 // 1024x32 BRAM memory
-// Single or Dual Port
 // --------------------------------------------------------------------------
 // The path to the data file is relative to the test bench (TB).
 // If the TB is run from this directory then the path would be "ROM.dat"
@@ -13,7 +12,7 @@
 // Otherwise it is relative to the TB.
 `define ROM_PATH "rams/"
 `define ROM_EXTENSION ".ram"
-`define MEM_CONTENTS "code_simple/sub_routine"
+`define MEM_CONTENTS "itype/ebreak"
 
 module Memory
 #(
@@ -39,13 +38,6 @@ initial begin
     // warning: "WARNING: memory.v:23: $readmemh: Standard inconsistency, following 1364-2005."
     //     $readmemh (`MEM_CONTENTS, mem, 'h00, 'h04);
     `ifdef USE_ROM
-        // NOTE:
-        // `` - The double-backtick(``) is essentially a token delimiter.
-        // It helps the compiler clearly differentiate between the Argument and
-        // the rest of the string in the macro text.
-        // Note: this approach doesn't work yosys very well.
-        // See: https://www.systemverilog.io/macros
-
         // This only works with BRAM. It generally doesn't work with SPRAM constructs.
         $display("Using ROM: %s", `MEM_CONTENTS);
         $readmemh ({`ROM_PATH, `MEM_CONTENTS, `ROM_EXTENSION}, mem);  // , 0, 6
@@ -83,6 +75,11 @@ initial begin
         for(integer index = 0; index < 32; index = index + 1)
             $display("memory[%d] = %b <- %h", index[7:0], mem[index], mem[index]);
 
+        // $display("------- Top MEM contents ------");
+        // for(integer index = 0; index < 32; index = index + 4) begin
+        //     $display("memory[%d] = %b <- %h", index[7:0], mem[index], mem[index]);
+        // end
+
         // Display the vector data residing at the bottom of memory
         $display("------- Bottom MEM contents ------");
         for(integer index = 1020; index < 1024; index = index + 1)
@@ -106,7 +103,7 @@ always_ff @(negedge clk_i) begin
     if (~rd_i) begin
         data_o <= mem[addr_i];
         `ifdef SIMULATE
-            $display("%d Mem READ Addr (0x%h), Data_o(0x%h), data_i(0x%h)", $stime, addr_i, mem[addr_i], data_i);
+            $display("Mem READ Addr (0x%h), Data_o(0x%h), data_i(0x%h)", addr_i, mem[addr_i], data_i);
         `endif
     end
 end
