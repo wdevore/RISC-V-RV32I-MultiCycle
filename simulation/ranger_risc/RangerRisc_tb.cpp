@@ -69,14 +69,12 @@ int main(int argc, char *argv[])
 
     tb->show();
 
-    VRangerRisc *vir = tb->core();
+    VRangerRisc *cpu = tb->core();
 
-    // Provides access to the Enums, for example,
-    // cmU->MatrixState::Fetch
-    VRangerRisc___024unit *const unit = vir->__PVT____024unit;
+    VRangerRisc___024unit *const unit = cpu->__PVT____024unit;
 
     // The top module "RangerRisc"
-    VRangerRisc___024root *top = vir->rootp;
+    VRangerRisc___024root *top = cpu->rootp;
 
     // Provides access to the sub-modules either privately or publicly.
     VRangerRisc_RangerRisc *const irm = top->RangerRisc;
@@ -90,31 +88,23 @@ int main(int argc, char *argv[])
     // Not really useful for the most part.
     // VRangerRisc__Syms *vlSymsp = irm->vlSymsp;
 
-    vluint64_t timeStep = 0;
+    vluint64_t timeStep = 10;
 
     int duration = 35;
-    int baseTime = 10;
 
     // Allow any initial blocks to execute
     tb->eval();
     dumpMem(bram);
 
-    timeStep = reset_sequence(timeStep, baseTime, duration, tb, top, irm, unit);
+    timeStep = reset_sequence(timeStep, timeStep, duration, tb, top, irm, unit);
     if (assertionFailure)
         abort(tb);
 
-    baseTime = timeStep;
     duration = 5000;
 
-    timeStep = loop(timeStep, baseTime, duration, tb, top, irm, unit);
+    timeStep = loop(timeStep, timeStep, duration, tb, top, irm, unit);
     if (assertionFailure)
         abort(tb);
-
-    int testDuration = timeStep + 50;
-    while (timeStep < testDuration)
-    {
-        timeStep = step(timeStep, tb, top);
-    }
 
     dumpMem(bram);
 
