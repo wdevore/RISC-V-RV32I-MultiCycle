@@ -77,16 +77,16 @@ int main(int argc, char *argv[])
     VRangerRisc___024root *top = cpu->rootp;
 
     // Provides access to the sub-modules either privately or publicly.
-    VRangerRisc_RangerRisc *const irm = top->RangerRisc;
+    VRangerRisc_RangerRisc *const risc = top->RangerRisc;
     // The sub-modules
-    VRangerRisc_ControlMatrix *cm = irm->matrix;
-    VRangerRisc_Register *ir = irm->ir;
+    VRangerRisc_ControlMatrix *cm = risc->matrix;
+    VRangerRisc_Register *ir = risc->ir;
 
-    VRangerRisc_Pmmu *pmmu = irm->pmmu;
+    VRangerRisc_Pmmu *pmmu = risc->pmmu;
     VRangerRisc_Memory *bram = pmmu->bram;
 
     // Not really useful for the most part.
-    // VRangerRisc__Syms *vlSymsp = irm->vlSymsp;
+    // VRangerRisc__Syms *vlSymsp = risc->vlSymsp;
 
     vluint64_t timeStep = 10;
 
@@ -96,13 +96,13 @@ int main(int argc, char *argv[])
     tb->eval();
     dumpMem(bram);
 
-    timeStep = reset_sequence(timeStep, timeStep, duration, tb, top, irm, unit);
+    timeStep = reset_sequence(timeStep, timeStep, duration, tb, top, risc, unit);
     if (assertionFailure)
         abort(tb);
 
     duration = 5000;
 
-    timeStep = loop(timeStep, timeStep, duration, tb, top, irm, unit);
+    timeStep = loop(timeStep, timeStep, duration, tb, top, risc, unit);
     if (assertionFailure)
         abort(tb);
 
