@@ -20,7 +20,7 @@ module ALU
     input  logic   [DATA_WIDTH-1:0] b_i,      // rs2 or (Immediate and/or Extended)
     input  ALU_Ops func_op_i,                 // Operation
     output logic   [DATA_WIDTH-1:0] y_o,      // Results output
-    output logic   [`FlagSize-1:0]  flags_o   // Flags: V,N,C,Z
+    output logic   [`FlagSize-1:0]  flags_o   // Flags: V,N,C,Z <-- Used for branches
 );
 
 logic [DATA_WIDTH-1:0] ORes;
@@ -44,12 +44,16 @@ always_comb begin
     sra = 0;
     carry_borrow_l = 0;
     carry_borrow_h = 0;
-    lower_bits = {DATA_WIDTH-1{1'b0}};
+    lower_bits = {DATA_WIDTH-1{1'b0}};  // Discarded
 
     case (func_op_i)
         AddOp: begin
-            {carry_borrow_l, lower_bits} = a_i[DATA_WIDTH-2:0] + b_i[DATA_WIDTH-2:0];
-            {carry_borrow_h, ORes} = a_i[DATA_WIDTH-1:0] + b_i[DATA_WIDTH-1:0];
+            AddOp: ORes = a_i + b_i;
+            // RISC-V ignores any overflows or carries
+            // Carry going "into" the upper bit
+            // {carry_borrow_l, lower_bits} = a_i[DATA_WIDTH-2:0] + b_i[DATA_WIDTH-2:0];
+            // Carry going "out" of the upper bit
+            // {carry_borrow_h, ORes} = a_i[DATA_WIDTH-1:0] + b_i[DATA_WIDTH-1:0];
         end
         
         SubOp: begin  // As if the Carry_In == 0
@@ -57,17 +61,11 @@ always_comb begin
             {carry_borrow_h, ORes} = a_i[DATA_WIDTH-1:0] - b_i[DATA_WIDTH-1:0];
         end
         
-        AndOp: begin
-            ORes = a_i & b_i;
-        end
+        AndOp: ORes = a_i & b_i;
         
-        OrOp: begin
-            ORes = a_i | b_i;
-        end
+        OrOp: ORes = a_i | b_i;
         
-        XorOp: begin
-            ORes = a_i ^ b_i;
-        end
+        XorOp: ORes = a_i ^ b_i;
         
         SllOp: begin    // Shift left logical a_i by b_i amount
             {carry_borrow_h, ORes} = {a_i[DATA_WIDTH-1], a_i << b_i};
@@ -127,6 +125,9 @@ assign y_o = ORes;
 endmodule
 
 // Flags
+// Overflow:
+//  https://suchprogramming.com/beginning-logic-design-part-6/
+//  https://suchprogramming.com/beginning-logic-design-part-7/
 // https://stackoverflow.com/questions/57452447/riscv-how-the-branch-intstructions-are-calculated
 
 
@@ -134,7 +135,6 @@ endmodule
 // https://www.doc.ic.ac.uk/~eedwards/compsys/arithmetic/index.html
 // Add only: http://teaching.idallen.com/dat2343/10f/notes/040_overflow.txt
     // ~(~(a_i[DATA_WIDTH-1] ^ b_i[DATA_WIDTH-1]) & ((a_i[DATA_WIDTH-1] & b_i[DATA_WIDTH-1]) ^ ORes[DATA_WIDTH-1])),  // V = !(!(a^b) & (a&b)^s))
-// Overflow: https://suchprogramming.com/beginning-logic-design-part-7/  and part 6
 // https://azeria-labs.com/arm-conditional-execution-and-branching-part-6/
 // http://www.mathcs.emory.edu/~cheung/Courses/255/Syl-ARM/7-ARM/cmp+bra.html
 // http://staffwww.fullcoll.edu/aclifton/cs241/lecture-branching-comparisons.html

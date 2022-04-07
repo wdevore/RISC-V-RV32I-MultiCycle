@@ -41,12 +41,11 @@ logic signed_op = !funct3[2];       // 0 = signed, 1 = unsigned
 // Determine the data-size of the operation
 logic is_byte_size     = funct3[1:0] == `BYTE_SIZE;
 logic is_halfword_size = funct3[1:0] == `HALFWORD_SIZE;
-// Word = 2'b10;
 
 // Because BRAM is organized as 32bit words and our PC increments
 // by 4 "bytes", that means if we used the incoming address it
-// will have "skipped" over 3 bytes. This means we need to convert
-// from word-addressing to byte-addressing.
+// will have "skipped" over 3 bytes, which means we need to convert
+// from byte-addressing to word-addressing.
 // We do this by logically shifting right by 2.
 // (i.e. ignoring the lower 2 bits)
 logic [WORDS-1:0] word_addr = byte_addr_i[WORDS+1:2];
@@ -94,7 +93,7 @@ Mux4 #(.DATA_WIDTH(DATA_WIDTH)) store_byte_mux
 );
 
 // Merge source word-data to storage data
-Mux2 #(.DATA_WIDTH(DATA_WIDTH)) store_halfword_mux
+Mux2 #(.DATA_WIDTH(DATA_WIDTH)) store_hw_mux
 (
     .select_i(halfword_selector),
     .data0_i({storage_data_out[31:16],  wd_i[15:0]}),
