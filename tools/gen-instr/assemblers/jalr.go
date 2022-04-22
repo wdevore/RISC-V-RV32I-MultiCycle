@@ -11,16 +11,16 @@ import (
 func Jalr(json map[string]interface{}) (macCode string, err error) {
 	ass := fmt.Sprintf("%s", json["Assembly"])
 
-	rxpr, _ := regexp.Compile(`([a-z]+) ([xa0-9]+),[ ]*([xa0-9]+),[ ]*([\w]+)`)
+	rxpr, _ := regexp.Compile(`([a-z]+)[ ]+([xa0-9]+),[ ]*([\w]+)[ ]*\(([xa0-9]+)\)`)
 
 	fields := rxpr.FindStringSubmatch(ass)
 	rd := fields[2]
 	fmt.Println("Destination register: ", rd)
 
-	rs1 := fields[3]
+	rs1 := fields[4]
 	fmt.Println("Rs1 register: ", rs1)
 
-	label := fields[4]
+	label := fields[3]
 	fmt.Println("Offset label: ", label)
 
 	labels := json["Labels"]

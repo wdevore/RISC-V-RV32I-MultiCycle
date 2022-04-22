@@ -1,5 +1,5 @@
 {
-    "Assembly": "ebreak",
+    "Assembly": "lw  x5, 0x24(x0)",
     "PC": "0x8",
     "Labels": [
         {
@@ -16,6 +16,9 @@
         },
         {
             "10": "0x10"
+        },
+        {
+            "jumpto": "0x2C"
         }
     ]
     

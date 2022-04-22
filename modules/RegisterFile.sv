@@ -31,7 +31,7 @@ initial begin
     `ifdef POPULATE_REGISTERS
         $display("------Populating RegisterFile----");
         bank[0] =  32'h00000002;       // Simple data for testing
-        bank[1] =  32'h00000004;
+        bank[1] =  32'h00000005;
         bank[2] =  32'h00000006;
         bank[3] =  32'h00000008;
         bank[4] =  32'h00000028;   // x4

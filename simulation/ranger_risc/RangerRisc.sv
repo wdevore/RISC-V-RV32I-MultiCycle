@@ -19,11 +19,11 @@ module RangerRisc
 // localparam ResetVector = 32'h00000FFC; // Reset Vector 0x3FF word = 0xFFC byte address
 
 // Instead set ResetVector to Low address as this makes the rom file smaller.
-localparam ResetVector = 32'h00000010 * 4; // Reset Vector 0x10 word = 0x040 byte address
+localparam ResetVector = 32'h00000010 * 4; // Reset Vector 0x10 word = 0x040 byte address format
 // localparam ResetVector = 32'h0000006C; // Reset Vector @1B
 
 // --++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++
-// Wires connecting modules
+// Wires and Buses connecting modules
 // --++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++
 logic cm_to_ir_ld /*verilator public*/;   // CM to IR
 
@@ -127,7 +127,7 @@ Mux4 #(.DATA_WIDTH(DATA_WIDTH)) pc_mux
 (
     .select_i(cm_to_pc_src),
     .data0_i(alu_imm_out),
-    .data1_i(`SrcUnConnected),
+    .data1_i(alu_out),
     .data2_i(ResetVector),
     .data3_i(pmmu_out),
     .data_o(pc_src_out)

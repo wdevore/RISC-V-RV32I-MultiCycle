@@ -8,6 +8,53 @@ All operands are consider Signed
 
 ```
 
+# add_0
+x1 preloaded with 0x05
+x2 preloaded with 0x06
+
+## Description
+rd = rs1 + rs2
+
+rd = x1
+
+Base = x0
+
+## add
+```
+     rd  rs1 rs2
+add  x3, x1, x2
+
+   func7   |  rs2  |  rs1  | func3 |   rd  |  opcode
+  0000000    00010   00001    000     00011    0110011 = 0x002081B3
+
+add  x0, x1, x2
+  0000000    00010   00001    000     00000    0110011 = 0x00208033
+  0000 0000 0010 0000 1000 0000 0011 0011
+```
+
+x3 should end up with a value of 0x0000000B
+
+## Memory layout
+```
+   WA BA
+   @00 0x00 00000002
+   @01 0x04 002081B3  add x3, x1, x2
+   @02 0x08 00100073  ebreak
+   @03 0x0C 00000000
+   @04 0x10 00000000
+   @05 0x14 00000000
+   @06 0x18 00000000     
+   @07 0x1C 00000000     
+   @08 0x20 00000000     
+   @09 0x24 00000000     
+   @0A 0x28 00000005  <-- data for x1
+   @0B 0x2C 00000006  <-- data for x2
+   ...
+   @10 0x40 00000004  Reset vector
+   @11 0x44 00000000
+```
+### ----------------------------------------------------------------
+
 # add_1
 Load x1 with byte from word-address **0x0000000A**
 
@@ -18,11 +65,12 @@ Flags: ----
 ## Description
 rd = rs1 + rs2
 
-## rd = x1
+rd = x1
+
 Base = x0
 ```
-    rd  rs1 imm
-lb  x1, x0, 0x0A     imm = (0x0A)*4 = 0x28
+    rd  imm  rs1
+lb  x1, 0x28(x0)      imm = (0x0A)*4 = 0x28
 
    imm11:0   |  rs1 | funct3 |   rd  |  opcode
 000000101000   00000   000     00001    0000011
@@ -33,8 +81,8 @@ lb  x1, x0, 0x0A     imm = (0x0A)*4 = 0x28
 
 ## rd = x2
 ```
-    rd  rs1 imm
-lb  x2, x0, 0x0B     imm = (0x0B)*4 = 0x2C
+    rd  imm  rs1
+lb  x2, 0x2C(x0)     imm = (0x0B)*4 = 0x2C
 
    imm11:0   |  rs1 | funct3 |   rd  |  opcode
 000000101100   00000   000     00010    0000011
@@ -56,21 +104,22 @@ x3 should end up with a value of 0x0000000B
 
 ## Memory layout
 ```
-@0 00000002
-@1 02800083  lb  x1, 0x0A(x0)
-@2 02C00103  lb  x2, 0x0B(x0)
-@3 002081B3  add x3, x1, x2
-@4 00100073  ebreak
-@5 0000000A     
-@6 00000000     
-@7 00000000     
-@8 00000000     
-@9 00000000     
-@A 00000005  <-- data for x1
-@B 00000006  <-- data for x2
-...
-@10 00000004  Reset vector
-@11 00000000
+   WA BA
+   @00 0x00 00000002
+   @01 0x04 02800083  lb  x1, 0x28(x0)
+   @02 0x08 02C00103  lb  x2, 0x2C(x0)
+   @03 0x0C 002081B3  add x3, x1, x2
+   @04 0x10 00100073  ebreak
+   @05 0x14 0000000A     
+   @06 0x18 00000000     
+   @07 0x1C 00000000     
+   @08 0x20 00000000     
+   @09 0x24 00000000     
+   @0A 0x28 00000005  <-- data for x1
+   @0B 0x2C 00000006  <-- data for x2
+   ...
+   @10 0x40 00000004  Reset vector
+   @11 0x44 00000000
 ```
 
 ```

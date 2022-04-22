@@ -54,6 +54,7 @@ logic [6:0] ir_opcode = ir_i[6:0];
 logic [2:0] funct3 = ir_i[14:12];
 // Used for Jal optimization
 logic [4:0] dstRg = ir_i[11:7];
+logic is_word_size = funct3[1:0] == `WORD_SIZE;
 
 // The Shift operations have additional info in the upper
 // 3 bits. R-Types call this funct7 but I-Types alias it.
@@ -263,13 +264,30 @@ always_comb begin
 
             next_state = Execute;
 
-            // Also, take advantage of Decode to increment PC. This is the
-            // default ALU setup. So we just enable the loads
+            // Also, take advantage of Decode to increment PC (PC+4). This is the
+            // default ALU setup above. So we just enable the loads
             alu_ld = RgLdEnabled;
             pc_ld = RgLdEnabled;
             pc_src = PCSrcAluImm;     // Select ALU direct output
 
+            // Set next InsRtuction state
             case (ir_opcode)
+                `ITYPE_E: begin
+                    if (ir_i[20] == 1'b1)
+                        next_ir_state = ITEbreak;
+                    else begin
+                        next_ir_state = ITECall;
+                    end
+                end
+
+                `RTYPE: begin
+                    next_ir_state = RType;
+                end
+
+                `ITYPE: begin
+                    next_ir_state = ITALU;
+                end
+
                 `ITYPE_L: begin
                     // Default: Load type instructions
                     // `ifdef SIMULATE
@@ -277,8 +295,8 @@ always_comb begin
                     // `endif
                 end
 
-                `RTYPE: begin
-                    next_ir_state = RType;
+                `ITYPE_J: begin
+                    next_ir_state = ITJalr;
                 end
 
                 `STYPE: begin
@@ -289,16 +307,8 @@ always_comb begin
                     next_ir_state = BType;
                 end
                 
-                `ITYPE: begin
-                    next_ir_state = ITALU;
-                end
-
                 `JTYPE: begin
                     next_ir_state = JTJal;
-                end
-
-                `ITYPE_J: begin
-                    next_ir_state = JTJalr;
                 end
 
                 `UTYPE_L: begin
@@ -307,14 +317,6 @@ always_comb begin
 
                 `UTYPE_A: begin
                     next_ir_state = UTypeAui;
-                end
-
-                `ITYPE_E: begin
-                    if (ir_i[20] == 1'b1)
-                        next_ir_state = ITEbreak;
-                    else begin
-                        next_ir_state = ITECall;
-                    end
                 end
 
                 default: begin
@@ -333,6 +335,91 @@ always_comb begin
 
             case (ir_state)
                 // ---------------------------------------------------
+                // R-Type ALU
+                // add, sub, xor, slt, sll etc.
+                // ---------------------------------------------------
+                RType: begin
+                    // First we compute the results
+                    alu_ld = RgLdEnabled;
+                    a_src = ASrcRsa;  // Select rs1 (aka RsA) source
+                    b_src = BSrcRsb;  // Select rs2 (aka RsB) source
+
+                    // We ignore the lower 4 bits because this is RV32I base
+                    // instructions only.
+                    alu_op = {funct3, funct7up};
+
+                    // ------ Optimization ------
+                    // If the destination register is x0 then
+                    // we don't need a writeback cycle so just
+                    // transition to fetch.
+                    // This effectively is a NOP
+                    if (dstRg == 5'b00000) begin
+                        mem_rd = 1'b0;
+                        next_state = Fetch;
+                    end
+                    else
+                        next_ir_state = RTCmpl;
+                end
+
+                RTCmpl: begin
+                    // ALUOut is now loaded with the results
+
+                    // Setup for writeback
+                    wd_src = WDSrcALUOut;
+                    rg_wr = RgLdEnabled;
+
+                    // Setup Fetch next instruction the PC is pointing at.
+                    mem_rd = 1'b0;
+
+                    next_state = Fetch;
+                end
+
+                // ---------------------------------------------------
+                // I-Type ALU immediate
+                // addi, xori, ori andi, ssli, srli, srai, slti, sltiu
+                // ---------------------------------------------------
+                ITALU: begin
+                    // Compute results
+                    alu_ld = RgLdEnabled;
+                    a_src = ASrcRsa;
+                    b_src = BSrcImm;
+
+                    // We only need the 3 upper bits when the I-Type is
+                    // slli, (srli, srai) in order to further narrow
+                    // the operation, otherwise use zero.
+                    if (funct3 == ITSlli || funct3 == ITSrli)
+                        alu_op = {funct3, funct7up};
+                    else
+                        alu_op = {funct3, 3'b000};
+
+                    // ------ Optimization ------
+                    // If the destination register is x0 then
+                    // we don't need a writeback cycle so just
+                    // transition to fetch.
+                    // This effectively is a NOP
+                    if (dstRg == 5'b00000) begin
+                        mem_rd = 1'b0;
+                        next_state = Fetch;
+                    end
+                    else
+                        next_ir_state = ITALUCmpl;
+                end
+
+                ITALUCmpl: begin
+                    // ALUOut has results
+
+                    // Setup for writeback
+                    wd_src = WDSrcALUOut;
+                    rg_wr = RgLdEnabled;
+
+
+                    // Setup Fetch next instruction the PC is pointing at.
+                    mem_rd = 1'b0;
+
+                    next_state = Fetch;
+                end
+
+                // ---------------------------------------------------
                 // I-Type Load
                 // rd = M[rs1+imm][0:N]
                 // Load a value from memory into a register.
@@ -346,7 +433,7 @@ always_comb begin
                     a_src = ASrcRsa;  // Select rs1 (aka RsA) source
                     b_src = BSrcImm;  // Select Immediate source
                     // The Immediate function is computed by the Immediate module
-                    
+
                     next_ir_state = ITLDMemAcc;
                 end
 
@@ -389,6 +476,40 @@ always_comb begin
                 end
 
                 // ---------------------------------------------------
+                // I-Type jalr
+                // ---------------------------------------------------
+                ITJalr: begin
+                    // Compute the jump address: PC = rs1 + imm
+                    a_src = ASrcRsa;
+                    b_src = BSrcImm;
+
+                    // Load PC
+                    pc_src = PCSrcAluImm;
+                    pc_ld = RgLdEnabled;
+
+                    // ------ Optimization ------
+                    // If the destination register is x0 then
+                    // we don't need a writeback cycle so just
+                    // transition to complete.
+                    if (dstRg == 5'b00000)
+                        next_ir_state = PreFetch;
+                    else
+                        next_ir_state = ITJalrRtr;
+                end
+
+                ITJalrRtr: begin
+                    // Compute the return address: rd = PC+4.
+                    a_src = ASrcPrior;
+                    b_src = BSrcFour;
+
+                    // Setup for writeback
+                    wd_src = WDSrcImm;
+                    rg_wr = RgLdEnabled;
+
+                    next_ir_state = PreFetch;
+                end
+
+                // ---------------------------------------------------
                 // S-Type store
                 // M[rs1+imm][0:31] = rs2[0:31]
                 // Store a register file value to memory
@@ -403,7 +524,10 @@ always_comb begin
                     // Select destination address instead of PC
                     addr_src = 1'b1;
 
-                    next_ir_state = STMemAcc;
+                    if (is_word_size)
+                        next_ir_state = STMemWrt;
+                    else
+                        next_ir_state = STMemAcc;
                 end
 
                 STMemAcc: begin
@@ -420,7 +544,7 @@ always_comb begin
                 end
 
                 STMemWrt: begin
-                    // Pmmu out has data for merging if required.
+                    // Pmmu out has data for merging(byte/halfword) if required.
 
                     // Maintain source selection
                     addr_src = 1'b1;
@@ -436,46 +560,6 @@ always_comb begin
                 end
 
                 // ---------------------------------------------------
-                // R-Type ALU
-                // add, sub, xor, slt, sll etc.
-                // ---------------------------------------------------
-                RType: begin
-                    // First we compute the results
-                    alu_ld = RgLdEnabled;
-                    a_src = ASrcRsa;  // Select rs1 (aka RsA) source
-                    b_src = BSrcRsb;  // Select rs2 (aka RsB) source
-
-                    // We ignore the lower 4 bits because this is RV32I base
-                    // instructions only.
-                    alu_op = {funct3, funct7up};
-
-                    // ------ Optimization ------
-                    // If the destination register is x0 then
-                    // we don't need a writeback cycle so just
-                    // transition to fetch.
-                    // This effectively is a NOP
-                    if (dstRg == 5'b00000) begin
-                        mem_rd = 1'b0;
-                        next_state = Fetch;
-                    end
-                    else
-                        next_ir_state = RTCmpl;
-                end
-
-                RTCmpl: begin
-                    // ALUOut is now loaded with the results
-
-                    // Setup for writeback
-                    wd_src = WDSrcALUOut;
-                    rg_wr = RgLdEnabled;
-
-                    // Setup Fetch next instruction the PC is pointing at.
-                    mem_rd = 1'b0;
-
-                    next_state = Fetch;
-                end
-
-                // ---------------------------------------------------
                 // B-Type branch
                 // Beq, Bne, Blt, Bge, Bltu, Bgeu etc.
                 // ---------------------------------------------------
@@ -483,9 +567,9 @@ always_comb begin
                     // rsa and rsb are now present.
 
                     // Compute the flags
-                    alu_ld = RgLdDisabled; // We don't need the result
                     a_src = ASrcRsa;  // Select rs1 (aka RsA) source
                     b_src = BSrcRsb;  // Select rs2 (aka RsB) source
+                    // Save them
                     flags_ld = RgLdEnabled;
 
                     // Perform Subtract
@@ -561,51 +645,6 @@ always_comb begin
                 end
 
                 // ---------------------------------------------------
-                // I-Type ALU immediate
-                // addi, xori, ori andi, ssli, srli, srai, slti, sltiu
-                // ---------------------------------------------------
-                ITALU: begin
-                    // Compute results
-                    alu_ld = RgLdEnabled;
-                    a_src = ASrcRsa;
-                    b_src = BSrcImm;
-
-                    // We only need the 3 upper bits when the I-Type is
-                    // slli, (srli, srai) in order to further narrow
-                    // the operation, otherwise use zero.
-                    if (funct3 == ITSlli || funct3 == ITSrli)
-                        alu_op = {funct3, funct7up};
-                    else
-                        alu_op = {funct3, 3'b000};
-
-                    // ------ Optimization ------
-                    // If the destination register is x0 then
-                    // we don't need a writeback cycle so just
-                    // transition to fetch.
-                    // This effectively is a NOP
-                    if (dstRg == 5'b00000) begin
-                        mem_rd = 1'b0;
-                        next_state = Fetch;
-                    end
-                    else
-                        next_ir_state = ITALUCmpl;
-                end
-
-                ITALUCmpl: begin
-                    // ALUOut has results
-
-                    // Setup for writeback
-                    wd_src = WDSrcALUOut;
-                    rg_wr = RgLdEnabled;
-
-
-                    // Setup Fetch next instruction the PC is pointing at.
-                    mem_rd = 1'b0;
-
-                    next_state = Fetch;
-                end
-
-                // ---------------------------------------------------
                 // J-Type jal
                 // ---------------------------------------------------
                 JTJal: begin
@@ -628,40 +667,6 @@ always_comb begin
                 end
 
                 JTJalRtr: begin
-                    // Compute the return address: rd = PC+4.
-                    a_src = ASrcPrior;
-                    b_src = BSrcFour;
-
-                    // Setup for writeback
-                    wd_src = WDSrcImm;
-                    rg_wr = RgLdEnabled;
-
-                    next_ir_state = PreFetch;
-                end
-
-                // ---------------------------------------------------
-                // I-Type jalr
-                // ---------------------------------------------------
-                JTJalr: begin
-                    // Compute the jump address: PC = rs1 + imm
-                    a_src = ASrcRsa;
-                    b_src = BSrcImm;
-
-                    // Load PC
-                    pc_src = PCSrcAluImm;
-                    pc_ld = RgLdEnabled;
-
-                    // ------ Optimization ------
-                    // If the destination register is x0 then
-                    // we don't need a writeback cycle so just
-                    // transition to complete.
-                    if (dstRg == 5'b00000)
-                        next_ir_state = PreFetch;
-                    else
-                        next_ir_state = JTJalrRtr;
-                end
-
-                JTJalrRtr: begin
                     // Compute the return address: rd = PC+4.
                     a_src = ASrcPrior;
                     b_src = BSrcFour;
