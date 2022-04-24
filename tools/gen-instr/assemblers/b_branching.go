@@ -7,8 +7,8 @@ import (
 	"github.com/wdevore/gen-instr/utils"
 )
 
-//          beq rs1, imm  rs2
-// Example: beq x1, offset(x2)
+//          beq rs1, rs2, imm
+// Example: beq  x1,  x2, offset
 func BtypeBranch(json map[string]interface{}) (macCode string, err error) {
 	ass := fmt.Sprintf("%s", json["Assembly"])
 

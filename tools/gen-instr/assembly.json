@@ -1,6 +1,6 @@
 {
-    "Assembly": "lw  x5, 0x24(x0)",
-    "PC": "0x8",
+    "Assembly": "bne x1, x2, offset",
+    "PC": "0x0C",
     "Labels": [
         {
             "Cnt": "0x14"
@@ -19,7 +19,14 @@
         },
         {
             "jumpto": "0x2C"
+        },
+        {
+            "offset": "0x18"
+        }
+    ],
+    "RegFile": [
+        {
+            "x2": "0x028"
         }
     ]
-    
 }

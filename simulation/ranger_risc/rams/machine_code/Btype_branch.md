@@ -51,13 +51,14 @@ To test "not" taken branch change either @A or @C to a value different than the 
 ```
     WA BA
     @0 0x00  00000002
-    @1 0x04  00020083   lw  x1, x4, 0
-    @2 0x08  00820103   lw  x2, x4, 8
-    @3 0x0C  00208663   beg x1, x2, offset
-    @4 0x10  01022283   lw  x5, x4, 0x10   <-- not taken path
+    @1 0x04  00020083   lw  x1, 0x0(x4)    <-- x4 preloaded with 0x28
+    @2 0x08  00820103   lw  x2, 0x8(x4)
+    @3 0x0C  00209663   bne x1, x2, offset
+    @4 0x10  01022283   lw  x5, 0x10(x4)   <-- not taken path
     @5 0x14  00100073   ebreak
 offset:
-    @6 0x18  00C22283   lw  x5, x4, 0x0C   <-- taken path
+    @6 0x18  00C22283   lw  x5, 0x0C(x4)   <-- taken path
+    @7 0x1C  00100073   ebreak
     ...
     @A 0x28  00000005   data for x1
     @B 0x2C  00000000
@@ -65,7 +66,7 @@ offset:
     @D 0x34  00000A0A   data for x5   <-- branch taken
     @E 0x38  00000B0B   data for x5   <-- branch not taken
     @F 0x3C  00100073   ebreak
-    @10 0x40 00000004   Reset vector
+    @10 0x40 00000004   -- Reset vector
     @11 0x44 00000000
 ```
 

@@ -35,14 +35,14 @@ func main() {
 
 	byteValue, _ := ioutil.ReadAll(jsonFile)
 
-	var result map[string]interface{}
-	json.Unmarshal([]byte(byteValue), &result)
+	var context map[string]interface{}
+	json.Unmarshal([]byte(byteValue), &context)
 
-	fmt.Println("Assembling: ", result["Assembly"])
+	fmt.Println("Assembling: ", context["Assembly"])
 
 	rxpr, _ := regexp.Compile(`([a-z]+)`)
 
-	ass := fmt.Sprintf("%s", result["Assembly"])
+	ass := fmt.Sprintf("%s", context["Assembly"])
 	fields := rxpr.FindStringSubmatch(ass)
 
 	instruction := fields[1]
@@ -50,25 +50,25 @@ func main() {
 	machineCode := ""
 	switch instruction {
 	case "jal":
-		machineCode, err = assemblers.Jal(result)
+		machineCode, err = assemblers.Jal(context)
 	case "jalr":
-		machineCode, err = assemblers.Jalr(result)
+		machineCode, err = assemblers.Jalr(context)
 	case "lui":
-		machineCode, err = assemblers.Lui(result)
+		machineCode, err = assemblers.Lui(context)
 	case "auipc":
-		machineCode, err = assemblers.Auipc(result)
+		machineCode, err = assemblers.Auipc(context)
 	case "ebreak":
 		machineCode, err = assemblers.Ebreak()
 	case "lb", "lh", "lw", "lbu", "lhu":
-		machineCode, err = assemblers.Loads(result)
+		machineCode, err = assemblers.Loads(context)
 	case "sb", "sh", "sw":
-		machineCode, err = assemblers.Stores(result)
+		machineCode, err = assemblers.Stores(context)
 	case "add", "sub", "xor", "or", "and", "sll", "srl", "sra", "slt", "sltu":
-		machineCode, err = assemblers.RtypeAlu(result)
+		machineCode, err = assemblers.RtypeAlu(context)
 	case "addi", "xori", "ori", "andi", "slli", "srli", "srai", "slti", "sltiu":
-		machineCode, err = assemblers.ItypeAlu(result)
+		machineCode, err = assemblers.ItypeAlu(context)
 	case "beq", "bne", "blt", "bge", "bltu", "bgeu":
-		machineCode, err = assemblers.BtypeBranch(result)
+		machineCode, err = assemblers.BtypeBranch(context)
 	}
 
 	if err != nil {
