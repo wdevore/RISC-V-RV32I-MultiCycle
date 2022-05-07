@@ -34,16 +34,18 @@ module ControlMatrix
     output logic alu_ld_o,                          // ALU output register load
     output logic [`ALUOpSize-1:0] alu_op_o,         // ALU operation
     output logic [`WDSelectSize-1:0] wd_src_o,       // Write-Data source select
-    output logic mdr_ld_o
 
     // **--**--**--**--**--**--**--**--**--**--**--**--**--
     // DEBUGGING Outputs
     // **--**--**--**--**--**--**--**--**--**--**--**--**--
     `ifdef DEBUG_MODE
-    output logic out_ld_o,
-    output logic out_sel_o,
+    // output logic out_ld_o,
+    // output logic out_sel_o,
+    output logic mdr_ld_o,
     output logic ready_o,              // Active high
     output logic halt_o                // Active high
+    `else
+    output logic mdr_ld_o
     `endif
 );
 
@@ -784,8 +786,8 @@ assign mdr_ld_o = mdr_ld;
 assign alu_op_o = alu_op;
 
 `ifdef DEBUG_MODE
-assign out_ld_o = out_ld;
-assign out_sel_o = out_sel;
+// assign out_ld_o = out_ld;
+// assign out_sel_o = out_sel;
 assign ready_o = ready;
 assign halt_o = halt;
 `endif

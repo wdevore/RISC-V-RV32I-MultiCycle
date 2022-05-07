@@ -5,6 +5,7 @@
 
 #include "console.h"
 #include "commands.h"
+#include "utils.h"
 
 Console::Console(/* args */)
 {
@@ -22,7 +23,8 @@ int Console::init(void)
     // Configure ncurses for non-blocking, no chars echoed
     raw();
     noecho();
-    keypad(stdscr, true); // Enable non-blocking
+    keypad(stdscr, true);  // Include control sequences
+    nodelay(stdscr, true); // Enable non-blocking
 
     // Check for Terminal features.
     if (!has_colors())
@@ -92,6 +94,17 @@ Command Console::handleInput()
         _exitConsole = true;
         return Command::Exit;
     }
+    else if (ch == KEY_BACKSPACE)
+    {
+        if (col > 1)
+        {
+            move(LINES - 1, col);
+            addch(' ' | A_NORMAL);
+            col--;
+            keyBuffer = keyBuffer.substr(0, keyBuffer.size() - 1);
+            dataDirty = true;
+        }
+    }
     else if (ch == '\n')
     {
         col = startCmdLineCol;
@@ -106,10 +119,48 @@ Command Console::handleInput()
             return Command::None;
 
         if (keyBuffer == "reset")
+        {
             cmd = Command::Reset;
-
-        if (keyBuffer == "ns")
+        }
+        else if (keyBuffer.rfind("sig", 0) == 0)
+        {
+            // Ex: sig reset h
+            cmd = Command::Signal;
+            std::vector<std::string> fields = split_string(keyBuffer);
+            arg1 = fields[1]; // reset, ...
+            arg2 = fields[2]; // (l)ow/(h)igh
+        }
+        else if (keyBuffer == "ns")
             cmd = Command::NStep;
+        else if (keyBuffer == "hc")
+            cmd = Command::HCStep;
+        else if (keyBuffer == "fl")
+            cmd = Command::FLStep;
+        else if (keyBuffer.rfind("sim", 0) == 0)
+        {
+            cmd = Command::EnableSim;
+            std::vector<std::string> fields = split_string(keyBuffer);
+            arg1 = fields.size() > 1 ? fields[1] : "off";
+        }
+        else if (keyBuffer.rfind("delay", 0) == 0)
+        {
+            cmd = Command::EnableDelay;
+            std::vector<std::string> fields = split_string(keyBuffer);
+            arg1 = fields.size() > 1 ? fields[1] : "off";
+        }
+        else if (keyBuffer.rfind("dtime", 0) == 0)
+        {
+            cmd = Command::DelayTime;
+            std::vector<std::string> fields = split_string(keyBuffer);
+            arg1 = fields.size() > 1 ? fields[1] : "10";
+        }
+        else if (keyBuffer.rfind("srg", 0) == 0)
+        {
+            cmd = Command::SetReg;
+            // Make a Regfile register as active
+            std::vector<std::string> fields = split_string(keyBuffer);
+            arg1 = fields.size() > 1 ? fields[1] : "0";
+        }
 
         dataDirty = true;
 
@@ -130,11 +181,6 @@ Command Console::handleInput()
     return cmd;
 }
 
-std::string Console::getCmd(void)
-{
-    return lastCmd;
-}
-
 void Console::clearCmdLine(void)
 {
     move(LINES - 1, 2);
@@ -143,6 +189,7 @@ void Console::clearCmdLine(void)
 
 void Console::showTermCaret(void)
 {
+    attrset(A_NORMAL);
     mvaddch(LINES - 1, 1, '>');
 }
 
@@ -150,13 +197,81 @@ void Console::moveCaretToEndl(void)
 {
     move(LINES - 1, col + 1);
 }
-void Console::showTimeStep(unsigned long int timeStep)
+
+// --------------------------------------------------------------------
+// Show methods
+// --------------------------------------------------------------------
+void Console::_showLabel(int row, int col, std::string label)
 {
-    move(2, 1);
-    printw("                        ");
-    move(2, 1);
+    dataDirty = true;
     attrset(A_NORMAL);
-    printw("timeStep: ");
+    move(row, col);
+    printw("                        ");
+    move(row, col);
+    printw("%s: ", label.c_str());
     attrset(A_BOLD);
-    printw("%d", timeStep);
+}
+
+void Console::showULIntProperty(int row, int col, std::string label, unsigned long int value)
+{
+    _showLabel(row, col, label);
+    printw("%d", value);
+}
+
+void Console::showIntProperty(int row, int col, std::string label, int value)
+{
+    _showLabel(row, col, label);
+    printw("%d", value);
+}
+
+void Console::showBoolProperty(int row, int col, std::string label, bool value)
+{
+    _showLabel(row, col, label);
+    if (value)
+        printw("True");
+    else
+        printw("False");
+}
+
+void Console::showClockEdge(int row, int col, bool rising)
+{
+    attrset(A_NORMAL);
+    mvaddstr(row, col, "Clock: ");
+    attrset(A_BOLD);
+
+    if (rising)
+    {
+        mvaddch(row, col + 8, '_'); // __/--
+        mvaddch(row, col + 9, '/');
+        mvaddch(row, col + 10, ACS_S1);
+    }
+    else
+    {
+        mvaddch(row, col + 8, ACS_S1); // --\__
+        mvaddch(row, col + 9, '\\');
+        mvaddch(row, col + 10, '_');
+    }
+}
+// --------------------------------------------------------------------
+// Getters
+// --------------------------------------------------------------------
+std::string Console::getCmd(void)
+{
+    return lastCmd;
+}
+
+const std::string &Console::getArg1(void) { return arg1; }
+const std::string &Console::getArg2(void) { return arg2; }
+const std::string &Console::getArg3(void) { return arg3; }
+const std::string &Console::getArg4(void) { return arg4; }
+const std::string &Console::getArg5(void) { return arg5; }
+
+int Console::getArg1Int(void)
+{
+    return string_to_int(arg1);
+}
+
+bool Console::getArg1Bool(void)
+{
+    return string_to_bool(arg1);
 }

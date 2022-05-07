@@ -7,13 +7,20 @@ class Console
 private:
     std::string keyBuffer;
     std::string lastCmd;
-    char ch;
+    int ch;
     const int startCmdLineCol = 1; // Caret starts at column
     int col = startCmdLineCol;
     bool dataDirty = true;
 
     bool _exitConsole = false;
     Command cmd;
+    std::string arg1;
+    std::string arg2;
+    std::string arg3;
+    std::string arg4;
+    std::string arg5;
+
+    void _showLabel(int row, int col, std::string label);
 
 public:
     Console(/* args */);
@@ -28,9 +35,22 @@ public:
 
     std::string getCmd(void);
 
+    const std::string &getArg1(void);
+    int getArg1Int(void);
+    bool getArg1Bool(void);
+
+    const std::string &getArg2(void);
+    const std::string &getArg3(void);
+    const std::string &getArg4(void);
+    const std::string &getArg5(void);
+
     void clearCmdLine(void);
     void showTermCaret(void);
     void moveCaretToEndl(void);
 
-    void showTimeStep(unsigned long int timeStep);
+    void showULIntProperty(int row, int col, std::string lable, unsigned long int value);
+    void showIntProperty(int row, int col, std::string lable, int value);
+    void showBoolProperty(int row, int col, std::string lable, bool value);
+
+    void showClockEdge(int row, int col, bool rising);
 };

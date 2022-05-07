@@ -8,7 +8,13 @@ module RangerRisc
     parameter DATA_WIDTH = 32)
 (
    input logic clk_i,
+`ifdef DEBUG_MODE
+   input logic reset_i,
+   output logic ready_o,
+   output logic halt_o
+`else
    input logic reset_i
+`endif
 );
 
 /*verilator public_module*/
@@ -106,7 +112,13 @@ ControlMatrix matrix
    .alu_ld_o(cm_to_alu_ld),
    .alu_op_o(cm_to_alu_op),
    .wd_src_o(cm_to_wd_src),
+`ifdef DEBUG_MODE
+   .mdr_ld_o(cm_to_mdr_ld),
+   .ready_o(ready_o),
+   .halt_o(halt_o)
+`else
    .mdr_ld_o(cm_to_mdr_ld)
+`endif
 );
 
 // Memory management

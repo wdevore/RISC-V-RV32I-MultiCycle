@@ -4,9 +4,15 @@ enum class Command
 {
     None,
     Exit,
-    NStep, // nano timescale step
     Reset,
     Stop,
-    Run
+    Run,
+    NStep,  // nano timescale step
+    HCStep, // half-cycle step
+    FLStep, // full cycle step
+    Signal,
+    SetReg, // Activate a Regfile register
+    EnableSim,
+    EnableDelay,
+    DelayTime,
 };
-
