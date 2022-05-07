@@ -12,7 +12,7 @@
 // Otherwise it is relative to the TB.
 `define ROM_PATH "rams/"
 `define ROM_EXTENSION ".ram"
-`define MEM_CONTENTS "btype/beq"
+`define MEM_CONTENTS "itype/ebreak"
 
 module Memory
 #(
@@ -39,7 +39,7 @@ initial begin
     //     $readmemh (`MEM_CONTENTS, mem, 'h00, 'h04);
     `ifdef USE_ROM
         // This only works with BRAM. It generally doesn't work with SPRAM constructs.
-        $display("Using ROM: %s", `MEM_CONTENTS);
+        // $display("Using ROM: %s", `MEM_CONTENTS);
         $readmemh ({`ROM_PATH, `MEM_CONTENTS, `ROM_EXTENSION}, mem);  // , 0, 6
     `elsif USE_STATIC
         $display("Using STATIC content");

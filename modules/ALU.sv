@@ -31,9 +31,12 @@ logic [DATA_WIDTH-1:0] ORes;
 // To do this we create a (2*DATA_WIDTH) bit signed extended version of a_i
 logic [2*DATA_WIDTH-1:0] sext_a;
 
-logic [2*DATA_WIDTH-1:0] sra;
 
+// verilator lint_off UNUSED
 logic [DATA_WIDTH-2:0] lower_bits;
+logic [2*DATA_WIDTH-1:0] sra;       // Not all bits are actually used
+// verilator lint_on UNUSED
+
 logic carry_borrow_l; // DATA_WIDTH-2
 logic carry_borrow_h; // DATA_WIDTH-1
 

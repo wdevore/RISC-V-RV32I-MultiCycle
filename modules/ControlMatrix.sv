@@ -9,7 +9,9 @@ module ControlMatrix
 )
 (
     input logic clk_i,
-    input logic [DATA_WIDTH-1:0] ir_i,    // Instruction register
+    // verilator lint_off UNUSED
+    input logic [DATA_WIDTH-1:0] ir_i,    // Instruction register (some bits aren't evaluated)
+    // verilator lint_on UNUSED
     input logic reset_i,                  // CPU reset (active low)
     input logic mem_busy_i,               // Memory ready (active high)
     input logic [`FlagSize-1:0] flags_i,  // Flags: V,N,C,Z
@@ -29,7 +31,6 @@ module ControlMatrix
     output logic rg_wr_o,                           // Register file write (active low)
     output logic [`AMuxSelectSize-1:0] a_src_o,     // A_Mux source select
     output logic [`BMuxSelectSize-1:0] b_src_o,     // B_Mux source select
-    output logic [`ImmSelectSize-1:0] imm_src_o,    // Immediate source select
     output logic alu_ld_o,                          // ALU output register load
     output logic [`ALUOpSize-1:0] alu_op_o,         // ALU operation
     output logic [`WDSelectSize-1:0] wd_src_o,       // Write-Data source select
@@ -54,10 +55,11 @@ logic [6:0] ir_opcode = ir_i[6:0];
 logic [2:0] funct3 = ir_i[14:12];
 // Used for Jal optimization
 logic [4:0] dstRg = ir_i[11:7];
+
 logic is_word_size = funct3[1:0] == `WORD_SIZE;
 
 // The Shift operations have additional info in the upper
-// 3 bits. R-Types call this funct7 but I-Types alias it.
+// 3 bits. R-Types call this funct7 but I-Types aliases it.
 logic [2:0] funct7up = ir_i[31:29];
 
 // ---------------------------------------------------
@@ -75,7 +77,12 @@ InstructionState next_ir_state;
 // ---------------------------------------------------
 // External Functional states (non RISC-V) signals
 // ---------------------------------------------------
+// verilator lint_off UNUSED
 logic halt;     // Debug only
+logic out_ld;
+logic out_sel;
+// verilator lint_on UNUSED
+
 logic ready /*verilator public*/;    // The "ready" flag is Set when the CPU has completed its reset activities.
 
 // ---------------------------------------------------
@@ -92,9 +99,6 @@ logic [`PCSelectSize-1:0] pc_src;
 logic ir_ld;
 logic mdr_ld;
 
-logic out_ld;
-logic out_sel;
-
 logic mem_wr;
 logic mem_rd;
 logic addr_src;
@@ -106,7 +110,6 @@ logic rg_wr;
 logic [`AMuxSelectSize-1:0] a_src;
 logic [`BMuxSelectSize-1:0] b_src;
 logic [`WDSelectSize-1:0] wd_src;
-logic [`ImmSelectSize-1:0] imm_src;
 
 logic alu_ld;
 logic [`ALUOpSize-1:0] alu_op;
@@ -164,7 +167,6 @@ always_comb begin
     a_src = ASrcPC;
     b_src = BSrcFour;
 
-    imm_src = 3'b000;
     wd_src = WDSrcImm;
 
     alu_ld = RgLdDisabled;
@@ -659,9 +661,10 @@ always_comb begin
                     // ------ Optimization ------
                     // If the destination register is x0 then
                     // we don't need a writeback cycle so just
-                    // transition to complete.
-                    if (dstRg == 5'b00000)
+                    // transition to prefetch.
+                    if (dstRg == 5'b00000) begin
                         next_ir_state = PreFetch;
+                    end
                     else
                         next_ir_state = JTJalRtr;
                 end
@@ -724,7 +727,6 @@ always_comb begin
                 PreFetch: begin
                     // Setup Fetch next instruction the PC is pointing at.
                     mem_rd = 1'b0;
-
                     next_state = Fetch;
                 end
 
@@ -775,7 +777,6 @@ assign addr_src_o = addr_src;
 assign rg_wr_o = rg_wr;
 assign a_src_o = a_src;
 assign b_src_o = b_src;
-assign imm_src_o = imm_src;
 assign wd_src_o = wd_src;
 assign alu_ld_o = alu_ld;
 assign rst_src_o = rst_src;

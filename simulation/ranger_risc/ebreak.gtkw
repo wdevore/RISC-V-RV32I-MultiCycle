@@ -1,21 +1,21 @@
 [*]
 [*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
-[*] Sat Apr 23 15:49:56 2022
+[*] Sun May  1 22:40:21 2022
 [*]
 [dumpfile] "/media/RAMDisk/waveform.vcd"
-[dumpfile_mtime] "Sat Apr 23 15:38:54 2022"
-[dumpfile_size] 61365
+[dumpfile_mtime] "Sun May  1 22:35:05 2022"
+[dumpfile_size] 52060
 [savefile] "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/ranger_risc/ebreak.gtkw"
 [timestart] 10
-[size] 3800 1089
+[size] 3260 1198
 [pos] 0 27
-*-4.911203 470 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-5.000000 170 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
 [treeopen] TOP.RangerRisc.
 [sst_width] 221
 [signals_width] 284
 [sst_expanded] 1
-[sst_vpaned_height] 302
+[sst_vpaned_height] 339
 @28
 [color] 2
 TOP.clk_i
@@ -30,12 +30,35 @@ TOP.RangerRisc.matrix.ready
 TOP.RangerRisc.matrix.halt
 @200
 -States
-@2024
+@c02024
 [color] 2
 ^2 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_matrixstate_filter.txt
 TOP.RangerRisc.matrix.state[4:0]
+@28
+[color] 2
+(0)TOP.RangerRisc.matrix.state[4:0]
+[color] 2
+(1)TOP.RangerRisc.matrix.state[4:0]
+[color] 2
+(2)TOP.RangerRisc.matrix.state[4:0]
+[color] 2
+(3)TOP.RangerRisc.matrix.state[4:0]
+[color] 2
+(4)TOP.RangerRisc.matrix.state[4:0]
+@1401200
+-group_end
+@c02024
 ^2 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_matrixstate_filter.txt
 TOP.RangerRisc.matrix.next_state[4:0]
+@28
+(0)TOP.RangerRisc.matrix.next_state[4:0]
+(1)TOP.RangerRisc.matrix.next_state[4:0]
+(2)TOP.RangerRisc.matrix.next_state[4:0]
+(3)TOP.RangerRisc.matrix.next_state[4:0]
+(4)TOP.RangerRisc.matrix.next_state[4:0]
+@1401200
+-group_end
+@2024
 ^3 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_resetstate_filter.txt
 TOP.RangerRisc.matrix.vector_state[4:0]
 ^3 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_resetstate_filter.txt
@@ -44,6 +67,11 @@ TOP.RangerRisc.matrix.next_vector_state[4:0]
 TOP.RangerRisc.matrix.ir_state[4:0]
 ^4 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_ir_state_filter.txt
 TOP.RangerRisc.matrix.next_ir_state[4:0]
+@200
+-Matrix
+@22
+[color] 2
+TOP.RangerRisc.matrix.dstRg[4:0]
 @200
 -IR
 @2028
@@ -81,6 +109,7 @@ TOP.RangerRisc.pc_src_out[31:0]
 ^7 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_addr_src_filter.txt
 TOP.RangerRisc.cm_to_addr_src
 @22
+[color] 3
 TOP.RangerRisc.addr_mux_to_pmmu[31:0]
 @200
 -Pmmu
@@ -95,6 +124,8 @@ TOP.RangerRisc.pmmu.wd_i[31:0]
 TOP.RangerRisc.pmmu.storage_data_in[31:0]
 [color] 7
 TOP.RangerRisc.pmmu_out[31:0]
+[color] 3
+TOP.RangerRisc.pmmu.storage_data_out[31:0]
 [color] 4
 +{MDR[31:0]} TOP.RangerRisc.mdr.data_o[31:0]
 @200
@@ -122,8 +153,15 @@ TOP.RangerRisc.alu.y_o[31:0]
 TOP.RangerRisc.alu_out_rg.ld_i
 @22
 +{TOP.RangerRisc.alu_out_rg.ALUOut[31:0]} TOP.RangerRisc.alu_out_rg.data_o[31:0]
-@2029
+@2028
 ^9 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_alu_flags.txt
 +{TOP.RangerRisc.alu_flags_rg.Flags[3:0]} TOP.RangerRisc.alu_flags_rg.data_o[3:0]
+@201
+-WD
+@28
+[color] 2
+TOP.RangerRisc.wd_mux.select_i[1:0]
+@22
+TOP.RangerRisc.wd_src_out[31:0]
 [pattern_trace] 1
 [pattern_trace] 0

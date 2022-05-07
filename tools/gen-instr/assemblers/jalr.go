@@ -3,6 +3,7 @@ package assemblers
 import (
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/wdevore/gen-instr/utils"
 )
@@ -23,11 +24,16 @@ func Jalr(json map[string]interface{}) (macCode string, err error) {
 	label := fields[3]
 	fmt.Println("Offset label: ", label)
 
-	labels := json["Labels"]
+	offset := ""
+	if strings.Contains(label, "0x") {
+		offset = label
+	} else {
+		labels := json["Labels"]
 
-	offset, err := utils.FindLabelValue(labels, label)
-	if err != nil {
-		return "", err
+		offset, err = utils.FindLabelValue(labels, label)
+		if err != nil {
+			return "", err
+		}
 	}
 	fmt.Println("Offset: ", offset)
 

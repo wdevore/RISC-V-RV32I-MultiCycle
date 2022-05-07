@@ -1,6 +1,6 @@
 {
-    "Assembly": "bne x1, x2, offset",
-    "PC": "0x0C",
+    "Assembly": "auipc x3, 0x0000DEAD",
+    "PC": "0x18",
     "Labels": [
         {
             "Cnt": "0x14"
@@ -18,10 +18,13 @@
             "10": "0x10"
         },
         {
-            "jumpto": "0x2C"
+            "jumpto": "0x14"
         },
         {
             "offset": "0x18"
+        },
+        {
+            "zero": "0x0"
         }
     ],
     "RegFile": [

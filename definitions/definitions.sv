@@ -13,9 +13,9 @@
 // both srli and srai
 `define SRLI 3'b101
 
-`define BYTE_SIZE     2'b00;
-`define HALFWORD_SIZE 2'b01;
-`define WORD_SIZE     2'b10;
+`define BYTE_SIZE     2'b00
+`define HALFWORD_SIZE 2'b01
+`define WORD_SIZE     2'b10
 
 `define AMuxSelectSize 2
 `define BMuxSelectSize 2

@@ -29,7 +29,7 @@ logic [DATA_WIDTH-1:0] bank [0:WORDS-1] /*verilator public*/;
 
 initial begin
     `ifdef POPULATE_REGISTERS
-        $display("------Populating RegisterFile----");
+        // $display("------Populating RegisterFile----");
         bank[0] =  32'h00000002;       // Simple data for testing
         bank[1] =  32'h00000005;
         bank[2] =  32'h00000006;
