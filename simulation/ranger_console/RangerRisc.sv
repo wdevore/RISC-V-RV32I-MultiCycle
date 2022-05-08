@@ -38,11 +38,11 @@ logic [`PCSelectSize-1:0] cm_to_pc_src;
 logic [DATA_WIDTH-1:0] pc_out;
 logic cm_to_pcp_ld;
 logic [DATA_WIDTH-1:0] pc_prior_out;
-logic [DATA_WIDTH-1:0] pc_src_out;
+logic [DATA_WIDTH-1:0] pc_src_out /*verilator public*/;
 
 logic cm_to_addr_src;
 logic [DATA_WIDTH-1:0] addr_mux_to_pmmu;
-logic [DATA_WIDTH-1:0] pmmu_out;
+logic [DATA_WIDTH-1:0] pmmu_out /*verilator public*/;
 
 logic cm_to_mem_wr;
 logic cm_to_mem_rd;

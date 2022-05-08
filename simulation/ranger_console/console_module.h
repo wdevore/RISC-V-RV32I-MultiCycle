@@ -35,7 +35,6 @@ public:
     {
         // Update simulation
         _core->eval();
-        timeStep++;
         return timeStep;
     }
 

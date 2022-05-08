@@ -15,9 +15,8 @@ module Register
     input  logic clk_i,                   // Processor domain clock
     input  logic ld_i,                    // Active Low
     input  logic [DATA_WIDTH-1:0] data_i, // Input
-    output logic [DATA_WIDTH-1:0] data_o  // Output
+    output logic [DATA_WIDTH-1:0] data_o /*verilator public*/  // Output
 );
-
 /*verilator public_module*/
 
 // The register acts only the negative edge of the clock

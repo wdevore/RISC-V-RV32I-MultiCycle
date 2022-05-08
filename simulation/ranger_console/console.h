@@ -20,6 +20,8 @@ private:
     std::string arg4;
     std::string arg5;
 
+    int p_clkState = 1;
+
     void _showLabel(int row, int col, std::string label);
 
 public:
@@ -49,8 +51,12 @@ public:
     void moveCaretToEndl(void);
 
     void showULIntProperty(int row, int col, std::string lable, unsigned long int value);
-    void showIntProperty(int row, int col, std::string lable, int value);
+    void showIntProperty(int row, int col, std::string lable, int value, int when = -1);
+    void showIntAsHexProperty(int row, int col, std::string lable, int value, int when = -1);
     void showBoolProperty(int row, int col, std::string lable, bool value);
 
-    void showClockEdge(int row, int col, bool rising);
+    void showClockEdge(int row, int col, int clkState, int when);
+
+    void showCPUState(int row, int col, std::string label, int value);
+    void showVectorState(int row, int col, std::string label, int value);
 };

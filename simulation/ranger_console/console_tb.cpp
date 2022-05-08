@@ -81,6 +81,7 @@ int main(int argc, char *argv[])
     // The sub-modules
     VRangerRisc_ControlMatrix *cm = risc->matrix;
     VRangerRisc_Register *ir = risc->ir;
+    VRangerRisc_Register *pc = risc->pc;
 
     VRangerRisc_Pmmu *pmmu = risc->pmmu;
     VRangerRisc_Memory *bram = pmmu->bram;
@@ -90,8 +91,12 @@ int main(int argc, char *argv[])
 
     vluint64_t timeStep_ns = 0;
 
+    // Default to clock low
+    top->clk_i = 0;
+
     // Allow any initial blocks to execute (timeStep 0->1)
-    timeStep_ns = tb->eval(timeStep_ns); // each eval() is 1 "timescale" = 1ns
+    timeStep_ns = tb->eval(timeStep_ns); // each eval() is 1 "time unit" = 1ns
+    timeStep_ns++;
 
     int p_clk_i = top->clk_i;
 
@@ -123,26 +128,29 @@ int main(int argc, char *argv[])
     bool clockEnabled = true;
 
     // Disabling the sim means bypassing the call to eval();
-    bool simRunning = false;
+    bool simRunning = true;
 
     // --------------------------------------------------
     // initialize NCurses
     // --------------------------------------------------
+    int row = 2;
     Console *con = new Console();
     con->init();
 
     con->start();
 
-    con->showULIntProperty(2, 1, "timeStep", timeStep_ns);
-    con->showBoolProperty(3, 1, "Sim running", simRunning);
-    con->showIntProperty(4, 1, "Delay time", timeStepDelayms);
-    con->showIntProperty(5, 1, "Step size", stepSize);
-    // 6 used
-    con->showIntProperty(7, 1, "CPU Ready", cm->ready);
-    con->showIntProperty(8, 1, "CPU Reset", top->reset_i);
+    con->showULIntProperty(row++, 1, "timeStep", timeStep_ns);
+    con->showBoolProperty(row++, 1, "Sim running", simRunning);
+    con->showIntProperty(row++, 1, "Delay time", timeStepDelayms);
+    con->showIntProperty(row++, 1, "Step size", stepSize);
+    con->showClockEdge(row++, 1, 2, timeStep_ns);
+    con->showIntProperty(row++, 1, "Ready", cm->ready);
+    con->showIntProperty(row++, 1, "Reset", top->reset_i);
+    con->showIntProperty(row++, 1, "State", cm->state);
+    con->showIntProperty(row++, 1, "Vec State", cm->vector_state);
 
     // Default to holding CPU in reset state
-    top->reset_i = 0;
+    top->reset_i = 1;
 
     while (looping)
     {
@@ -157,7 +165,7 @@ int main(int argc, char *argv[])
         case Command::Signal:
             // Enable cpu reset pin and wait for reset-complete
             top->reset_i = con->getArg2() == "l" ? 0 : 1;
-            con->showIntProperty(8, 1, "CPU Reset", top->reset_i);
+            con->showIntProperty(8, 1, "Reset", top->reset_i);
             break;
         case Command::NStep:
             stepCnt = 0;
@@ -202,28 +210,48 @@ int main(int argc, char *argv[])
         {
             if (stepCnt < stepSize)
             {
-                timeStep_ns = tb->eval(timeStep_ns); // each eval() is 1 "timescale" = 1ns
-
-                ready_sig.set(top->ready_o);
-
                 // The clock toggles every half-cycle
                 if (timeStep_ns % halfCycle == 0)
                     top->clk_i ^= 1;
 
-                if (p_clk_i == 0 && top->clk_i == 1)
-                    con->showClockEdge(6, 1, true);
-                else if (p_clk_i == 1 && top->clk_i == 0)
-                    con->showClockEdge(6, 1, false);
-                // else
-                //     mvaddstr(6, 1, "Clock:  --- ");
+                timeStep_ns = tb->eval(timeStep_ns); // each eval() is 1 "timescale" = 1ns
+
+                ready_sig.set(top->ready_o, timeStep_ns);
 
                 con->showULIntProperty(2, 1, "timeStep", timeStep_ns);
-                if (ready_sig.changed())
-                    con->showIntProperty(7, 1, "CPU Ready", top->ready_o);
-                con->showIntProperty(8, 1, "CPU Reset", top->reset_i);
+
+                row = 6;
+                // Clock edges
+                if (p_clk_i == 0 && top->clk_i == 1)
+                    con->showClockEdge(row++, 1, 0, timeStep_ns);
+                else if (p_clk_i == 1 && top->clk_i == 0)
+                    con->showClockEdge(row++, 1, 1, timeStep_ns);
+                else
+                    con->showClockEdge(row++, 1, 2, timeStep_ns);
+
+                // if (ready_sig.changed())
+                con->showIntProperty(row++, 1, "Ready", top->ready_o);
+
+                con->showIntProperty(row++, 1, "Reset", top->reset_i);
+                con->showCPUState(row++, 1, "State", cm->state);
+                con->showVectorState(row++, 1, "Vec State", cm->vector_state);
+
+                con->showIntAsHexProperty(row++, 1, "PC", pc->data_o);
+                con->showIntProperty(row++, 1, "PC_ld", cm->pc_ld);
+                con->showIntProperty(row++, 1, "PC_src", cm->pc_src);
+                con->showIntAsHexProperty(row++, 1, "PC_src_out", risc->pc_src_out);
+
+                con->showIntProperty(row++, 1, "Mem_wr", cm->mem_wr);
+                con->showIntProperty(row++, 1, "Mem_rd", cm->mem_rd);
+                con->showIntAsHexProperty(row++, 1, "Pmmu_out", risc->pmmu_out);
+                con->showIntProperty(row++, 1, "Addr_src", cm->addr_src);
+                con->showIntProperty(row++, 1, "Rst_src", cm->rst_src);
+
+                con->showIntAsHexProperty(row++, 1, "IR", ir->data_o);
 
                 p_clk_i = top->clk_i;
                 stepCnt++;
+                timeStep_ns++;
             }
         }
 

@@ -93,19 +93,19 @@ logic ready /*verilator public*/;    // The "ready" flag is Set when the CPU has
 // Once the reset sequence has completed this flag is Set.
 logic resetComplete /*verilator public*/;
 
-logic pc_ld;
+logic pc_ld /*verilator public*/;
 logic pcp_ld;
 logic flags_ld;
-logic [`PCSelectSize-1:0] pc_src;
+logic [`PCSelectSize-1:0] pc_src /*verilator public*/;
 
 logic ir_ld;
 logic mdr_ld;
 
-logic mem_wr;
-logic mem_rd;
-logic addr_src;
+logic mem_wr /*verilator public*/;
+logic mem_rd /*verilator public*/;
+logic addr_src /*verilator public*/;
 
-logic rst_src;
+logic rst_src /*verilator public*/;
 
 logic rg_wr;
 
@@ -125,7 +125,7 @@ initial begin
     // Be default the CPU always attempts to start in Reset mode.
     state = Reset;
     // Also configure the reset sequence start state.
-    vector_state = Vector0;
+    vector_state = Sync0;
     ir_state = ITLoad;
 end
 
@@ -140,7 +140,7 @@ always_comb begin
     resetComplete = 1'b1;   // Default: Reset is complete
 
     next_state = Reset;
-    next_vector_state = Vector0;
+    next_vector_state = Sync0;
 
     next_ir_state = ITLoad;
 
@@ -198,6 +198,15 @@ always_comb begin
             // Vector reset sequence
             // ------------------------------------------------------
             case (vector_state)
+                Sync0: begin
+                    // We need to "sync up" to a rising edge regardless
+                    // wether the Reset signal was active.
+                    if (~reset_i)
+                        next_vector_state = Sync0;
+                    else
+                        next_vector_state = Vector0;
+                end
+
                 Vector0: begin
                     pc_ld = RgLdEnabled;
                     pc_src = PCSrcResetVec; // Select Reset vector constant
@@ -239,7 +248,7 @@ always_comb begin
                     `ifdef SIMULATE
                         $display("%d ###### default Vector state ######", $stime);
                     `endif
-                    next_vector_state = Vector0;
+                    next_vector_state = Sync0;
                 end
             endcase
         end
@@ -324,9 +333,9 @@ always_comb begin
                 end
 
                 default: begin
-                    `ifdef SIMULATE
-                        $display("OPCODE type: UNKNOWN %x", ir_opcode);
-                    `endif
+                    // `ifdef SIMULATE
+                    //     $display("OPCODE type: UNKNOWN %x", ir_opcode);
+                    // `endif
                 end
             endcase
         end
@@ -752,7 +761,7 @@ end
 always_ff @(posedge clk_i) begin
     if (!reset_i) begin
         state <= Reset;
-        vector_state <= Vector0;
+        vector_state <= Sync0;
     end
     else
         if (resetComplete) begin

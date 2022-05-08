@@ -88,12 +88,16 @@ int main(int argc, char *argv[])
     // Not really useful for the most part.
     // VRangerRisc__Syms *vlSymsp = risc->vlSymsp;
 
-    vluint64_t timeStep = 10;
-
-    int duration = 35;
+    // To test "zero delay" Reset sequence set timeStep=0 and duration=0
+    // timeStep=10, duration=35.
+    vluint64_t timeStep = 0;
+    // The reset signal can be held for 0 or more Units for the CPU to sync
+    // to the first vector reset state.
+    int duration = 0;
 
     // Allow any initial blocks to execute
     tb->eval();
+    timeStep++;
     dumpMem(bram);
 
     timeStep = reset_sequence(timeStep, timeStep, duration, tb, top, risc, unit);

@@ -14,6 +14,7 @@ typedef enum logic [`ALUOpSize-1:0] {
 } ALU_Ops /*verilator public*/; 
 
 typedef enum logic [4:0] {
+    Sync0,
     Vector0,
     Vector1,
     Vector2,

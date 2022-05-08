@@ -218,10 +218,23 @@ void Console::showULIntProperty(int row, int col, std::string label, unsigned lo
     printw("%d", value);
 }
 
-void Console::showIntProperty(int row, int col, std::string label, int value)
+void Console::showIntProperty(int row, int col, std::string label, int value, int when)
 {
     _showLabel(row, col, label);
-    printw("%d", value);
+    if (when >= 0)
+        printw("(%d) %d", when, value);
+    else
+        printw("%d", value);
+}
+
+void Console::showIntAsHexProperty(int row, int col, std::string label, int value, int when)
+{
+    _showLabel(row, col, label);
+    std::string hexi = int_to_hex(value, "");
+    if (when >= 0)
+        printw("(%d) %s", when, hexi.c_str());
+    else
+        printw("%s", hexi.c_str());
 }
 
 void Console::showBoolProperty(int row, int col, std::string label, bool value)
@@ -233,25 +246,91 @@ void Console::showBoolProperty(int row, int col, std::string label, bool value)
         printw("False");
 }
 
-void Console::showClockEdge(int row, int col, bool rising)
+void Console::showClockEdge(int row, int col, int clkState, int when)
 {
     attrset(A_NORMAL);
+    // mvprintw(row, col, "Clock (%d): ", when);
     mvaddstr(row, col, "Clock: ");
     attrset(A_BOLD);
 
-    if (rising)
+    if (clkState == 0)
     {
         mvaddch(row, col + 8, '_'); // __/--
         mvaddch(row, col + 9, '/');
         mvaddch(row, col + 10, ACS_S1);
+        p_clkState = clkState;
     }
-    else
+    else if (clkState == 1)
     {
         mvaddch(row, col + 8, ACS_S1); // --\__
         mvaddch(row, col + 9, '\\');
         mvaddch(row, col + 10, '_');
+        p_clkState = clkState;
+    }
+    else
+    {
+        if (p_clkState == 0)
+        {
+            mvaddch(row, col + 8, ACS_S1);
+            mvaddch(row, col + 9, ACS_S1);
+            mvaddch(row, col + 10, ACS_S1);
+        } else {
+            mvaddch(row, col + 8, '_');
+            mvaddch(row, col + 9, '_');
+            mvaddch(row, col + 10, '_');
+        }
+    }
+
+    // printw(" (%d)", when);
+}
+
+void Console::showCPUState(int row, int col, std::string label, int value)
+{
+    _showLabel(row, col, label);
+    switch (value)
+    {
+    case 0:
+        printw("Reset");
+        break;
+    case 1:
+        printw("Fetch");
+        break;
+    case 2:
+        printw("Decode");
+        break;
+    case 3:
+        printw("Execute");
+        break;
+    default:
+        break;
     }
 }
+
+void Console::showVectorState(int row, int col, std::string label, int value)
+{
+    _showLabel(row, col, label);
+    switch (value)
+    {
+    case 0:
+        printw("Sync0");
+        break;
+    case 1:
+        printw("Vector0");
+        break;
+    case 2:
+        printw("Vector1");
+        break;
+    case 3:
+        printw("Vector2");
+        break;
+    case 4:
+        printw("Vector3");
+        break;
+    default:
+        break;
+    }
+}
+
 // --------------------------------------------------------------------
 // Getters
 // --------------------------------------------------------------------

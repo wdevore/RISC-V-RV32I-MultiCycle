@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
-[*] Sun May  1 22:40:21 2022
+[*] Sun May  8 15:31:06 2022
 [*]
 [dumpfile] "/media/RAMDisk/waveform.vcd"
-[dumpfile_mtime] "Sun May  1 22:35:05 2022"
-[dumpfile_size] 52060
+[dumpfile_mtime] "Sun May  8 15:29:41 2022"
+[dumpfile_size] 51192
 [savefile] "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/ranger_risc/ebreak.gtkw"
-[timestart] 10
-[size] 3260 1198
-[pos] 0 27
-*-5.000000 170 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[timestart] 0
+[size] 2722 1198
+[pos] 1 27
+*-4.000000 67 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
 [treeopen] TOP.RangerRisc.
 [sst_width] 221
@@ -156,7 +156,7 @@ TOP.RangerRisc.alu_out_rg.ld_i
 @2028
 ^9 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_alu_flags.txt
 +{TOP.RangerRisc.alu_flags_rg.Flags[3:0]} TOP.RangerRisc.alu_flags_rg.data_o[3:0]
-@201
+@200
 -WD
 @28
 [color] 2
