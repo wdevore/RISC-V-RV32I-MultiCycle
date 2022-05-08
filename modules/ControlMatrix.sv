@@ -67,14 +67,14 @@ logic [2:0] funct7up = ir_i[31:29];
 // ---------------------------------------------------
 // Internal state signals
 // ---------------------------------------------------
-MatrixState state /*verilator public*/;  // Current state
-MatrixState next_state;                  // Next state
+MatrixState state /*verilator public*/;       // Current state
+MatrixState next_state /*verilator public*/;  // Next state
 
 MatrixState vector_state /*verilator public*/;
 MatrixState next_vector_state /*verilator public*/;
 
-InstructionState ir_state;
-InstructionState next_ir_state;
+InstructionState ir_state /*verilator public*/;
+InstructionState next_ir_state /*verilator public*/;
 
 // ---------------------------------------------------
 // External Functional states (non RISC-V) signals
@@ -201,6 +201,8 @@ always_comb begin
                 Sync0: begin
                     // We need to "sync up" to a rising edge regardless
                     // wether the Reset signal was active.
+                    // We do this to insure that Vector0 starts at a rising
+                    // edge.
                     if (~reset_i)
                         next_vector_state = Sync0;
                     else

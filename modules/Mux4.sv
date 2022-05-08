@@ -9,13 +9,15 @@ module Mux4
     parameter SELECT_SIZE = 2
 )
 (
-   input  logic [SELECT_SIZE-1:0] select_i,
+   input  logic [SELECT_SIZE-1:0] select_i /*verilator public*/,
    input  logic [DATA_WIDTH-1:0] data0_i,  // Data input
    input  logic [DATA_WIDTH-1:0] data1_i,  // Data input
    input  logic [DATA_WIDTH-1:0] data2_i,  // Data input
    input  logic [DATA_WIDTH-1:0] data3_i,  // Data input
-   output logic [DATA_WIDTH-1:0] data_o    // Output
+   output logic [DATA_WIDTH-1:0] data_o /*verilator public*/    // Output
 );
+
+/*verilator public_module*/
 
 assign data_o = (select_i == 2'b00) ? data0_i :
                 (select_i == 2'b01) ? data1_i :

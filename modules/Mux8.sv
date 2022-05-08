@@ -3,6 +3,10 @@
 `timescale 1ns/1ps
 `endif
 
+// ----------------------------------------------------
+// Currently unused by RangerRisc
+// ----------------------------------------------------
+
 module Mux8
 #(
     parameter DATA_WIDTH = 32,

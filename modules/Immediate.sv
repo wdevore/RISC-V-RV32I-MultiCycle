@@ -10,8 +10,10 @@ module Immediate
     /*verilator lint_off UNUSED*/     // suppress unused bits warning
     input logic [DATA_WIDTH-1:0] ir_i,      // Instruction register
     /*verilator lint_on UNUSED*/
-    output logic [DATA_WIDTH-1:0] imm_o     // Imm extended or Amount(s)
+    output logic [DATA_WIDTH-1:0] imm_o /*verilator public*/    // Imm extended or Amount(s)
 );
+
+/*verilator public_module*/
 
 logic sign = ir_i[31];
 logic [6:0] ir_opcode = ir_i[6:0];

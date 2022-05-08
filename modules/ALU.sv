@@ -18,10 +18,12 @@ module ALU
 (
     input  logic   [DATA_WIDTH-1:0] a_i,      // rs1
     input  logic   [DATA_WIDTH-1:0] b_i,      // rs2 or (Immediate and/or Extended)
-    input  ALU_Ops func_op_i,                 // Operation
-    output logic   [DATA_WIDTH-1:0] y_o,      // Results output
-    output logic   [`FlagSize-1:0]  flags_o   // Flags: V,N,C,Z <-- Used for branches
+    input  ALU_Ops func_op_i /*verilator public*/, // Operation
+    output logic   [DATA_WIDTH-1:0] y_o /*verilator public*/, // Results output
+    output logic   [`FlagSize-1:0]  flags_o /*verilator public*/  // Flags: V,N,C,Z <-- Used for branches
 );
+
+/*verilator public_module*/
 
 logic [DATA_WIDTH-1:0] ORes;
 

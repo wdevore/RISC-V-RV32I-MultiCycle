@@ -136,12 +136,6 @@ Command Console::handleInput()
             cmd = Command::HCStep;
         else if (keyBuffer == "fl")
             cmd = Command::FLStep;
-        else if (keyBuffer.rfind("sim", 0) == 0)
-        {
-            cmd = Command::EnableSim;
-            std::vector<std::string> fields = split_string(keyBuffer);
-            arg1 = fields.size() > 1 ? fields[1] : "off";
-        }
         else if (keyBuffer.rfind("delay", 0) == 0)
         {
             cmd = Command::EnableDelay;
@@ -274,7 +268,9 @@ void Console::showClockEdge(int row, int col, int clkState, int when)
             mvaddch(row, col + 8, ACS_S1);
             mvaddch(row, col + 9, ACS_S1);
             mvaddch(row, col + 10, ACS_S1);
-        } else {
+        }
+        else
+        {
             mvaddch(row, col + 8, '_');
             mvaddch(row, col + 9, '_');
             mvaddch(row, col + 10, '_');
@@ -325,6 +321,104 @@ void Console::showVectorState(int row, int col, std::string label, int value)
         break;
     case 4:
         printw("Vector3");
+        break;
+    default:
+        break;
+    }
+}
+
+void Console::showALUOp(int row, int col, std::string label, int value)
+{
+    _showLabel(row, col, label);
+    switch (value)
+    {
+    case 0b000000:
+        printw("Add");
+        break;
+    case 0b000010:
+        printw("Sub");
+        break;
+    case 0b001000:
+        printw("Sll");
+        break;
+    case 0b010000:
+        printw("Slt");
+        break;
+    case 0b011000:
+        printw("Sltu");
+        break;
+    case 0b100000:
+        printw("Xor");
+        break;
+    case 0b101000:
+        printw("Srl");
+        break;
+    case 0b101010:
+        printw("Sra");
+        break;
+    case 0b110000:
+        printw("Or");
+        break;
+    case 0b111000:
+        printw("And");
+        break;
+    default:
+        break;
+    }
+}
+
+void Console::showALUFlagsProperty(int row, int col, std::string label, int value)
+{
+    _showLabel(row, col, label);
+    switch (value)
+    {
+    case 0b0000:
+        printw("----");
+        break;
+    case 0b0001:
+        printw("---Z");
+        break;
+    case 0b0010:
+        printw("--C-");
+        break;
+    case 0b0011:
+        printw("--CZ");
+        break;
+    case 0b0100:
+        printw("-N--");
+        break;
+    case 0b0101:
+        printw("-N-Z");
+        break;
+    case 0b0110:
+        printw("-NC-");
+        break;
+    case 0b0111:
+        printw("-NCZ");
+        break;
+    case 0b1000:
+        printw("V---");
+        break;
+    case 0b1001:
+        printw("V--Z");
+        break;
+    case 0b1010:
+        printw("V-C-");
+        break;
+    case 0b1011:
+        printw("V-CZ");
+        break;
+    case 0b1100:
+        printw("VN--");
+        break;
+    case 0b1101:
+        printw("VN-Z");
+        break;
+    case 0b1110:
+        printw("VNC-");
+        break;
+    case 0b1111:
+        printw("VNCZ");
         break;
     default:
         break;

@@ -15,6 +15,7 @@ TEMPLATE_HEADER = \
 
 HEADERS = \
 	commands.h \
+	row_indices.h \
 	console.h \
 	utils.h \
 	property.h
