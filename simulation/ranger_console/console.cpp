@@ -159,11 +159,16 @@ Command Console::handleInput()
         {
             // Set memory display range
             cmd = Command::MemRange;
-            // Make a Regfile register as active
             std::vector<std::string> fields = split_string(keyBuffer);
             arg1 = fields.size() > 1 ? fields[1] : "0"; // From
-            int to = string_to_int(arg1) + 32;
-            arg2 = fields.size() > 2 ? fields[2] : int_to_string(to); // To
+        }
+        else if (keyBuffer.rfind("mm", 0) == 0)
+        {
+            // Modify memory address
+            cmd = Command::MemModify;
+            std::vector<std::string> fields = split_string(keyBuffer);
+            arg1 = fields.size() > 1 ? fields[1] : "0"; // Address
+            arg2 = fields.size() > 2 ? fields[2] : "0"; // value
         }
 
         dataDirty = true;

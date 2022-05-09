@@ -171,6 +171,7 @@ int main(int argc, char *argv[])
     // Default to "not" holding CPU in reset state. Reset is active low.
     top->reset_i = 1;
     long int fromAddr;
+    long int memAddr;
 
     while (looping)
     {
@@ -212,6 +213,25 @@ int main(int argc, char *argv[])
             else
                 fromAddr = con->getArg1Int();
 
+            con->showMemory(2, 70, fromAddr, 1024, bram->mem);
+        }
+        break;
+        case Command::MemModify:
+        {
+            std::string arg1 = con->getArg1();
+            if (arg1.find("0x") != std::string::npos)
+                memAddr = hex_string_to_int(arg1);
+            else
+                memAddr = con->getArg1Int();
+
+            int value;
+            std::string arg2 = con->getArg2();
+            if (arg1.find("0x") != std::string::npos)
+                value = hex_string_to_int(arg2);
+            else
+                value = con->getArg2Int();
+
+            bram->mem[memAddr] = value;
             con->showMemory(2, 70, fromAddr, 1024, bram->mem);
         }
         break;
