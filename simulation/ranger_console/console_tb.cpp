@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <iostream>
 #include <iomanip>
+#include <fstream>
+#include <regex>
 
 #include <ncurses.h>
 
@@ -170,7 +172,7 @@ int main(int argc, char *argv[])
 
     // Default to "not" holding CPU in reset state. Reset is active low.
     top->reset_i = 1;
-    long int fromAddr;
+    long int fromAddr = 0;
     long int memAddr;
 
     while (looping)
@@ -236,8 +238,61 @@ int main(int argc, char *argv[])
         }
         break;
         case Command::SetReg:
-
             break;
+        case Command::LoadProg:
+        {
+            // Load ram into memory
+            std::string line;
+            std::string fileName = "rams/" + con->getArg1() + ".ram";
+            std::ifstream file(fileName);
+
+            if (file.is_open())
+            {
+                std::string msg = "Opened: " + fileName;
+                move(0, 50);
+                clrtoeol();
+                mvaddstr(0, 50, msg.c_str());
+
+                // Ex: @01 00100073
+                std::smatch matches;
+                std::regex mem_regex("@([a-fA-F0-9]+) ([a-fA-F0-9]{8})");
+
+                while (getline(file, line))
+                {
+                    // Parse and set memory
+                    if (std::regex_search(line, matches, mem_regex))
+                    {
+                        if (matches.size() > 2)
+                        {
+                            // [0] is the line itself.
+                            std::string maddr = matches[1].str();
+                            std::string mval = matches[2].str();
+
+                            // Convert data from hex to int
+                            int addr = hex_string_to_int(maddr);
+                            int val = hex_string_to_int(mval);
+                            bram->mem[addr] = val;
+                        }
+                    }
+                    else
+                    {
+                        mvaddstr(0, 100, "No match!!!!!!!!!!!");
+                    }
+                }
+
+                file.close();
+            }
+            else
+            {
+                std::string msg = "Unable to open: " + fileName;
+                move(0, 50);
+                clrtoeol();
+                mvaddstr(0, 50, msg.c_str());
+            }
+
+            con->showMemory(2, 70, fromAddr, 1024, bram->mem);
+        }
+        break;
         case Command::EnableDelay:
             delayEnabled = con->getArg1Bool();
             break;
@@ -350,6 +405,15 @@ int main(int argc, char *argv[])
     exit(EXIT_SUCCESS);
 }
 
+// Tasks:
+// - Mark PC in mem
+// - scroll memory
+// - Load programs
+// - J (jump) command. Sets PC to address.
+// - PC (sets PC reg)
+//    - Call (???)
+// - SR Makes a regfile active for any other actions.
+
 // async futures
 // https://devdreamz.com/question/844791-user-input-without-pausing-code-c-console-application
 // https://forum.juce.com/t/async-input-stream/48817/4
@@ -360,3 +424,8 @@ int main(int argc, char *argv[])
 // curses
 // https://stackoverflow.com/questions/7772341/how-to-get-a-character-from-stdin-without-waiting-for-user-to-put-it
 // http://www.c-faq.com/osdep/cbreak.html
+
+// coredumps:
+// ulimit -c unlimited
+// gdb /media/RAMDisk/VRangerRisc
+//    stacktrace

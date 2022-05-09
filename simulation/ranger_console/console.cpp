@@ -170,6 +170,13 @@ Command Console::handleInput()
             arg1 = fields.size() > 1 ? fields[1] : "0"; // Address
             arg2 = fields.size() > 2 ? fields[2] : "0"; // value
         }
+        else if (keyBuffer.rfind("ld", 0) == 0)
+        {
+            // Load a program from "rams" folder
+            cmd = Command::LoadProg;
+            std::vector<std::string> fields = split_string(keyBuffer);
+            arg1 = fields.size() > 1 ? fields[1] : "ebreak"; // Program name "lw"
+        }
 
         dataDirty = true;
 
@@ -470,12 +477,15 @@ void Console::showMemory(int row, int col, long int fromAddr, int memLen, VlUnpa
     mvaddstr(row, col, " ---------- Memory -------");
     row++;
 
+    if (fromAddr < 0)
+        fromAddr = 0;
+    if (fromAddr > memLen)
+        fromAddr = memLen - 1 - 32;
+
     // Check if the fromAddr+memLen > memLen
     int toAddr = fromAddr + 32;
     if (toAddr > memLen)
-    {
         toAddr = memLen;
-    }
 
     for (int i = fromAddr; i < toAddr; i++)
     {

@@ -17,4 +17,5 @@ enum class Command
     DelayTime,
     MemRange,
     MemModify,
+    LoadProg,
 };
