@@ -15,4 +15,6 @@ enum class Command
     EnableSim,
     EnableDelay,
     DelayTime,
+    MemRange,
+    MemModify,
 };

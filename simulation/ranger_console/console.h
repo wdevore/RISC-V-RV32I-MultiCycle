@@ -39,7 +39,8 @@ public:
     std::string getCmd(void);
 
     const std::string &getArg1(void);
-    int getArg1Int(void);
+    long int getArg1Int(void);
+    long int getArg2Int(void);
     bool getArg1Bool(void);
 
     const std::string &getArg2(void);
@@ -63,4 +64,5 @@ public:
     void showALUOp(int row, int col, std::string label, int value);
     void showALUFlagsProperty(int row, int col, std::string label, int value);
     void showRegFile(int row, int col, VlUnpacked<IData, 32> values);
+    void showMemory(int row, int col, long int fromAddr, int memLen, VlUnpacked<IData, 1024> mem);
 };

@@ -38,6 +38,13 @@ std::string int_to_bin(long int v)
 	return stream.str();
 }
 
+std::string int_to_string(long int v)
+{
+	std::stringstream stream;
+	stream << v;
+	return stream.str();
+}
+
 long int string_to_int(std::string &v)
 {
 	unsigned long int i;

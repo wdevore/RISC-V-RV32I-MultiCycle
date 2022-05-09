@@ -155,6 +155,16 @@ Command Console::handleInput()
             std::vector<std::string> fields = split_string(keyBuffer);
             arg1 = fields.size() > 1 ? fields[1] : "0";
         }
+        else if (keyBuffer.rfind("mr", 0) == 0)
+        {
+            // Set memory display range
+            cmd = Command::MemRange;
+            // Make a Regfile register as active
+            std::vector<std::string> fields = split_string(keyBuffer);
+            arg1 = fields.size() > 1 ? fields[1] : "0"; // From
+            int to = string_to_int(arg1) + 32;
+            arg2 = fields.size() > 2 ? fields[2] : int_to_string(to); // To
+        }
 
         dataDirty = true;
 
@@ -425,21 +435,85 @@ void Console::showALUFlagsProperty(int row, int col, std::string label, int valu
     }
 }
 
-void Console::showRegFile(int row, int col, VlUnpacked<IData, 32> values) {
-	mvaddstr(row, col, "--- RegFile ---");
-	row++;
+void Console::showRegFile(int row, int col, VlUnpacked<IData, 32> values)
+{
+    mvaddstr(row, col, "--- RegFile ---");
+    row++;
 
-	for (int i = 0; i < 32; i++) {
-		move(row,col);
-		attrset(A_NORMAL);
-		if (i < 10)
-			printw(" x%d: ", i);
-		else
-			printw("x%d: ", i);
-		attrset(A_BOLD);
-		printw("%s", int_to_hex(values[i], "").c_str());
-		row++;
-	}
+    for (int i = 0; i < 32; i++)
+    {
+        move(row, col);
+        attrset(A_NORMAL);
+        if (i < 10)
+            printw(" x%d: ", i);
+        else
+            printw("x%d: ", i);
+        attrset(A_BOLD);
+        printw("%s", int_to_hex(values[i], "").c_str());
+        row++;
+    }
+}
+
+// Show mem dump from A to B and ascii
+void Console::showMemory(int row, int col, long int fromAddr, int memLen, VlUnpacked<IData, 1024> mem)
+{
+    // Addr           data          Ascii
+    // 0x0000000a     0x01010101    ..ll
+    // int row = 1;
+    // int col = 70;
+
+    mvaddstr(row, col, " ---------- Memory -------");
+    row++;
+
+    // Check if the fromAddr+memLen > memLen
+    int toAddr = fromAddr + 32;
+    if (toAddr > memLen)
+    {
+        toAddr = memLen;
+    }
+
+    for (int i = fromAddr; i < toAddr; i++)
+    {
+        move(row, col);
+
+        attrset(A_NORMAL);
+        printw("%s: ", int_to_hex(i, "0x").c_str());
+
+        attrset(A_BOLD);
+        std::string data = int_to_hex(mem[i], "");
+        printw("%s  ", data.c_str());
+
+        // Display text column
+        std::string bye = {data[0], data[1]};
+        int bt = hex_string_to_int(bye);
+        if (bt >= 32 && bt <= 126)
+            printw("%c", bt);
+        else
+            printw(".");
+
+        bye = {data[2], data[3]};
+        bt = hex_string_to_int(bye);
+        if (bt >= 32 && bt <= 126)
+            printw("%c", bt);
+        else
+            printw(".");
+
+        bye = {data[4], data[5]};
+        bt = hex_string_to_int(bye);
+        if (bt >= 32 && bt <= 126)
+            printw("%c", bt);
+        else
+            printw(".");
+
+        bye = {data[6], data[7]};
+        bt = hex_string_to_int(bye);
+        if (bt >= 32 && bt <= 126)
+            printw("%c", bt);
+        else
+            printw(".");
+
+        row++;
+    }
 }
 
 // --------------------------------------------------------------------
@@ -456,9 +530,14 @@ const std::string &Console::getArg3(void) { return arg3; }
 const std::string &Console::getArg4(void) { return arg4; }
 const std::string &Console::getArg5(void) { return arg5; }
 
-int Console::getArg1Int(void)
+long int Console::getArg1Int(void)
 {
     return string_to_int(arg1);
+}
+
+long int Console::getArg2Int(void)
+{
+    return string_to_int(arg2);
 }
 
 bool Console::getArg1Bool(void)

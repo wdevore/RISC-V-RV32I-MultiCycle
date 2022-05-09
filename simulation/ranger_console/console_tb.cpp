@@ -8,6 +8,7 @@
 #include "row_indices.h"
 #include "console.h"
 #include "property.h"
+#include "utils.h"
 
 #define ESC '\x1B'
 
@@ -145,7 +146,6 @@ int main(int argc, char *argv[])
     bool clockEnabled = true;
 
     // Disabling the sim means bypassing the call to eval();
-    // bool simEnabled = true;
     bool simRunning = false;
 
     // --------------------------------------------------
@@ -170,6 +170,7 @@ int main(int argc, char *argv[])
 
     // Default to "not" holding CPU in reset state. Reset is active low.
     top->reset_i = 1;
+    long int fromAddr;
 
     while (looping)
     {
@@ -203,8 +204,19 @@ int main(int argc, char *argv[])
             stepSize = fullCycle;
             con->showIntProperty(+RowPropId::StepSize, 1, "Step size", stepSize);
             break;
+        case Command::MemRange:
+        {
+            std::string arg1 = con->getArg1();
+            if (arg1.find("0x") != std::string::npos)
+                fromAddr = hex_string_to_int(arg1);
+            else
+                fromAddr = con->getArg1Int();
+
+            con->showMemory(2, 70, fromAddr, 1024, bram->mem);
+        }
+        break;
         case Command::SetReg:
-            con->markForUpdate();
+
             break;
         case Command::EnableDelay:
             delayEnabled = con->getArg1Bool();
