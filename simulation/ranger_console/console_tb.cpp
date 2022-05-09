@@ -92,6 +92,8 @@ int main(int argc, char *argv[])
     VRangerRisc_Register *alu_out = risc->alu_out_rg;
     VRangerRisc_Register__D4 *alu_flags = risc->alu_flags_rg;
 
+    VRangerRisc_RegisterFile *regFile = risc->reg_file;
+
     VRangerRisc_Mux4 *a_mux = risc->a_mux;
     VRangerRisc_Mux4 *b_mux = risc->b_mux;
 
@@ -154,7 +156,7 @@ int main(int argc, char *argv[])
 
     con->start();
 
-    con->showULIntProperty(+RowPropId::Timestep, 1, "timeStep", timeStep_ns);
+    con->showULIntProperty(+RowPropId::Timestep, 1, "timeStep(ns)", timeStep_ns);
     con->showBoolProperty(+RowPropId::SimRunning, 1, "Sim running", false);
     con->showIntProperty(+RowPropId::DelayTime, 1, "Delay time", timeStepDelayms);
     con->showIntProperty(+RowPropId::StepSize, 1, "Step size", stepSize);
@@ -231,7 +233,7 @@ int main(int argc, char *argv[])
 
             ready_sig.set(top->ready_o, timeStep_ns);
 
-            con->showULIntProperty(+RowPropId::Timestep, 1, "timeStep", timeStep_ns);
+            con->showULIntProperty(+RowPropId::Timestep, 1, "timeStep(ns)", timeStep_ns);
             con->showBoolProperty(+RowPropId::SimRunning, 1, "Sim running", true);
 
             // Clock edges
@@ -286,6 +288,8 @@ int main(int argc, char *argv[])
             con->showIntAsHexProperty(+RowPropId::ALU_OUT, 1, "ALU_Out", alu_out->data_o);
             con->showIntProperty(+RowPropId::ALU_FLAGS_LD, 1, "ALU_flgs_ld", alu_flags->ld_i);
             con->showALUFlagsProperty(+RowPropId::ALU_FLAGS, 1, "ALU_Flags", alu_flags->data_o);
+
+            con->showRegFile(2, 50, regFile->bank);
 
             p_clk_i = top->clk_i;
 

@@ -425,6 +425,23 @@ void Console::showALUFlagsProperty(int row, int col, std::string label, int valu
     }
 }
 
+void Console::showRegFile(int row, int col, VlUnpacked<IData, 32> values) {
+	mvaddstr(row, col, "--- RegFile ---");
+	row++;
+
+	for (int i = 0; i < 32; i++) {
+		move(row,col);
+		attrset(A_NORMAL);
+		if (i < 10)
+			printw(" x%d: ", i);
+		else
+			printw("x%d: ", i);
+		attrset(A_BOLD);
+		printw("%s", int_to_hex(values[i], "").c_str());
+		row++;
+	}
+}
+
 // --------------------------------------------------------------------
 // Getters
 // --------------------------------------------------------------------

@@ -14,14 +14,16 @@ module RegisterFile
     parameter SELECT_SIZE = 5)   // 5 bits = 32 = WORDS
 (
     input  logic clk_i,
-    input  logic reg_we_i,                      // Write = Active Low
+    input  logic reg_we_i /*verilator public*/,                       // Write = Active Low
     input  logic [DATA_WIDTH-1:0] data_i,        // Data input
-    input  logic [SELECT_SIZE-1:0] reg_dst_i,    // Reg destination select
-    input  logic [SELECT_SIZE-1:0] reg_srcA_i,   // Source #1 select
-    input  logic [SELECT_SIZE-1:0] reg_srcB_i,   // Source #2 select
-    output logic [DATA_WIDTH-1:0] srcA_o,        // Source 1 output
-    output logic [DATA_WIDTH-1:0] srcB_o         // Source 2 output
+    input  logic [SELECT_SIZE-1:0] reg_dst_i /*verilator public*/,    // Reg destination select
+    input  logic [SELECT_SIZE-1:0] reg_srcA_i /*verilator public*/,   // Source #1 select
+    input  logic [SELECT_SIZE-1:0] reg_srcB_i /*verilator public*/,   // Source #2 select
+    output logic [DATA_WIDTH-1:0] srcA_o /*verilator public*/,        // Source 1 output
+    output logic [DATA_WIDTH-1:0] srcB_o /*verilator public*/         // Source 2 output
 );
+
+/*verilator public_module*/
 
 // The Registers
 //     # of bits          # of registers
