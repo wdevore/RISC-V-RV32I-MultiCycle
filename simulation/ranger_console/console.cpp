@@ -557,16 +557,27 @@ void Console::showMemory(int row, int col, long int fromAddr, int memLen, VlUnpa
 
 int Console::showPCMarker(int pcMarkerRow, int markerCol, int rowOffset, int pc, long int fromAddr)
 {
-    mvaddch(pcMarkerRow, markerCol, ' ');
-    mvaddch(pcMarkerRow, markerCol + 1, ' ');
-    attrset(A_BOLD);
-
-    if (pc >= fromAddr && pc < fromAddr + 32)
+    // Calc row based on address using modulo
+    //             0      v                              1023
+    //             |- ---------------------------------- -|
+    //
+    //         |- ------- -|
+    //         0           32
+    if (pc >= fromAddr && pc < 1024)
     {
-        int r = pc - fromAddr + rowOffset;
-        mvaddch(r, markerCol, '-');
-        mvaddch(r, markerCol + 1, '>');
-        pcMarkerRow = r;
+        mvaddch(pcMarkerRow, markerCol, ' ');
+        mvaddch(pcMarkerRow, markerCol + 1, ' ');
+        mvaddch(pcMarkerRow, markerCol + 2, ' ');
+        attrset(A_BOLD);
+
+        if (pc >= fromAddr && pc < fromAddr + 32)
+        {
+            int r = pc - fromAddr + rowOffset;
+            mvaddch(r, markerCol, 'P');
+            mvaddch(r, markerCol + 1, 'C');
+            mvaddch(r, markerCol + 2, '>');
+            pcMarkerRow = r;
+        }
     }
 
     return pcMarkerRow;

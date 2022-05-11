@@ -273,22 +273,7 @@ int main(int argc, char *argv[])
             con->showIntAsHexProperty(+RowPropId::PC, 1, "PC", pc->data_o);
 
             // Update PC marker
-            if (pc->data_o >= fromAddr && pc->data_o < 1024)
-            {
-
-                // Calc row based on address using modulo
-                //             0      v                              1023
-                //             |- ---------------------------------- -|
-                //
-                //         |- ------- -|
-                //         0           32
-
-                // Is the marker in the current page.
-                // Map pc to visible window.
-                // 0 ----------------------------- 32
-                // 0x1f                           0x3f
-                p_pcMarker = con->showPCMarker(p_pcMarker, markerCol, rowOffset, pc->data_o, fromAddr);
-            }
+            p_pcMarker = con->showPCMarker(p_pcMarker, markerCol, rowOffset, pc->data_o, fromAddr);
         }
         break;
         case Command::LoadProg:
@@ -393,7 +378,8 @@ int main(int argc, char *argv[])
             con->showVectorState(+RowPropId::VecState, 1, "Vec-State", cm->vector_state);
             con->showVectorState(+RowPropId::NxVecState, 1, "Nxt Vec-State", cm->next_vector_state);
 
-            con->showIntAsHexProperty(+RowPropId::PC, 1, "PC", pc->data_o);
+            int pcWA = pc->data_o / 4;
+            con->showIntAsHexProperty(+RowPropId::PC, 1, "PC", pcWA);
             con->showIntAsHexProperty(+RowPropId::PCPrior, 1, "PC-prior", pc_prior->data_o);
             con->showIntProperty(+RowPropId::PC_LD, 1, "PC_ld", cm->pc_ld);
             con->showIntProperty(+RowPropId::PC_SRC, 1, "PC_src", cm->pc_src);
@@ -429,6 +415,8 @@ int main(int argc, char *argv[])
             con->showALUFlagsProperty(+RowPropId::ALU_FLAGS, 1, "ALU_Flags", alu_flags->data_o);
 
             con->showRegFile(2, 50, regFile->bank);
+
+            p_pcMarker = con->showPCMarker(p_pcMarker, markerCol, rowOffset, pcWA, fromAddr);
 
             p_clk_i = top->clk_i;
 
