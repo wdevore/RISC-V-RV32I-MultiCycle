@@ -373,6 +373,97 @@ void Console::showVectorState(int row, int col, std::string label, int value)
     }
 }
 
+void Console::showIRState(int row, int col, std::string label, int value)
+{
+    _showLabel(row, col, label);
+    switch (value)
+    {
+    case 0:
+        printw("STStore");
+        break;
+    case 1:
+        printw("STMemAcc");
+        break;
+    case 2:
+        printw("STMemWrt");
+        break;
+    case 3:
+        printw("STMemRrd");
+        break;
+    case 4:
+        printw("ITLoad");
+        break;
+    case 5:
+        printw("ITLDMemAcc");
+        break;
+    case 6:
+        printw("ITLDMemMdr");
+        break;
+    case 7:
+        printw("ITLDMemCmpl");
+        break;
+    case 8:
+        printw("RType");
+        break;
+    case 9:
+        printw("RTCmpl");
+        break;
+    case 10:
+        printw("BType");
+        break;
+    case 11:
+        printw("BTBranch");
+        break;
+    case 12:
+        printw("BTCmpl");
+        break;
+    case 13:
+        printw("ITALU");
+        break;
+    case 14:
+        printw("ITALUCmpl");
+        break;
+    case 15:
+        printw("JTJal");
+        break;
+    case 16:
+        printw("JTJalRtr");
+        break;
+    case 17:
+        printw("ITJalr");
+        break;
+    case 18:
+        printw("ITJalrRtr");
+        break;
+    case 19:
+        printw("UType");
+        break;
+    case 20:
+        printw("UTCmpl");
+        break;
+    case 21:
+        printw("UTypeAui");
+        break;
+    case 22:
+        printw("UTAuiCmpl");
+        break;
+    case 23:
+        printw("ITEbreak");
+        break;
+    case 24:
+        printw("ITECall");
+        break;
+    case 25:
+        printw("PreFetch");
+        break;
+    case 26:
+        printw("IRUnknown");
+        break;
+    default:
+        break;
+    }
+}
+
 void Console::showALUOp(int row, int col, std::string label, int value)
 {
     _showLabel(row, col, label);

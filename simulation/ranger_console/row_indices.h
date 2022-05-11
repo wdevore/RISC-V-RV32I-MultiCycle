@@ -29,6 +29,8 @@ enum class RowPropId
     RST_SRC,
     IR_LD,
     IR,
+    IR_State,
+    NxIR_State,
     WD_SRC,
     WD_SRC_OUT,
     A_SRC,

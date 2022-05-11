@@ -62,6 +62,7 @@ public:
 
     void showCPUState(int row, int col, std::string label, int value);
     void showVectorState(int row, int col, std::string label, int value);
+    void showIRState(int row, int col, std::string label, int value);
     void showALUOp(int row, int col, std::string label, int value);
     void showALUFlagsProperty(int row, int col, std::string label, int value);
     void showRegFile(int row, int col, VlUnpacked<IData, 32> values);

@@ -396,6 +396,8 @@ int main(int argc, char *argv[])
 
             con->showIntProperty(+RowPropId::IR_LD, 1, "IR_ld", ir->ld_i);
             con->showIntAsHexProperty(+RowPropId::IR, 1, "IR", ir->data_o);
+            con->showIRState(+RowPropId::IR_State, 1, "IR-State", cm->ir_state);
+            con->showIRState(+RowPropId::NxIR_State, 1, "Nxt IR-State", cm->next_ir_state);
 
             con->showIntProperty(+RowPropId::WD_SRC, 1, "WD_src", wd_mux->select_i);
             con->showIntAsHexProperty(+RowPropId::WD_SRC_OUT, 1, "WD_Src_Out", wd_mux->data_o);
