@@ -79,7 +79,7 @@ buildSimMk:
 
 runMake:
 	@echo "################## Running Makefile ##################"
-	make -C ${BUILD_DIR} -f V${TOP}.mk CXXFLAGS='-Wall -Wextra -g' LIBS='-lncurses'
+	make -j4 -C ${BUILD_DIR} -f V${TOP}.mk CXXFLAGS='-Wall -Wextra -g' LIBS='-lncurses'
 
 launch:
 	@echo "################## Simulating ##################"

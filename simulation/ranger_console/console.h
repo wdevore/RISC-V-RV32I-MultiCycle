@@ -56,6 +56,7 @@ public:
     void showIntProperty(int row, int col, std::string lable, int value, int when = -1);
     void showIntAsHexProperty(int row, int col, std::string lable, int value, int when = -1);
     void showBoolProperty(int row, int col, std::string lable, bool value);
+    void showRegisterBin(int row, const std::string &header, int value);
 
     void showClockEdge(int row, int col, int clkState, int when);
 
@@ -65,4 +66,5 @@ public:
     void showALUFlagsProperty(int row, int col, std::string label, int value);
     void showRegFile(int row, int col, VlUnpacked<IData, 32> values);
     void showMemory(int row, int col, long int fromAddr, int memLen, VlUnpacked<IData, 1024> mem);
+    int showPCMarker(int pcMarkerRow, int markerCol, int rowOffset, int pc, long int fromAddr);
 };

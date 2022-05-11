@@ -18,4 +18,7 @@ enum class Command
     MemRange,
     MemModify,
     LoadProg,
+    SetPC,
+    MemScrollUp,
+    MemScrollDwn,
 };

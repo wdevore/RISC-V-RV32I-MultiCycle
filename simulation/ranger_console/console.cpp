@@ -105,6 +105,14 @@ Command Console::handleInput()
             dataDirty = true;
         }
     }
+    else if (ch == KEY_UP)
+    {
+        cmd = Command::MemScrollUp;
+    }
+    else if (ch == KEY_DOWN)
+    {
+        cmd = Command::MemScrollDwn;
+    }
     else if (ch == '\n')
     {
         col = startCmdLineCol;
@@ -176,6 +184,13 @@ Command Console::handleInput()
             cmd = Command::LoadProg;
             std::vector<std::string> fields = split_string(keyBuffer);
             arg1 = fields.size() > 1 ? fields[1] : "ebreak"; // Program name "lw"
+        }
+        else if (keyBuffer.rfind("pc", 0) == 0)
+        {
+            // Set PC
+            cmd = Command::SetPC;
+            std::vector<std::string> fields = split_string(keyBuffer);
+            arg1 = fields.size() > 1 ? fields[1] : "0x0";
         }
 
         dataDirty = true;
@@ -260,6 +275,15 @@ void Console::showBoolProperty(int row, int col, std::string label, bool value)
         printw("True");
     else
         printw("False");
+}
+
+void Console::showRegisterBin(int row, const std::string &header, int value)
+{
+    move(row, 1);
+    attrset(A_NORMAL);
+    printw("%s: ", header.c_str());
+    attrset(A_BOLD);
+    printw("%s", int_to_bin(value, "").c_str());
 }
 
 void Console::showClockEdge(int row, int col, int clkState, int when)
@@ -529,6 +553,23 @@ void Console::showMemory(int row, int col, long int fromAddr, int memLen, VlUnpa
 
         row++;
     }
+}
+
+int Console::showPCMarker(int pcMarkerRow, int markerCol, int rowOffset, int pc, long int fromAddr)
+{
+    mvaddch(pcMarkerRow, markerCol, ' ');
+    mvaddch(pcMarkerRow, markerCol + 1, ' ');
+    attrset(A_BOLD);
+
+    if (pc >= fromAddr && pc < fromAddr + 32)
+    {
+        int r = pc - fromAddr + rowOffset;
+        mvaddch(r, markerCol, '-');
+        mvaddch(r, markerCol + 1, '>');
+        pcMarkerRow = r;
+    }
+
+    return pcMarkerRow;
 }
 
 // --------------------------------------------------------------------

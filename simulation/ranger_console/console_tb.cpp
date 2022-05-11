@@ -174,6 +174,9 @@ int main(int argc, char *argv[])
     top->reset_i = 1;
     long int fromAddr = 0;
     long int memAddr;
+    int p_pcMarker = 0;
+    const int markerCol = 67;
+    const int rowOffset = 3;
 
     while (looping)
     {
@@ -237,8 +240,57 @@ int main(int argc, char *argv[])
             con->showMemory(2, 70, fromAddr, 1024, bram->mem);
         }
         break;
+        case Command::MemScrollUp:
+            // Dec address
+            fromAddr--;
+            if (fromAddr < 0)
+                fromAddr = 0;
+
+            p_pcMarker = con->showPCMarker(p_pcMarker, markerCol, rowOffset, pc->data_o, fromAddr);
+            con->showMemory(2, 70, fromAddr, 1024, bram->mem);
+            break;
+        case Command::MemScrollDwn:
+            // Inc address
+            fromAddr++;
+            if (fromAddr > 1023)
+                fromAddr = 1023;
+            p_pcMarker = con->showPCMarker(p_pcMarker, markerCol, rowOffset, pc->data_o, fromAddr);
+            con->showMemory(2, 70, fromAddr, 1024, bram->mem);
+            break;
         case Command::SetReg:
             break;
+        case Command::SetPC:
+        {
+            std::string arg1 = con->getArg1();
+
+            // Note: I set the output even though during simulation
+            // you would set the input, load and clock falling edge.
+            if (arg1.find("0x") != std::string::npos)
+                pc->data_o = hex_string_to_int(arg1);
+            else
+                pc->data_o = con->getArg1Int();
+
+            con->showIntAsHexProperty(+RowPropId::PC, 1, "PC", pc->data_o);
+
+            // Update PC marker
+            if (pc->data_o >= fromAddr && pc->data_o < 1024)
+            {
+
+                // Calc row based on address using modulo
+                //             0      v                              1023
+                //             |- ---------------------------------- -|
+                //
+                //         |- ------- -|
+                //         0           32
+
+                // Is the marker in the current page.
+                // Map pc to visible window.
+                // 0 ----------------------------- 32
+                // 0x1f                           0x3f
+                p_pcMarker = con->showPCMarker(p_pcMarker, markerCol, rowOffset, pc->data_o, fromAddr);
+            }
+        }
+        break;
         case Command::LoadProg:
         {
             // Load ram into memory
@@ -407,12 +459,12 @@ int main(int argc, char *argv[])
 
 // Tasks:
 // - Mark PC in mem
-// - scroll memory
-// - Load programs
+// - SR (setreg) Makes a regfile active for any other actions.
 // - J (jump) command. Sets PC to address.
-// - PC (sets PC reg)
 //    - Call (???)
-// - SR Makes a regfile active for any other actions.
+
+// - UART or PIO
+// This requires a plain testbench that interacts solely with a terminal
 
 // async futures
 // https://devdreamz.com/question/844791-user-input-without-pausing-code-c-console-application

@@ -12,9 +12,9 @@ module Register
 #(
     parameter DATA_WIDTH = 32)
 (
-    input  logic clk_i,                     // Processor domain clock
+    input  logic clk_i /*verilator public*/,                     // Processor domain clock
     input  logic ld_i /*verilator public*/, // Active Low
-    input  logic [DATA_WIDTH-1:0] data_i,   // Input
+    input  logic [DATA_WIDTH-1:0] data_i /*verilator public*/,  // Input
     output logic [DATA_WIDTH-1:0] data_o /*verilator public*/  // Output
 );
 /*verilator public_module*/
