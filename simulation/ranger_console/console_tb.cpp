@@ -446,7 +446,7 @@ int main(int argc, char *argv[])
 }
 
 // Tasks:
-// - Mark PC in mem
+// - add run fetch/ebreak etc.
 // - SR (setreg) Makes a regfile active for any other actions.
 // - J (jump) command. Sets PC to address.
 //    - Call (???)
