@@ -72,9 +72,9 @@ always_ff @(negedge clk_i) begin
     if (~reg_we_i && reg_dst_i != 0) begin
         bank[reg_dst_i] <= data_i;
 
-        `ifdef SIMULATE
-            $display("%d Write Reg File DIn: %h, Reg: ", $stime, data_i, reg_dst_i);
-        `endif
+        // `ifdef SIMULATE
+        //     $display("%d Write Reg File DIn: %h, Reg: ", $stime, data_i, reg_dst_i);
+        // `endif
     end
 end
 

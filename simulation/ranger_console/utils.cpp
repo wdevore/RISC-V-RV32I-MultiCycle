@@ -15,13 +15,21 @@ std::vector<std::string> split_string(std::string &cmdLine)
 	return fields;
 }
 
-std::string int_to_hex(long int v, const std::string &header)
+std::string int_to_hex(unsigned long int v, const std::string &header)
 {
 	std::stringstream stream;
 	stream << header
 		   << std::setfill('0') << std::setw(sizeof(int) * 2)
 		   << std::hex << v;
-	return stream.str();
+
+	// Not sure why I need to do this because setw() should handle it.
+	// The stream doesn't seem to understand that v is unsigned
+	// which means I end up with ffffffffdeadbeaf instead of deadbeaf.
+	int size = stream.str().size();
+	std::string sub = stream.str();
+	if (size > 8)
+		sub = sub.substr(8, 16);
+	return sub;
 }
 
 std::string int_to_bin(long int v, const std::string &header)
