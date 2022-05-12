@@ -2,6 +2,7 @@
 #include <verilated.h>
 
 #include "commands.h"
+#include "model.h"
 
 class Console
 {
@@ -51,6 +52,8 @@ public:
     void clearCmdLine(void);
     void showTermCaret(void);
     void moveCaretToEndl(void);
+
+    void show(Model& mdl);
 
     void showULIntProperty(int row, int col, std::string lable, unsigned long int value);
     void showIntProperty(int row, int col, std::string lable, int value, int when = -1);

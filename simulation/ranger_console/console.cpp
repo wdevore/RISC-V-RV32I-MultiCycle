@@ -6,6 +6,7 @@
 #include "console.h"
 #include "commands.h"
 #include "utils.h"
+#include "row_indices.h"
 
 Console::Console(/* args */)
 {
@@ -232,6 +233,78 @@ void Console::moveCaretToEndl(void)
 // --------------------------------------------------------------------
 // Show methods
 // --------------------------------------------------------------------
+void Console::show(Model &mdl)
+{
+    showULIntProperty(+RowPropId::Timestep, 1, "timeStep(ns)", mdl.timeStep_ns);
+    showBoolProperty(+RowPropId::SimRunning, 1, "Sim running", mdl.simRunning);
+    showIntProperty(+RowPropId::DelayTime, 1, "Delay time", mdl.timeStepDelayms);
+    showIntProperty(+RowPropId::StepSize, 1, "Step size", mdl.stepSize);
+    // showClockEdge(+RowPropId::ClockEdge, 1, 2, mdl.timeStep_ns);
+
+    // Clock edges
+    if (mdl.p_clk_i == 0 && mdl.top->clk_i == 1)
+        showClockEdge(+RowPropId::ClockEdge, 1, 0, mdl.timeStep_ns);
+    else if (mdl.p_clk_i == 1 && mdl.top->clk_i == 0)
+        showClockEdge(+RowPropId::ClockEdge, 1, 1, mdl.timeStep_ns);
+    else
+        showClockEdge(+RowPropId::ClockEdge, 1, 2, mdl.timeStep_ns);
+
+    showIntProperty(+RowPropId::Ready, 1, "Ready", mdl.cm->ready);
+    showIntProperty(+RowPropId::Reset, 1, "Reset", mdl.top->reset_i);
+    showCPUState(+RowPropId::State, 1, "State", mdl.cm->state);
+    showCPUState(+RowPropId::NxState, 1, "Nxt State", mdl.cm->vector_state);
+    showVectorState(+RowPropId::VecState, 1, "Vec State", mdl.cm->vector_state);
+    showVectorState(+RowPropId::NxVecState, 1, "Nxt Vec-State", mdl.cm->next_vector_state);
+
+    showIntProperty(+RowPropId::Ready, 1, "Ready", mdl.top->ready_o);
+    showIntProperty(+RowPropId::Reset, 1, "Reset", mdl.top->reset_i);
+
+    showCPUState(+RowPropId::State, 1, "State", mdl.cm->state);
+    showCPUState(+RowPropId::NxState, 1, "Nxt State", mdl.cm->next_state);
+    showVectorState(+RowPropId::VecState, 1, "Vec-State", mdl.cm->vector_state);
+    showVectorState(+RowPropId::NxVecState, 1, "Nxt Vec-State", mdl.cm->next_vector_state);
+
+    int pcWA = mdl.pc->data_o / 4;
+    showIntAsHexProperty(+RowPropId::PC, 1, "PC", pcWA);
+    showIntAsHexProperty(+RowPropId::PCPrior, 1, "PC-prior", mdl.pc_prior->data_o);
+    showIntProperty(+RowPropId::PC_LD, 1, "PC_ld", mdl.cm->pc_ld);
+    showIntProperty(+RowPropId::PC_SRC, 1, "PC_src", mdl.cm->pc_src);
+    showIntAsHexProperty(+RowPropId::PC_SRC_OUT, 1, "PC_src_out", mdl.risc->pc_src_out);
+
+    showIntProperty(+RowPropId::MEM_WR, 1, "Mem_wr", mdl.cm->mem_wr);
+    showIntProperty(+RowPropId::MEM_RD, 1, "Mem_rd", mdl.cm->mem_rd);
+    showIntAsHexProperty(+RowPropId::PMMU_OUT, 1, "Pmmu_out", mdl.risc->pmmu_out);
+    showIntAsHexProperty(+RowPropId::RSA_OUT, 1, "RsA", mdl.rsa->data_o);
+    showIntAsHexProperty(+RowPropId::RSB_OUT, 1, "RsB", mdl.rsb->data_o);
+    showIntAsHexProperty(+RowPropId::MDR, 1, "MDR", mdl.mdr->data_o);
+    showIntProperty(+RowPropId::ADDR_SRC, 1, "Addr_src", mdl.cm->addr_src);
+    showIntProperty(+RowPropId::RST_SRC, 1, "Rst_src", mdl.cm->rst_src);
+
+    showIntProperty(+RowPropId::IR_LD, 1, "IR_ld", mdl.ir->ld_i);
+    showIntAsHexProperty(+RowPropId::IR, 1, "IR", mdl.ir->data_o);
+    showIRState(+RowPropId::IR_State, 1, "IR-State", mdl.cm->ir_state);
+    showIRState(+RowPropId::NxIR_State, 1, "Nxt IR-State", mdl.cm->next_ir_state);
+
+    showIntProperty(+RowPropId::WD_SRC, 1, "WD_src", mdl.wd_mux->select_i);
+    showIntAsHexProperty(+RowPropId::WD_SRC_OUT, 1, "WD_Src_Out", mdl.wd_mux->data_o);
+
+    showIntProperty(+RowPropId::A_SRC, 1, "A_src", mdl.a_mux->select_i);
+    showIntAsHexProperty(+RowPropId::A_MUX_OUT, 1, "A_Mux_Out", mdl.a_mux->data_o);
+    showIntProperty(+RowPropId::B_SRC, 1, "B_src", mdl.b_mux->select_i);
+    showIntAsHexProperty(+RowPropId::B_MUX_OUT, 1, "B_Mux_Out", mdl.b_mux->data_o);
+
+    showIntAsHexProperty(+RowPropId::IMM_EXT_OUT, 1, "IMM_Ext_Out", mdl.imm_ext->imm_o);
+
+    showALUOp(+RowPropId::ALU_OP, 1, "ALUOp", mdl.alu->func_op_i);
+    showIntAsHexProperty(+RowPropId::ALU_IMM_OUT, 1, "ALU_Imm_Out", mdl.alu->y_o);
+    showIntProperty(+RowPropId::ALU_LD, 1, "ALU_ld", mdl.alu_out->ld_i);
+    showIntAsHexProperty(+RowPropId::ALU_OUT, 1, "ALU_Out", mdl.alu_out->data_o);
+    showIntProperty(+RowPropId::ALU_FLAGS_LD, 1, "ALU_flgs_ld", mdl.alu_flags->ld_i);
+    showALUFlagsProperty(+RowPropId::ALU_FLAGS, 1, "ALU_Flags", mdl.alu_flags->data_o);
+
+    showRegFile(2, 50, mdl.regFile->bank);
+}
+
 void Console::_showLabel(int row, int col, std::string label)
 {
     dataDirty = true;
@@ -656,20 +729,18 @@ int Console::showPCMarker(int pcMarkerRow, int markerCol, int rowOffset, int pc,
     //         0           32
     if (pc >= fromAddr && pc < 1024)
     {
-        mvaddch(pcMarkerRow, markerCol, ' ');
-        mvaddch(pcMarkerRow, markerCol + 1, ' ');
-        mvaddch(pcMarkerRow, markerCol + 2, ' ');
+        mvaddstr(pcMarkerRow, markerCol, "   ");
         attrset(A_BOLD);
 
-        if (pc >= fromAddr && pc < fromAddr + 32)
+        if (pc < fromAddr + 32)
         {
             int r = pc - fromAddr + rowOffset;
-            mvaddch(r, markerCol, 'P');
-            mvaddch(r, markerCol + 1, 'C');
-            mvaddch(r, markerCol + 2, '>');
+            mvaddstr(r, markerCol, "PC>");
             pcMarkerRow = r;
         }
     }
+    else
+        mvaddstr(pcMarkerRow, markerCol, "   ");
 
     return pcMarkerRow;
 }

@@ -1,5 +1,8 @@
 #pragma once
 
+//     Property<vluint8_t> ready_sig{};
+
+
 template <typename T>
 class Property
 {

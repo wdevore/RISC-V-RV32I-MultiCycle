@@ -17,6 +17,7 @@ HEADERS = \
 	commands.h \
 	row_indices.h \
 	console.h \
+	model.h \
 	utils.h \
 	property.h
 

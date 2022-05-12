@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdio.h>
 #include <iostream>
 #include <iomanip>
@@ -31,11 +33,10 @@ public:
         _core->final(); // simulation done
     }
 
-    virtual int eval(int timeStep)
+    virtual void eval(void)
     {
         // Update simulation
         _core->eval();
-        return timeStep;
     }
 
     virtual MODULE *core(void)
