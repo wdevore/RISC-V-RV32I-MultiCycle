@@ -7,6 +7,7 @@ TOP = RangerRisc
 TEST_BENCH = \
 	misc.cpp \
 	console.cpp \
+	simulation.cpp \
 	utils.cpp \
 	console_tb.cpp
 
@@ -18,6 +19,7 @@ HEADERS = \
 	row_indices.h \
 	console.h \
 	model.h \
+	simulation.h \
 	utils.h \
 	property.h
 

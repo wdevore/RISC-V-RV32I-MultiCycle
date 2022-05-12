@@ -10,6 +10,7 @@
 #include "row_indices.h"
 #include "console.h"
 #include "model.h"
+#include "simulation.h"
 
 #include "property.h"
 #include "utils.h"
@@ -29,10 +30,6 @@
 
 // Examples of field access
 // cmU->ALU_Ops::SraOp
-
-// ------------------------------------------------------------
-// Misc
-// ------------------------------------------------------------
 
 // This file is similar to a Verilog test bench file except
 // is C++
@@ -85,8 +82,8 @@ int main(int argc, char *argv[])
     // Default to "not" holding CPU in reset state. Reset is active low.
     mdl.top->reset_i = 1;
 
-    // Simulation sim = Simulation{tb, con};
-    // sim.init();
+    Simulation sim = Simulation{};
+    sim.init();
 
     while (looping)
     {
@@ -105,8 +102,10 @@ int main(int argc, char *argv[])
 
             if (con->getArg1() == "reset")
             {
-                // sim.begin_reset();
-                con->showIntProperty(+RowPropId::Reset, 1, "Reset", top->reset_i);
+                sim.begin_reset(mdl);
+                sim.update_reset(mdl, tb);
+                sim.end_reset(mdl);
+                con->show(mdl);
             }
             break;
         case Command::NStep:
@@ -265,25 +264,18 @@ int main(int argc, char *argv[])
         // ---------------------------------------------------
         if (mdl.stepCnt < mdl.stepSize)
         {
-            mdl.simRunning = true;
-
-            // The clock toggles every half-cycle
-            if (mdl.timeStep_ns % mdl.halfCycle == 0)
-                mdl.top->clk_i ^= 1;
+            sim.begin(mdl);
 
             tb->eval(); // each eval() is 1 "timescale" = 1ns
 
             con->show(mdl);
 
-            mdl.p_clk_i = top->clk_i;
-
-            mdl.stepCnt++;
-            mdl.timeStep_ns++;
+            sim.update(mdl);
         }
         else
         {
+            sim.end(mdl);
             con->showBoolProperty(+RowPropId::SimRunning, 1, "Sim running", mdl.simRunning);
-            mdl.simRunning = false;
         }
 
         con->update();
@@ -306,7 +298,6 @@ int main(int argc, char *argv[])
 }
 
 // Tasks:
-// - add reset sequence
 // - add run fetch/ebreak etc.
 // - SR (setreg) Makes a regfile active for any other actions.
 // - J (jump) command. Sets PC to address.
@@ -329,4 +320,4 @@ int main(int argc, char *argv[])
 // coredumps:
 // ulimit -c unlimited
 // gdb /media/RAMDisk/VRangerRisc
-//    stacktrace
+//    backtrace

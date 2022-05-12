@@ -137,7 +137,8 @@ Command Console::handleInput()
             cmd = Command::Signal;
             std::vector<std::string> fields = split_string(keyBuffer);
             arg1 = fields[1]; // reset, ...
-            arg2 = fields[2]; // (l)ow/(h)igh
+            if (fields.size() > 2)
+                arg2 = fields[2]; // (l)ow/(h)igh
         }
         else if (keyBuffer == "ns")
             cmd = Command::NStep;
@@ -239,7 +240,6 @@ void Console::show(Model &mdl)
     showBoolProperty(+RowPropId::SimRunning, 1, "Sim running", mdl.simRunning);
     showIntProperty(+RowPropId::DelayTime, 1, "Delay time", mdl.timeStepDelayms);
     showIntProperty(+RowPropId::StepSize, 1, "Step size", mdl.stepSize);
-    // showClockEdge(+RowPropId::ClockEdge, 1, 2, mdl.timeStep_ns);
 
     // Clock edges
     if (mdl.p_clk_i == 0 && mdl.top->clk_i == 1)

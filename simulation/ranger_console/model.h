@@ -47,7 +47,8 @@ struct Model
 
     vluint64_t timeStep_ns = 0;
     int timeStepDelayms = 10; // Default 10ms = 100Hz
-
+    bool resetActive = false;
+    
     //
     //     -|--- cycle ---|-
     //       ______        ______        ______        ______

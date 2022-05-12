@@ -200,7 +200,7 @@ always_comb begin
             case (vector_state)
                 Sync0: begin
                     // We need to "sync up" to a rising edge regardless
-                    // wether the Reset signal was active.
+                    // if the Reset signal was active.
                     // We do this to insure that Vector0 starts at a rising
                     // edge.
                     if (~reset_i)
