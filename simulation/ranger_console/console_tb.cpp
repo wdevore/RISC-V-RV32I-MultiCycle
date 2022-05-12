@@ -83,12 +83,7 @@ int main(int argc, char *argv[])
     con->show(mdl);
 
     // Default to "not" holding CPU in reset state. Reset is active low.
-    top->reset_i = 1;
-    long int fromAddr = 0;
-    long int memAddr;
-    int p_pcMarker = 0;
-    const int markerCol = 67;
-    const int rowOffset = 3;
+    mdl.top->reset_i = 1;
 
     // Simulation sim = Simulation{tb, con};
     // sim.init();
@@ -133,20 +128,20 @@ int main(int argc, char *argv[])
         {
             std::string arg1 = con->getArg1();
             if (arg1.find("0x") != std::string::npos)
-                fromAddr = hex_string_to_int(arg1);
+                mdl.fromAddr = hex_string_to_int(arg1);
             else
-                fromAddr = con->getArg1Int();
+                mdl.fromAddr = con->getArg1Int();
 
-            con->showMemory(2, 70, fromAddr, 1024, mdl.bram->mem);
+            con->showMemory(2, 70, mdl.fromAddr, 1024, mdl.bram->mem);
         }
         break;
         case Command::MemModify:
         {
             std::string arg1 = con->getArg1();
             if (arg1.find("0x") != std::string::npos)
-                memAddr = hex_string_to_int(arg1);
+                mdl.memAddr = hex_string_to_int(arg1);
             else
-                memAddr = con->getArg1Int();
+                mdl.memAddr = con->getArg1Int();
 
             int value;
             std::string arg2 = con->getArg2();
@@ -155,26 +150,28 @@ int main(int argc, char *argv[])
             else
                 value = con->getArg2Int();
 
-            mdl.bram->mem[memAddr] = value;
-            con->showMemory(2, 70, fromAddr, 1024, mdl.bram->mem);
+            mdl.bram->mem[mdl.memAddr] = value;
+            con->showMemory(2, 70, mdl.fromAddr, 1024, mdl.bram->mem);
         }
         break;
         case Command::MemScrollUp:
             // Dec address
-            fromAddr--;
-            if (fromAddr < 0)
-                fromAddr = 0;
+            mdl.fromAddr--;
+            if (mdl.fromAddr < 0)
+                mdl.fromAddr = 0;
 
-            p_pcMarker = con->showPCMarker(p_pcMarker, markerCol, rowOffset, mdl.pc->data_o, fromAddr);
-            con->showMemory(2, 70, fromAddr, 1024, mdl.bram->mem);
+            con->showPCMarker(mdl);
+
+            con->showMemory(2, 70, mdl.fromAddr, 1024, mdl.bram->mem);
             break;
         case Command::MemScrollDwn:
             // Inc address
-            fromAddr++;
-            if (fromAddr > 1023)
-                fromAddr = 1023;
-            p_pcMarker = con->showPCMarker(p_pcMarker, markerCol, rowOffset, mdl.pc->data_o, fromAddr);
-            con->showMemory(2, 70, fromAddr, 1024, mdl.bram->mem);
+            mdl.fromAddr++;
+            if (mdl.fromAddr > 1023)
+                mdl.fromAddr = 1023;
+            con->showPCMarker(mdl);
+
+            con->showMemory(2, 70, mdl.fromAddr, 1024, mdl.bram->mem);
             break;
         case Command::SetReg:
             break;
@@ -192,7 +189,7 @@ int main(int argc, char *argv[])
             con->showIntAsHexProperty(+RowPropId::PC, 1, "PC", mdl.pc->data_o);
 
             // Update PC marker
-            p_pcMarker = con->showPCMarker(p_pcMarker, markerCol, rowOffset, mdl.pc->data_o, fromAddr);
+            con->showPCMarker(mdl);
         }
         break;
         case Command::LoadProg:
@@ -246,7 +243,7 @@ int main(int argc, char *argv[])
                 mvaddstr(0, 50, msg.c_str());
             }
 
-            con->showMemory(2, 70, fromAddr, 1024, mdl.bram->mem);
+            con->showMemory(2, 70, mdl.fromAddr, 1024, mdl.bram->mem);
         }
         break;
         case Command::EnableDelay:
@@ -277,9 +274,6 @@ int main(int argc, char *argv[])
             tb->eval(); // each eval() is 1 "timescale" = 1ns
 
             con->show(mdl);
-
-            int pcWA = mdl.pc->data_o / 4;
-            p_pcMarker = con->showPCMarker(p_pcMarker, markerCol, rowOffset, pcWA, fromAddr);
 
             mdl.p_clk_i = top->clk_i;
 

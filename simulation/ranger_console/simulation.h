@@ -17,45 +17,10 @@
 class Simulation
 {
 private:
-    Console *con;
-    VRangerRisc *cpu;
-    // The top module "RangerRisc"
-    VRangerRisc___024root *top;
 
-    // Provides access to the sub-modules either privately or publicly.
-    VRangerRisc_RangerRisc *risc;
-
-    // The sub-modules
-    VRangerRisc_ControlMatrix *cm;
-    VRangerRisc_Register *ir;
-    VRangerRisc_Register *pc;
-    VRangerRisc_Register *pc_prior;
-    VRangerRisc_Register *mdr;
-    VRangerRisc_Mux4 *wd_mux;
-    VRangerRisc_Register *rsa;
-    VRangerRisc_Register *rsb;
-    VRangerRisc_Register *alu_out;
-    VRangerRisc_Register__D4 *alu_flags;
-
-    VRangerRisc_RegisterFile *regFile;
-
-    VRangerRisc_Mux4 *a_mux;
-    VRangerRisc_Mux4 *b_mux;
-
-    VRangerRisc_ALU__D20 *alu;
-    VRangerRisc_Immediate *imm_ext;
-
-    VRangerRisc_Pmmu *pmmu;
-    VRangerRisc_Memory *bram;
-
-    long int fromAddr = 0;
-    long int memAddr;
-    int p_pcMarker = 0;
-    const int markerCol = 67;
-    const int rowOffset = 3;
 
 public:
-    Simulation(TESTBENCH<VRangerRisc> *tb, Console *con);
+    Simulation();
     ~Simulation();
 
     int init(void);
@@ -64,6 +29,4 @@ public:
     void begin_reset(void);
     void reset(void);
     void end_reset(void);
-
-    VRangerRisc_ControlMatrix *CM() { return cm; }
 };

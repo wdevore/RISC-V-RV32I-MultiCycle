@@ -303,6 +303,8 @@ void Console::show(Model &mdl)
     showALUFlagsProperty(+RowPropId::ALU_FLAGS, 1, "ALU_Flags", mdl.alu_flags->data_o);
 
     showRegFile(2, 50, mdl.regFile->bank);
+
+    showPCMarker(mdl);
 }
 
 void Console::_showLabel(int row, int col, std::string label)
@@ -719,7 +721,7 @@ void Console::showMemory(int row, int col, long int fromAddr, int memLen, VlUnpa
     }
 }
 
-int Console::showPCMarker(int pcMarkerRow, int markerCol, int rowOffset, int pc, long int fromAddr)
+void Console::showPCMarker(Model &mdl)
 {
     // Calc row based on address using modulo
     //             0      v                              1023
@@ -727,22 +729,21 @@ int Console::showPCMarker(int pcMarkerRow, int markerCol, int rowOffset, int pc,
     //
     //         |- ------- -|
     //         0           32
-    if (pc >= fromAddr && pc < 1024)
+    int pc = mdl.pc->data_o / 4;
+    if (pc >= mdl.fromAddr && pc < 1024)
     {
-        mvaddstr(pcMarkerRow, markerCol, "   ");
+        mvaddstr(mdl.p_pcMarker, mdl.markerCol, "   ");
         attrset(A_BOLD);
 
-        if (pc < fromAddr + 32)
+        if (pc < mdl.fromAddr + 32)
         {
-            int r = pc - fromAddr + rowOffset;
-            mvaddstr(r, markerCol, "PC>");
-            pcMarkerRow = r;
+            int r = pc - mdl.fromAddr + mdl.rowOffset;
+            mvaddstr(r, mdl.markerCol, "PC>");
+            mdl.p_pcMarker = r;
         }
     }
     else
-        mvaddstr(pcMarkerRow, markerCol, "   ");
-
-    return pcMarkerRow;
+        mvaddstr(mdl.p_pcMarker, mdl.markerCol, "   ");
 }
 
 // --------------------------------------------------------------------
