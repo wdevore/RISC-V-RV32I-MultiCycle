@@ -7,6 +7,8 @@
 class Simulation
 {
 private:
+    
+
 public:
     Simulation();
     ~Simulation();
@@ -20,4 +22,8 @@ public:
     void begin_reset(Model &mdl);
     void update_reset(Model &mdl, TESTBENCH<VRangerRisc> *tb);
     void end_reset(Model &mdl);
+
+    void run_to_fetch(Model &mdl, TESTBENCH<VRangerRisc> *tb);
+    void run_to_decode(Model &mdl, TESTBENCH<VRangerRisc> *tb);
+    void run_to_execute(Model &mdl, TESTBENCH<VRangerRisc> *tb);
 };

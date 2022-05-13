@@ -8,6 +8,8 @@
 #include "VRangerRisc__Syms.h"
 #include "VRangerRisc_Memory.h"
 
+#include "VRangerRisc___024unit.h" // Enums
+
 struct Model
 {
     // The top module "RangerRisc"
@@ -15,6 +17,9 @@ struct Model
 
     // Provides access to the sub-modules either privately or publicly.
     VRangerRisc_RangerRisc *risc;
+
+    // Symbol enums
+    VRangerRisc___024unit *unit;
 
     // The sub-modules
     VRangerRisc_ControlMatrix *cm;
@@ -48,7 +53,7 @@ struct Model
     vluint64_t timeStep_ns = 0;
     int timeStepDelayms = 10; // Default 10ms = 100Hz
     bool resetActive = false;
-    
+
     //
     //     -|--- cycle ---|-
     //       ______        ______        ______        ______
@@ -64,9 +69,11 @@ struct Model
     bool simRunning = false;
     int p_clk_i;
 
-    Model(VRangerRisc___024root *top)
+    Model(VRangerRisc *cpu)
     {
-        this->top = top;
+        top = cpu->rootp;
+        unit = cpu->__PVT____024unit;
+
         p_clk_i = top->clk_i;
 
         risc = top->RangerRisc;

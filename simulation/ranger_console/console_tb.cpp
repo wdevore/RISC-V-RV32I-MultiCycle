@@ -47,9 +47,9 @@ int main(int argc, char *argv[])
     VRangerRisc *cpu = tb->core();
 
     // The top module "RangerRisc"
-    VRangerRisc___024root *top = cpu->rootp;
+    // VRangerRisc___024root *top = cpu->rootp;
 
-    Model mdl{top};
+    Model mdl{cpu};
 
     // Default to clock low
     mdl.top->clk_i = 0;
@@ -91,22 +91,30 @@ int main(int argc, char *argv[])
 
         switch (cmd)
         {
-        case Command::Reset:
-            mdl.timeStep_ns = 0;
-            mdl.stepCnt = 0;
-            break;
         case Command::Signal:
-
-            // Enable cpu reset pin and wait for reset-complete
-            // top->reset_i = con->getArg2() == "l" ? 0 : 1;
-
             if (con->getArg1() == "reset")
             {
+                // Enable cpu reset pin and wait for reset-complete
                 sim.begin_reset(mdl);
                 sim.update_reset(mdl, tb);
                 sim.end_reset(mdl);
                 con->show(mdl);
             }
+            break;
+        case Command::RunTo:
+            if (con->getArg1() == "fetch" || con->getArg1() == "fe")
+            {
+                sim.run_to_fetch(mdl, tb);
+            }
+            else if (con->getArg1() == "decode" || con->getArg1() == "de")
+            {
+                sim.run_to_decode(mdl, tb);
+            }
+            else if (con->getArg1() == "execute" || con->getArg1() == "ex")
+            {
+                sim.run_to_execute(mdl, tb);
+            }
+            con->show(mdl);
             break;
         case Command::NStep:
             mdl.stepCnt = 0;

@@ -127,11 +127,15 @@ Command Console::handleInput()
         if (keyBuffer == "")
             return Command::None;
 
-        if (keyBuffer == "reset")
+        if (keyBuffer.rfind("rn", 0) == 0)
         {
-            cmd = Command::Reset;
+            // Ex: rn fetch
+            // or: rn decode
+            std::vector<std::string> fields = split_string(keyBuffer);
+            arg1 = fields[1];
+            cmd = Command::RunTo;
         }
-        else if (keyBuffer.rfind("sig", 0) == 0)
+        else if (keyBuffer.rfind("sg", 0) == 0)
         {
             // Ex: sig reset h
             cmd = Command::Signal;

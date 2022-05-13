@@ -3,6 +3,8 @@
 
 #include <ncurses.h>
 
+#include "VRangerRisc___024unit.h"
+
 #include "simulation.h"
 #include "commands.h"
 #include "utils.h"
@@ -21,6 +23,9 @@ int Simulation::init(void)
     return 0;
 }
 
+// ----------------------------------------------------
+// Reset sequencce
+// ----------------------------------------------------
 void Simulation::begin_reset(Model &mdl)
 {
     mdl.simRunning = true;
@@ -32,8 +37,8 @@ void Simulation::begin_reset(Model &mdl)
 
 void Simulation::update_reset(Model &mdl, TESTBENCH<VRangerRisc> *tb)
 {
-    // Track time and update tb sim
-    // Toggle clock at least 3 times for reset signal take hold
+    // Toggle clock at least 3 times to create a large window
+    // for syncing.
     int stepSize = mdl.fullCycle * 3;
     do
     {
@@ -51,6 +56,9 @@ void Simulation::end_reset(Model &mdl)
     mdl.top->reset_i = 1;
 }
 
+// ----------------------------------------------------
+// Standard stepping
+// ----------------------------------------------------
 void Simulation::begin(Model &mdl)
 {
     mdl.simRunning = true;
@@ -69,4 +77,73 @@ void Simulation::update(Model &mdl)
 void Simulation::end(Model &mdl)
 {
     mdl.simRunning = false;
+}
+
+// ----------------------------------------------------
+// Run until Fetch state reached
+// ----------------------------------------------------
+void Simulation::run_to_fetch(Model &mdl, TESTBENCH<VRangerRisc> *tb)
+{
+    // If we are already sitting at the Fetch state then we need to
+    // move forward to the Decode state and then search.
+    if (mdl.cm->state == mdl.unit->MatrixState::Fetch)
+    {
+        while (mdl.cm->state != mdl.unit->MatrixState::Decode)
+        {
+            begin(mdl);
+            tb->eval();
+            update(mdl);
+        }
+    }
+
+    while (mdl.cm->state != mdl.unit->MatrixState::Fetch)
+    {
+        begin(mdl);
+        tb->eval();
+        update(mdl);
+    }
+}
+
+void Simulation::run_to_decode(Model &mdl, TESTBENCH<VRangerRisc> *tb)
+{
+    // If we are already sitting at the Fetch state then we need to
+    // move forward to the Execute state and then search.
+    if (mdl.cm->state == mdl.unit->MatrixState::Decode)
+    {
+        while (mdl.cm->state != mdl.unit->MatrixState::Execute)
+        {
+            begin(mdl);
+            tb->eval();
+            update(mdl);
+        }
+    }
+
+    while (mdl.cm->state != mdl.unit->MatrixState::Decode)
+    {
+        begin(mdl);
+        tb->eval();
+        update(mdl);
+    }
+}
+
+void Simulation::run_to_execute(Model &mdl, TESTBENCH<VRangerRisc> *tb)
+{
+    // If we are already sitting at the Fetch state then we need to
+    // move forward to the Fetch state and then search.
+    if (mdl.cm->state == mdl.unit->MatrixState::Execute)
+    {
+        while (mdl.cm->state != mdl.unit->MatrixState::Fetch)
+        {
+            begin(mdl);
+            tb->eval();
+            update(mdl);
+        }
+    }
+
+    while (mdl.cm->state != mdl.unit->MatrixState::Execute)
+    {
+        begin(mdl);
+        tb->eval();
+        update(mdl);
+    }
 }
