@@ -181,7 +181,7 @@ Command Console::handleInput()
             std::vector<std::string> fields = split_string(keyBuffer);
             arg1 = fields.size() > 1 ? fields[1] : "off";
         }
-        else if (keyBuffer.rfind("dtime", 0) == 0)
+        else if (keyBuffer.rfind("dt", 0) == 0)
         {
             cmd = Command::DelayTime;
             std::vector<std::string> fields = split_string(keyBuffer);
