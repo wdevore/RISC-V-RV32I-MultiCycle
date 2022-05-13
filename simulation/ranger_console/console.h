@@ -53,7 +53,7 @@ public:
     void showTermCaret(void);
     void moveCaretToEndl(void);
 
-    void show(Model& mdl);
+    void show(Model &mdl);
 
     void showULIntProperty(int row, int col, std::string lable, unsigned long int value);
     void showIntProperty(int row, int col, std::string lable, int value, int when = -1);
@@ -70,6 +70,6 @@ public:
     void showALUFlagsProperty(int row, int col, std::string label, int value);
     void showRegFile(int row, int col, VlUnpacked<IData, 32> values);
     void showMemory(int row, int col, long int fromAddr, int memLen, VlUnpacked<IData, 1024> mem);
-    // int showPCMarker(int pcMarkerRow, int markerCol, int rowOffset, int pc, long int fromAddr);
-    void showPCMarker(Model& model);
+    void showPCMarker(Model &model);
+    void showPCPriorMarker(Model &model);
 };

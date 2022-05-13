@@ -8,6 +8,14 @@
 #include "utils.h"
 #include "row_indices.h"
 
+#define DEFAULT_COLOR 1
+#define YELLOW_RED 2
+#define YELLOW_DARK_GRAY 3
+#define COLOR_DARK_GRAY 4
+#define COLOR_LIGHT_GRAY 5
+#define YELLOW_LIGHT_GRAY 6
+#define GREEN_LIGHT_GRAY 7
+
 Console::Console(/* args */)
 {
     initscr();
@@ -46,6 +54,14 @@ int Console::init(void)
     {
         puts("Term can't change colors");
     }
+
+    init_color(COLOR_DARK_GRAY, 128, 128, 128);
+    init_color(COLOR_LIGHT_GRAY, 200, 200, 200);
+
+    init_pair(YELLOW_RED, COLOR_YELLOW, COLOR_RED);
+    init_pair(YELLOW_DARK_GRAY, COLOR_YELLOW, COLOR_DARK_GRAY);
+    init_pair(YELLOW_LIGHT_GRAY, COLOR_YELLOW, COLOR_LIGHT_GRAY);
+    init_pair(GREEN_LIGHT_GRAY, COLOR_GREEN, COLOR_LIGHT_GRAY);
 
     return 0;
 }
@@ -137,7 +153,7 @@ Command Console::handleInput()
         }
         else if (keyBuffer.rfind("sg", 0) == 0)
         {
-            // Ex: sig reset h
+            // Ex: sg reset h
             cmd = Command::Signal;
             std::vector<std::string> fields = split_string(keyBuffer);
             arg1 = fields[1]; // reset, ...
@@ -270,7 +286,8 @@ void Console::show(Model &mdl)
 
     int pcWA = mdl.pc->data_o / 4;
     showIntAsHexProperty(+RowPropId::PC, 1, "PC", pcWA);
-    showIntAsHexProperty(+RowPropId::PCPrior, 1, "PC-prior", mdl.pc_prior->data_o);
+    pcWA = mdl.pc_prior->data_o / 4;
+    showIntAsHexProperty(+RowPropId::PCPrior, 1, "PC-prior", pcWA);
     showIntProperty(+RowPropId::PC_LD, 1, "PC_ld", mdl.cm->pc_ld);
     showIntProperty(+RowPropId::PC_SRC, 1, "PC_src", mdl.cm->pc_src);
     showIntAsHexProperty(+RowPropId::PC_SRC_OUT, 1, "PC_src_out", mdl.risc->pc_src_out);
@@ -306,9 +323,10 @@ void Console::show(Model &mdl)
     showIntProperty(+RowPropId::ALU_FLAGS_LD, 1, "ALU_flgs_ld", mdl.alu_flags->ld_i);
     showALUFlagsProperty(+RowPropId::ALU_FLAGS, 1, "ALU_Flags", mdl.alu_flags->data_o);
 
-    showRegFile(2, 50, mdl.regFile->bank);
+    showRegFile(2, 40, mdl.regFile->bank);
 
     showPCMarker(mdl);
+    showPCPriorMarker(mdl);
 }
 
 void Console::_showLabel(int row, int col, std::string label)
@@ -736,18 +754,37 @@ void Console::showPCMarker(Model &mdl)
     int pc = mdl.pc->data_o / 4;
     if (pc >= mdl.fromAddr && pc < 1024)
     {
-        mvaddstr(mdl.p_pcMarker, mdl.markerCol, "   ");
-        attrset(A_BOLD);
+        mvaddstr(mdl.p_pcMarker, mdl.markerCol - 1, "    ");
 
         if (pc < mdl.fromAddr + 32)
         {
             int r = pc - mdl.fromAddr + mdl.rowOffset;
+            attrset(COLOR_PAIR(YELLOW_LIGHT_GRAY) | A_BOLD);
             mvaddstr(r, mdl.markerCol, "PC>");
             mdl.p_pcMarker = r;
         }
     }
     else
-        mvaddstr(mdl.p_pcMarker, mdl.markerCol, "   ");
+        mvaddstr(mdl.p_pcMarker, mdl.markerCol - 1, "    ");
+}
+
+void Console::showPCPriorMarker(Model &mdl)
+{
+    int pc = mdl.pc_prior->data_o / 4;
+    if (pc >= mdl.fromAddr && pc < 1024)
+    {
+        mvaddstr(mdl.p_pcpMarker, mdl.markerCol - 1, "    ");
+
+        if (pc < mdl.fromAddr + 32)
+        {
+            int r = pc - mdl.fromAddr + mdl.rowOffset;
+            attrset(COLOR_PAIR(GREEN_LIGHT_GRAY) | A_BOLD);
+            mvaddstr(r, mdl.markerCol - 1, "PCP>");
+            mdl.p_pcpMarker = r;
+        }
+    }
+    else
+        mvaddstr(mdl.p_pcpMarker, mdl.markerCol - 1, "    ");
 }
 
 // --------------------------------------------------------------------

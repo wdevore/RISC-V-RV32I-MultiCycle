@@ -84,67 +84,85 @@ void Simulation::end(Model &mdl)
 // ----------------------------------------------------
 void Simulation::run_to_fetch(Model &mdl, TESTBENCH<VRangerRisc> *tb)
 {
+    const int maxSteps = 100000;
+    int cnt = 0;
+
     // If we are already sitting at the Fetch state then we need to
     // move forward to the Decode state and then search.
     if (mdl.cm->state == mdl.unit->MatrixState::Fetch)
     {
-        while (mdl.cm->state != mdl.unit->MatrixState::Decode)
+        while (mdl.cm->state != mdl.unit->MatrixState::Decode && cnt < maxSteps)
         {
             begin(mdl);
             tb->eval();
             update(mdl);
+            cnt++;
         }
     }
 
-    while (mdl.cm->state != mdl.unit->MatrixState::Fetch)
+    cnt = 0;
+    while (mdl.cm->state != mdl.unit->MatrixState::Fetch && cnt < maxSteps)
     {
         begin(mdl);
         tb->eval();
         update(mdl);
+        cnt++;
     }
 }
 
 void Simulation::run_to_decode(Model &mdl, TESTBENCH<VRangerRisc> *tb)
 {
+    const int maxSteps = 100000;
+    int cnt = 0;
+
     // If we are already sitting at the Fetch state then we need to
     // move forward to the Execute state and then search.
-    if (mdl.cm->state == mdl.unit->MatrixState::Decode)
+    if (mdl.cm->state == mdl.unit->MatrixState::Decode && cnt < maxSteps)
     {
         while (mdl.cm->state != mdl.unit->MatrixState::Execute)
         {
             begin(mdl);
             tb->eval();
             update(mdl);
+            cnt++;
         }
     }
 
-    while (mdl.cm->state != mdl.unit->MatrixState::Decode)
+    cnt = 0;
+    while (mdl.cm->state != mdl.unit->MatrixState::Decode && cnt < maxSteps)
     {
         begin(mdl);
         tb->eval();
         update(mdl);
+        cnt++;
     }
 }
 
 void Simulation::run_to_execute(Model &mdl, TESTBENCH<VRangerRisc> *tb)
 {
+    const int maxSteps = 100000;
+    int cnt = 0;
+
     // If we are already sitting at the Fetch state then we need to
     // move forward to the Fetch state and then search.
     if (mdl.cm->state == mdl.unit->MatrixState::Execute)
     {
-        while (mdl.cm->state != mdl.unit->MatrixState::Fetch)
+        while (mdl.cm->state != mdl.unit->MatrixState::Fetch && cnt < maxSteps)
         {
             begin(mdl);
             tb->eval();
             update(mdl);
+            cnt++;
         }
     }
 
-    while (mdl.cm->state != mdl.unit->MatrixState::Execute)
+    cnt = 0;
+    while (mdl.cm->state != mdl.unit->MatrixState::Execute && cnt < maxSteps)
     {
         begin(mdl);
         tb->eval();
         update(mdl);
+        cnt++;
     }
 }
 

@@ -95,6 +95,7 @@ int main(int argc, char *argv[])
             if (con->getArg1() == "reset")
             {
                 // Enable cpu reset pin and wait for reset-complete
+                mvaddstr(0, 100, "--- Resetting ---");
                 sim.begin_reset(mdl);
                 sim.update_reset(mdl, tb);
                 sim.end_reset(mdl);
@@ -310,7 +311,7 @@ int main(int argc, char *argv[])
 }
 
 // Tasks:
-// - add run fetch/ebreak etc.
+// - add run to Flag set
 // - SR (setreg) Makes a regfile active for any other actions.
 // - J (jump) command. Sets PC to address.
 //    - Call (???)

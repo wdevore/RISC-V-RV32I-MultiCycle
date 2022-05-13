@@ -47,6 +47,7 @@ struct Model
     long int fromAddr = 0;
     long int memAddr;
     int p_pcMarker = 0;
+    int p_pcpMarker = 0;
     const int markerCol = 67;
     const int rowOffset = 3;
 
