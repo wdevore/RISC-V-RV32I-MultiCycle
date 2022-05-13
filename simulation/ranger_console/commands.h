@@ -22,4 +22,6 @@ enum class Command
     MemScrollUp,
     MemScrollDwn,
     RunTo,
+    SetStepSize,
+    Halt,
 };

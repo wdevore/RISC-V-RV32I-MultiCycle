@@ -160,6 +160,15 @@ Command Console::handleInput()
             if (fields.size() > 2)
                 arg2 = fields[2]; // (l)ow/(h)igh
         }
+        else if (keyBuffer.rfind("ss", 0) == 0)
+        {
+            // Ex: ss 100000
+            cmd = Command::SetStepSize;
+            std::vector<std::string> fields = split_string(keyBuffer);
+            arg1 = fields[1];
+        }
+        else if (keyBuffer == "halt" || keyBuffer == "h")
+            cmd = Command::Halt;
         else if (keyBuffer == "ns")
             cmd = Command::NStep;
         else if (keyBuffer == "hc")
@@ -324,6 +333,10 @@ void Console::show(Model &mdl)
     showALUFlagsProperty(+RowPropId::ALU_FLAGS, 1, "ALU_Flags", mdl.alu_flags->data_o);
 
     showRegFile(2, 40, mdl.regFile->bank);
+    showRegisterBin(37, 40, "Reg: ", mdl.regFile->bank[mdl.selectedReg]);
+
+    mvaddstr(mdl.p_pcMarker, mdl.markerCol - 1, "    ");
+    mvaddstr(mdl.p_pcpMarker, mdl.markerCol - 1, "    ");
 
     showPCMarker(mdl);
     showPCPriorMarker(mdl);
@@ -374,9 +387,9 @@ void Console::showBoolProperty(int row, int col, std::string label, bool value)
         printw("False");
 }
 
-void Console::showRegisterBin(int row, const std::string &header, int value)
+void Console::showRegisterBin(int row, int col, const std::string &header, int value)
 {
-    move(row, 1);
+    move(row, col);
     attrset(A_NORMAL);
     printw("%s: ", header.c_str());
     attrset(A_BOLD);
@@ -754,8 +767,6 @@ void Console::showPCMarker(Model &mdl)
     int pc = mdl.pc->data_o / 4;
     if (pc >= mdl.fromAddr && pc < 1024)
     {
-        mvaddstr(mdl.p_pcMarker, mdl.markerCol - 1, "    ");
-
         if (pc < mdl.fromAddr + 32)
         {
             int r = pc - mdl.fromAddr + mdl.rowOffset;
@@ -773,8 +784,6 @@ void Console::showPCPriorMarker(Model &mdl)
     int pc = mdl.pc_prior->data_o / 4;
     if (pc >= mdl.fromAddr && pc < 1024)
     {
-        mvaddstr(mdl.p_pcpMarker, mdl.markerCol - 1, "    ");
-
         if (pc < mdl.fromAddr + 32)
         {
             int r = pc - mdl.fromAddr + mdl.rowOffset;

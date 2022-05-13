@@ -136,6 +136,16 @@ int main(int argc, char *argv[])
             mdl.stepSize = mdl.fullCycle;
             con->showIntProperty(+RowPropId::StepSize, 1, "Step size", mdl.stepSize);
             break;
+        case Command::SetStepSize:
+            mdl.stepCnt = 0;
+            mdl.stepSize = con->getArg1Int();
+            con->showIntProperty(+RowPropId::StepSize, 1, "Step size", mdl.stepSize);
+            break;
+        case Command::Halt:
+            mdl.stepCnt = 0;
+            mdl.stepSize = 0;
+            con->showIntProperty(+RowPropId::StepSize, 1, "Step size", mdl.stepSize);
+            break;
         case Command::MemRange:
         {
             std::string arg1 = con->getArg1();
@@ -186,6 +196,8 @@ int main(int argc, char *argv[])
             con->showMemory(2, 70, mdl.fromAddr, 1024, mdl.bram->mem);
             break;
         case Command::SetReg:
+            mdl.selectedReg = con->getArg1Int();
+            con->showRegisterBin(37, 40, "Reg: ", mdl.regFile->bank[mdl.selectedReg]);
             break;
         case Command::SetPC:
         {

@@ -59,7 +59,7 @@ public:
     void showIntProperty(int row, int col, std::string lable, int value, int when = -1);
     void showIntAsHexProperty(int row, int col, std::string lable, int value, int when = -1);
     void showBoolProperty(int row, int col, std::string lable, bool value);
-    void showRegisterBin(int row, const std::string &header, int value);
+    void showRegisterBin(int row, int col, const std::string &header, int value);
 
     void showClockEdge(int row, int col, int clkState, int when);
 
