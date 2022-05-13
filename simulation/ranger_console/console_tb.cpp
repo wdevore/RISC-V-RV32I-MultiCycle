@@ -114,6 +114,10 @@ int main(int argc, char *argv[])
             {
                 sim.run_to_execute(mdl, tb);
             }
+            else if (con->getArg1() == "ebreak" || con->getArg1() == "eb")
+            {
+                sim.run_to_ebreak(mdl, tb);
+            }
             con->show(mdl);
             break;
         case Command::NStep:

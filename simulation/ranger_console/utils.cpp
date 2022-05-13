@@ -4,6 +4,7 @@
 #include <iostream>
 #include <iomanip>
 #include <bitset>
+#include <string>
 
 std::vector<std::string> split_string(std::string &cmdLine)
 {
@@ -25,28 +26,28 @@ std::string int_to_hex(unsigned int v, const std::string &header)
 	return stream.str();
 }
 
-std::string int_to_bin(long int v, const std::string &header)
+std::string int_to_bin(int v, const std::string &header)
 {
 	std::stringstream stream;
 	stream << std::bitset<32>(v);
 	return stream.str();
 }
 
-std::string int_to_bin(long int v)
+std::string int_to_bin(int v)
 {
 	std::stringstream stream;
 	stream << std::bitset<4>(v);
 	return stream.str();
 }
 
-std::string int_to_string(long int v)
+std::string int_to_string(int v)
 {
 	std::stringstream stream;
 	stream << v;
 	return stream.str();
 }
 
-long int string_to_int(std::string &v)
+int string_to_int(std::string &v)
 {
 	unsigned long int i;
 	std::stringstream stream;
@@ -66,5 +67,11 @@ int hex_string_to_int(std::string &v)
 	std::stringstream stream;
 	stream << std::hex << v;
 	stream >> i;
+	return i;
+}
+
+int bin_string_to_int(std::string &v)
+{
+	int i = std::stoi(v, 0, 2);
 	return i;
 }

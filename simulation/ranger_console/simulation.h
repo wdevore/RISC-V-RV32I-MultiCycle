@@ -26,4 +26,7 @@ public:
     void run_to_fetch(Model &mdl, TESTBENCH<VRangerRisc> *tb);
     void run_to_decode(Model &mdl, TESTBENCH<VRangerRisc> *tb);
     void run_to_execute(Model &mdl, TESTBENCH<VRangerRisc> *tb);
+
+    void run_to_ebreak(Model &mdl, TESTBENCH<VRangerRisc> *tb);
+
 };

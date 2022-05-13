@@ -147,3 +147,29 @@ void Simulation::run_to_execute(Model &mdl, TESTBENCH<VRangerRisc> *tb)
         update(mdl);
     }
 }
+
+void Simulation::run_to_ebreak(Model &mdl, TESTBENCH<VRangerRisc> *tb)
+{
+    // Code is: 7'b1110011
+    // if (ir_i[20] == 1'b1)
+    //    next_ir_state = ITEbreak;
+    std::string ir;
+    std::string opCode;
+
+    // string is:      0 -> 31
+    // instruction is: 31 -> 0
+    // Scan for 100000ns max
+    for (int i = 0; i < 100000; i++)
+    {
+        begin(mdl);
+        tb->eval();
+        update(mdl);
+        ir = int_to_bin(mdl.ir->data_o, "");
+        opCode = ir.substr(ir.size() - 7, ir.size() - 1);
+        if (opCode == "1110011" && ir[11] == '1')
+        {
+            // mvaddstr(0, 100, opCode.c_str());
+            break;
+        }
+    }
+}
