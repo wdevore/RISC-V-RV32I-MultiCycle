@@ -28,11 +28,6 @@
 // Test bench files
 #include "console_module.h"
 
-// Examples of field access
-// cmU->ALU_Ops::SraOp
-
-// This file is similar to a Verilog test bench file except
-// is C++
 int main(int argc, char *argv[])
 {
     // --------------------------------------------------
@@ -45,9 +40,6 @@ int main(int argc, char *argv[])
     tb->setup();
 
     VRangerRisc *cpu = tb->core();
-
-    // The top module "RangerRisc"
-    // VRangerRisc___024root *top = cpu->rootp;
 
     Model mdl{cpu};
 
