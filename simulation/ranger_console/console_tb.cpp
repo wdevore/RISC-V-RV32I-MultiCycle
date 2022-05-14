@@ -116,10 +116,6 @@ int main(int argc, char *argv[])
             {
                 sim.run_to_ebreak(mdl, tb);
             }
-            else if (con->getArg1() == "ebreak" || con->getArg1() == "eb")
-            {
-                sim.run_to_ebreak(mdl, tb);
-            }
             else if (con->getArg1() == "pc")
             {
                 mdl.targetPC = word_to_byte_addr(con->getArg2Int());
