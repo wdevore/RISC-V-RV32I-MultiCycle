@@ -182,12 +182,11 @@ void Simulation::run_to_ebreak(Model &mdl, TESTBENCH<VRangerRisc> *tb)
         begin(mdl);
         tb->eval();
         update(mdl);
+
         ir = int_to_bin(mdl.ir->data_o, "");
         opCode = ir.substr(ir.size() - 7, ir.size() - 1);
+
         if (opCode == "1110011" && ir[11] == '1')
-        {
-            // mvaddstr(0, 100, opCode.c_str());
             break;
-        }
     }
 }

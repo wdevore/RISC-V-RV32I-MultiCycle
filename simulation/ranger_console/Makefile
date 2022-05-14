@@ -1,11 +1,8 @@
 # Top module is the HDL component being tested.
 TOP = RangerRisc
 
-# 	reset_sequence.cpp \
-
 # A cpp test-bench driver
 TEST_BENCH = \
-	misc.cpp \
 	console.cpp \
 	simulation.cpp \
 	utils.cpp \

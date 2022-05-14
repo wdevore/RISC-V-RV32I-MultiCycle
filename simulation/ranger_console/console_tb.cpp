@@ -198,7 +198,7 @@ int main(int argc, char *argv[])
             break;
         case Command::SetReg:
             mdl.selectedReg = con->getArg1Int();
-            con->showRegisterBin(37, 40, "Reg: ", mdl.regFile->bank[mdl.selectedReg]);
+            con->showRegisterBin(37, 40, "Reg", mdl.regFile->bank[mdl.selectedReg]);
             break;
         case Command::SetPC:
         {
