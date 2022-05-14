@@ -300,9 +300,9 @@ void Console::show(Model &mdl)
     showVectorState(+RowPropId::VecState, 1, "Vec-State", mdl.cm->vector_state);
     showVectorState(+RowPropId::NxVecState, 1, "Nxt Vec-State", mdl.cm->next_vector_state);
 
-    int pcWA = mdl.pc->data_o / 4;
+    int pcWA = byte_to_word_addr(mdl.pc->data_o);
     showIntAsHexProperty(+RowPropId::PC, 1, "PC", pcWA);
-    pcWA = mdl.pc_prior->data_o / 4;
+    pcWA = byte_to_word_addr(mdl.pc_prior->data_o);
     showIntAsHexProperty(+RowPropId::PCPrior, 1, "PC-prior", pcWA);
     showIntProperty(+RowPropId::PC_LD, 1, "PC_ld", mdl.cm->pc_ld);
     showIntProperty(+RowPropId::PC_SRC, 1, "PC_src", mdl.cm->pc_src);
@@ -785,7 +785,7 @@ void Console::showPCMarker(Model &mdl)
     //
     //         |- ------- -|
     //         0           32
-    int pc = mdl.pc->data_o / 4;
+    int pc = byte_to_word_addr(mdl.pc->data_o);
     if (pc >= mdl.fromAddr && pc < 1024)
     {
         if (pc < mdl.fromAddr + 32)
@@ -802,7 +802,7 @@ void Console::showPCMarker(Model &mdl)
 
 void Console::showPCPriorMarker(Model &mdl)
 {
-    int pc = mdl.pc_prior->data_o / 4;
+    int pc = byte_to_word_addr(mdl.pc_prior->data_o);
     if (pc >= mdl.fromAddr && pc < 1024)
     {
         if (pc < mdl.fromAddr + 32)

@@ -75,3 +75,11 @@ int bin_string_to_int(std::string &v)
 	int i = std::stoi(v, 0, 2);
 	return i;
 }
+
+int word_to_byte_addr(int wa) {
+	return wa * 4;
+}
+
+int byte_to_word_addr(int ba) {
+	return ba / 4;
+}

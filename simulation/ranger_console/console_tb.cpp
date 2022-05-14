@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
             }
             else if (con->getArg1() == "pc")
             {
-                mdl.targetPC = con->getArg2Int() * 4;
+                mdl.targetPC = word_to_byte_addr(con->getArg2Int());
                 sim.run_to_pc(mdl, tb);
             }
 

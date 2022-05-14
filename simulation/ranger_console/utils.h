@@ -13,3 +13,6 @@ int hex_string_to_int(std::string& v);
 std::string int_to_bin(int v, const std::string& header);
 std::string int_to_string(int v);
 int bin_string_to_int(std::string &v);
+
+int word_to_byte_addr(int wa);
+int byte_to_word_addr(int ba);
