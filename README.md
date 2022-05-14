@@ -1,33 +1,33 @@
 # Ranger Risc (RISC-V-RV32I-MultiCycle)
 An intuitive multi-cycle RISC-V RV32I soft-core processor for FPGAs using open source software and Folknology's BlackIce Mx.
 
-## Folknology
-![Folknology](Folknology.png)
-
-## Components
-- [x] Mux(s)
-- [x] Register
-- [x] RegisterFile
-- [x] ALU
-- [x] Immediate
-- [x] Memory
-- [x] Pmmu
-- [x] ControlMatrix
-
-## Simulation
-- [x] Mux(s)
-- [x] Register
-- [x] RegisterFile
-- [x] ALU
-- [x] Immediate
-- [x] Memory
-- [x] Pmmu
-- [x] Instruction Register
-- [x] RangerRisc
-
-This repository represents the **After Hours Engineering** Youtube series.
+This repository represents the **[After Hours Engineering](https://www.youtube.com/channel/UCQxFumV2LMrKBMDW6dar_ZA)** Youtube series.
 
 ![AfterHoursEngineering](AfterHoursEngineering.png)
+
+## Components
+    [x] Mux(s)
+    [x] Register
+    [x] RegisterFile
+    [x] ALU
+    [x] Immediate
+    [x] Memory
+    [x] Pmmu
+    [x] ControlMatrix
+
+## Simulation
+    [x] Mux(s)
+    [x] Register
+    [x] RegisterFile
+    [x] ALU
+    [x] Immediate
+    [x] Memory
+    [x] Pmmu
+    [x] Instruction Register
+    [x] RangerRisc
+    [x] Testbench GtkWave
+    [x] Testbench NCurses
+
 
 # RangerRisc Console
 Simulating the softcore processor was done two ways: *Gtkwave* and *NCurses console*.
@@ -37,6 +37,11 @@ Simulating the softcore processor was done two ways: *Gtkwave* and *NCurses cons
 
 ## Gtkwave
 ![Gtkwave](Gtkwave_CountUp.png)
+
+# Hardware
+
+## Folknology
+![Folknology](Folknology.png)
 
 
 
