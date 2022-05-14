@@ -154,6 +154,8 @@ Command Console::handleInput()
             // or: rn decode
             std::vector<std::string> fields = split_string(keyBuffer);
             arg1 = fields[1];
+            if (fields.size() > 2)
+                arg2 = fields[2];
             cmd = Command::RunTo;
         }
         else if (keyBuffer.rfind("sg", 0) == 0)
@@ -831,12 +833,18 @@ const std::string &Console::getArg5(void) { return arg5; }
 
 long int Console::getArg1Int(void)
 {
-    return string_to_int(arg1);
+    if (arg1.find("0x") != std::string::npos)
+        return hex_string_to_int(arg1);
+    else
+        return string_to_int(arg1);
 }
 
 long int Console::getArg2Int(void)
 {
-    return string_to_int(arg2);
+    if (arg2.find("0x") != std::string::npos)
+        return hex_string_to_int(arg2);
+    else
+        return string_to_int(arg2);
 }
 
 bool Console::getArg1Bool(void)

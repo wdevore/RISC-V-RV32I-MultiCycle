@@ -61,7 +61,7 @@ data:
     @02 0x08  00020103  lb x2, 0(x4)      // Shift by N
     @03 0x0C  00420183  lb x3, 4(x4)      // Start pattern
     @04 0x10  00420083  lb x1, 4(x4)      // Right pattern
-    @05 0x14  00820283  lb x5, 8(x4)      // Left pattern
+    @05 0x14  00822283  lw x5, 8(x4)      // Left pattern
 SftL:
     @06 0x18  002191B3  sll x3, x3, x2    // shift left by x2 amount
     @07 0x1C  FE519EE3  bne x3, x5, SftL  // branch if x3 != x5
@@ -82,7 +82,7 @@ SftR:
 Data: 
     @15 0x54  00000001  shift by 1
     @16 0x58  00000001  right pattern
-    @17 0x5C  00000008  left pattern
+    @17 0x5C  80000000  left pattern
     @18 0x60  00000000
     @19 0x64  00000000
     @1A 0x68  00000054  address of data section

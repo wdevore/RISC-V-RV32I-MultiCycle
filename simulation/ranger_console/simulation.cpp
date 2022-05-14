@@ -17,12 +17,6 @@ Simulation::~Simulation()
 {
 }
 
-int Simulation::init(void)
-{
-
-    return 0;
-}
-
 // ----------------------------------------------------
 // Reset sequencce
 // ----------------------------------------------------
@@ -187,6 +181,18 @@ void Simulation::run_to_ebreak(Model &mdl, TESTBENCH<VRangerRisc> *tb)
         opCode = ir.substr(ir.size() - 7, ir.size() - 1);
 
         if (opCode == "1110011" && ir[11] == '1')
+            break;
+    }
+}
+
+void Simulation::run_to_pc(Model &mdl, TESTBENCH<VRangerRisc> *tb)
+{
+    for (int i = 0; i < 100000; i++)
+    {
+        begin(mdl);
+        tb->eval();
+        update(mdl);
+        if (mdl.pc->data_o == mdl.targetPC)
             break;
     }
 }

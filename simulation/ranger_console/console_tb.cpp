@@ -28,6 +28,11 @@
 // Test bench files
 #include "console_module.h"
 
+#define ACTIVE_SIG 0
+#define INACTIVE_SIG 1
+#define CLOCK_HIGH 1
+#define CLOCK_LOW 0
+
 int main(int argc, char *argv[])
 {
     // --------------------------------------------------
@@ -44,7 +49,7 @@ int main(int argc, char *argv[])
     Model mdl{cpu};
 
     // Default to clock low
-    mdl.top->clk_i = 0;
+    mdl.top->clk_i = CLOCK_LOW;
 
     // Allow any initial blocks to execute (timeStep 0->1)
     tb->eval(); // each eval() is 1 "time unit" = 1ns
@@ -56,7 +61,6 @@ int main(int argc, char *argv[])
     bool delayEnabled = true;
 
     bool looping = true;
-    bool clockEnabled = true;
 
     // Disabling the sim means bypassing the call to eval();
     bool simRunning = false;
@@ -72,10 +76,10 @@ int main(int argc, char *argv[])
     con->show(mdl);
 
     // Default to "not" holding CPU in reset state. Reset is active low.
-    mdl.top->reset_i = 1;
+    mdl.top->reset_i = INACTIVE_SIG;
 
     Simulation sim = Simulation{};
-    sim.init();
+
     con->showMemory(2, 70, mdl.fromAddr, 1024, mdl.bram->mem);
 
     while (looping)
@@ -112,6 +116,16 @@ int main(int argc, char *argv[])
             {
                 sim.run_to_ebreak(mdl, tb);
             }
+            else if (con->getArg1() == "ebreak" || con->getArg1() == "eb")
+            {
+                sim.run_to_ebreak(mdl, tb);
+            }
+            else if (con->getArg1() == "pc")
+            {
+                mdl.targetPC = con->getArg2Int() * 4;
+                sim.run_to_pc(mdl, tb);
+            }
+
             con->show(mdl);
             break;
         case Command::NStep:
@@ -141,29 +155,15 @@ int main(int argc, char *argv[])
             break;
         case Command::MemRange:
         {
-            std::string arg1 = con->getArg1();
-            if (arg1.find("0x") != std::string::npos)
-                mdl.fromAddr = hex_string_to_int(arg1);
-            else
-                mdl.fromAddr = con->getArg1Int();
-
+            mdl.fromAddr = con->getArg1Int();
             con->showMemory(2, 70, mdl.fromAddr, 1024, mdl.bram->mem);
         }
         break;
         case Command::MemModify:
         {
-            std::string arg1 = con->getArg1();
-            if (arg1.find("0x") != std::string::npos)
-                mdl.memAddr = hex_string_to_int(arg1);
-            else
-                mdl.memAddr = con->getArg1Int();
+            mdl.memAddr = con->getArg1Int();
 
-            int value;
-            std::string arg2 = con->getArg2();
-            if (arg1.find("0x") != std::string::npos)
-                value = hex_string_to_int(arg2);
-            else
-                value = con->getArg2Int();
+            int value = con->getArg2Int();
 
             mdl.bram->mem[mdl.memAddr] = value;
             con->showMemory(2, 70, mdl.fromAddr, 1024, mdl.bram->mem);
@@ -194,14 +194,9 @@ int main(int argc, char *argv[])
             break;
         case Command::SetPC:
         {
-            std::string arg1 = con->getArg1();
-
             // Note: I set the output even though during simulation
             // you would set the input, load and clock falling edge.
-            if (arg1.find("0x") != std::string::npos)
-                mdl.pc->data_o = hex_string_to_int(arg1);
-            else
-                mdl.pc->data_o = con->getArg1Int();
+            mdl.pc->data_o = con->getArg1Int();
 
             con->showIntAsHexProperty(+RowPropId::PC, 1, "PC", mdl.pc->data_o);
 
@@ -284,7 +279,7 @@ int main(int argc, char *argv[])
         {
             sim.begin(mdl);
 
-            tb->eval(); // each eval() is 1 "timescale" = 1ns
+            tb->eval(); // each eval() is 1 "time-unit" = 1ns
 
             con->show(mdl);
 
@@ -316,6 +311,7 @@ int main(int argc, char *argv[])
 }
 
 // Tasks:
+// add run to PC
 // Add mem mapped IO and interrupts
 // Or UART as a blackbox
 

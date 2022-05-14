@@ -13,8 +13,6 @@ public:
     Simulation();
     ~Simulation();
 
-    int init(void);
-
     void begin(Model &mdl);
     void update(Model &mdl);
     void end(Model &mdl);
@@ -28,5 +26,6 @@ public:
     void run_to_execute(Model &mdl, TESTBENCH<VRangerRisc> *tb);
 
     void run_to_ebreak(Model &mdl, TESTBENCH<VRangerRisc> *tb);
+    void run_to_pc(Model &mdl, TESTBENCH<VRangerRisc> *tb);
 
 };

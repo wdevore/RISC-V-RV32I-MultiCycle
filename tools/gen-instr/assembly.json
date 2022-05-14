@@ -1,5 +1,5 @@
 {
-    "Assembly": "auipc x3, 0x0000DEAD",
+    "Assembly": "lw x5, 8(x4)",
     "PC": "0x18",
     "Labels": [
         {

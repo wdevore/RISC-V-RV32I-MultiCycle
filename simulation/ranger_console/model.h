@@ -51,6 +51,7 @@ struct Model
     const int markerCol = 67;
     const int rowOffset = 3;
     int selectedReg = 0;
+    int targetPC = 0;
     
     vluint64_t timeStep_ns = 0;
     int timeStepDelayms = 10; // Default 10ms = 100Hz
