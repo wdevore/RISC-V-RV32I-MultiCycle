@@ -15,6 +15,9 @@
 #define COLOR_LIGHT_GRAY 5
 #define YELLOW_LIGHT_GRAY 6
 #define GREEN_LIGHT_GRAY 7
+#define CYAN_LIGHT_GRAY 8
+#define BLACK_WHITE 9
+#define MAGENTA_WHITE 1
 
 Console::Console(/* args */)
 {
@@ -62,6 +65,8 @@ int Console::init(void)
     init_pair(YELLOW_DARK_GRAY, COLOR_YELLOW, COLOR_DARK_GRAY);
     init_pair(YELLOW_LIGHT_GRAY, COLOR_YELLOW, COLOR_LIGHT_GRAY);
     init_pair(GREEN_LIGHT_GRAY, COLOR_GREEN, COLOR_LIGHT_GRAY);
+    init_pair(CYAN_LIGHT_GRAY, COLOR_CYAN, COLOR_LIGHT_GRAY);
+    init_pair(BLACK_WHITE, COLOR_BLACK, COLOR_WHITE);
 
     return 0;
 }
@@ -333,7 +338,7 @@ void Console::show(Model &mdl)
     showALUFlagsProperty(+RowPropId::ALU_FLAGS, 1, "ALU_Flags", mdl.alu_flags->data_o);
 
     showRegFile(2, 40, mdl.regFile->bank);
-    showRegisterBin(37, 40, "Reg: ", mdl.regFile->bank[mdl.selectedReg]);
+    showRegisterBin(37, 40, "Reg", mdl.regFile->bank[mdl.selectedReg]);
 
     mvaddstr(mdl.p_pcMarker, mdl.markerCol - 1, "    ");
     mvaddstr(mdl.p_pcpMarker, mdl.markerCol - 1, "    ");
@@ -371,6 +376,7 @@ void Console::showIntProperty(int row, int col, std::string label, int value, in
 void Console::showIntAsHexProperty(int row, int col, std::string label, int value, int when)
 {
     _showLabel(row, col, label);
+
     std::string hexi = int_to_hex(value, "");
     if (when >= 0)
         printw("(%d) %s", when, hexi.c_str());
@@ -401,7 +407,7 @@ void Console::showClockEdge(int row, int col, int clkState, int when)
     attrset(A_NORMAL);
     // mvprintw(row, col, "Clock (%d): ", when);
     mvaddstr(row, col, "Clock: ");
-    attrset(A_BOLD);
+    attrset(COLOR_PAIR(CYAN_LIGHT_GRAY) | A_BOLD);
 
     if (clkState == 0)
     {
@@ -439,6 +445,8 @@ void Console::showClockEdge(int row, int col, int clkState, int when)
 void Console::showCPUState(int row, int col, std::string label, int value)
 {
     _showLabel(row, col, label);
+    attrset(COLOR_PAIR(YELLOW_LIGHT_GRAY) | A_BOLD);
+
     switch (value)
     {
     case 0:
@@ -461,6 +469,8 @@ void Console::showCPUState(int row, int col, std::string label, int value)
 void Console::showVectorState(int row, int col, std::string label, int value)
 {
     _showLabel(row, col, label);
+    attrset(COLOR_PAIR(YELLOW_LIGHT_GRAY) | A_BOLD);
+
     switch (value)
     {
     case 0:
@@ -486,6 +496,8 @@ void Console::showVectorState(int row, int col, std::string label, int value)
 void Console::showIRState(int row, int col, std::string label, int value)
 {
     _showLabel(row, col, label);
+    attrset(COLOR_PAIR(YELLOW_LIGHT_GRAY) | A_BOLD);
+
     switch (value)
     {
     case 0:
@@ -617,6 +629,8 @@ void Console::showALUOp(int row, int col, std::string label, int value)
 void Console::showALUFlagsProperty(int row, int col, std::string label, int value)
 {
     _showLabel(row, col, label);
+    attrset(COLOR_PAIR(BLACK_WHITE) | A_BOLD);
+
     switch (value)
     {
     case 0b0000:
@@ -674,7 +688,10 @@ void Console::showALUFlagsProperty(int row, int col, std::string label, int valu
 
 void Console::showRegFile(int row, int col, VlUnpacked<IData, 32> values)
 {
+    attrset(COLOR_PAIR(BLACK_WHITE) | A_BOLD);
     mvaddstr(row, col, "--- RegFile ---");
+    attrset(A_NORMAL);
+
     row++;
 
     for (int i = 0; i < 32; i++)
@@ -699,7 +716,9 @@ void Console::showMemory(int row, int col, long int fromAddr, int memLen, VlUnpa
     // int row = 1;
     // int col = 70;
 
+    attrset(COLOR_PAIR(BLACK_WHITE) | A_BOLD);
     mvaddstr(row, col, " ---------- Memory -------");
+    attrset(A_NORMAL);
     row++;
 
     if (fromAddr < 0)

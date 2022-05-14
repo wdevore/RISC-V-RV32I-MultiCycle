@@ -84,6 +84,7 @@ int main(int argc, char *argv[])
 
     Simulation sim = Simulation{};
     sim.init();
+    con->showMemory(2, 70, mdl.fromAddr, 1024, mdl.bram->mem);
 
     while (looping)
     {
@@ -323,8 +324,10 @@ int main(int argc, char *argv[])
 }
 
 // Tasks:
+// Add mem mapped IO and interrupts
+// Or UART as a blackbox
+
 // - add run to Flag set
-// - SR (setreg) Makes a regfile active for any other actions.
 // - J (jump) command. Sets PC to address.
 //    - Call (???)
 
