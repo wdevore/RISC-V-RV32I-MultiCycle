@@ -355,7 +355,7 @@ void Console::_showLabel(int row, int col, std::string label)
     dataDirty = true;
     attrset(A_NORMAL);
     move(row, col);
-    printw("                        ");
+    printw("                               ");
     move(row, col);
     printw("%s: ", label.c_str());
     attrset(A_BOLD);
