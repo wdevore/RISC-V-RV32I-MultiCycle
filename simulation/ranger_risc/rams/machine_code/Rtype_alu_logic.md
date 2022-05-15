@@ -245,8 +245,8 @@ sltu  x3, x1, x2
 ## Memory layout
 ```
 @0 00000002
-@1 00022083   lw   x1, x4, 0
-@2 00820103   lb   x2, x4, 8
+@1 00022083   lw x1, 0(x4)
+@2 00820103   lb   x2, 8(x4)
 @3 0020B1B3   sltu x3, x1, x2
 @4 00100073   ebreak
 @5 0000000A     
@@ -257,4 +257,25 @@ sltu  x3, x1, x2
 ...
 @10 00000004    <-- Reset vector
 @11 00000000
+```
+
+# xor
+x4 = 0x28  <-- preloaded via initial block
+
+## Memory layout
+```
+   @00 00000002
+   @01 00022083  lw x1, 0(x4)
+   @02 00422103  lw x2, 4(x4)
+loop:
+   @03 0020C0B3  xor x1, x1, x2
+   @04 FFFFF06F  jal x0, loop
+   @05 0000000A     
+   ...
+   @0A AAAAAAAA  data for x1
+   @0B FFFFFFFF  data for x2
+   @0C 00000009
+   ...
+   @10 00000004  Reset vector
+   @11 00000000
 ```
