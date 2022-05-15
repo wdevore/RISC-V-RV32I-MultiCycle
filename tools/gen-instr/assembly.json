@@ -1,5 +1,5 @@
 {
-    "Assembly": "addi x4, x0, 0xa",
+    "Assembly": "addi x4, x0, 0x1b",
     "PC": "0x24",
     "Labels": [
         {

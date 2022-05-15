@@ -201,6 +201,14 @@ Command Console::handleInput()
             std::vector<std::string> fields = split_string(keyBuffer);
             arg1 = fields.size() > 1 ? fields[1] : "0";
         }
+        else if (keyBuffer.rfind("crg", 0) == 0)
+        {
+            cmd = Command::ChangeReg;
+            // Change a Regfile register value
+            std::vector<std::string> fields = split_string(keyBuffer);
+            arg1 = fields.size() > 1 ? fields[1] : "0";
+            arg2 = fields.size() > 2 ? fields[2] : "0";
+        }
         else if (keyBuffer.rfind("mr", 0) == 0)
         {
             // Set memory display range

@@ -12,6 +12,7 @@ enum class Command
     FLStep, // full cycle step
     Signal,
     SetReg, // Activate a Regfile register
+    ChangeReg,
     EnableSim,
     EnableDelay,
     DelayTime,

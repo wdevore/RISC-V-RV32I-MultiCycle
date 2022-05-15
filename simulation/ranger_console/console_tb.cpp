@@ -188,6 +188,14 @@ int main(int argc, char *argv[])
             con->showRegisterBin(37, 40, "Reg", mdl.regFile->bank[mdl.selectedReg]);
             con->showRegisterInt(38, 40, "Reg", mdl.regFile->bank[mdl.selectedReg]);
             break;
+        case Command::ChangeReg:
+        {
+            int reg = con->getArg1Int();
+            int val = con->getArg2Int();
+            mdl.regFile->bank[reg] = val;
+            con->showRegFile(2, 40, mdl.regFile->bank);
+        }
+        break;
         case Command::SetPC:
         {
             // Note: I set the output even though during simulation

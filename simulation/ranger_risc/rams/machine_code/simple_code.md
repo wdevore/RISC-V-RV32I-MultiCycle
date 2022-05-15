@@ -18,7 +18,7 @@ inc:
 data: 
     @0A 0x28  00000005  max count
     @0B 0x2C  00000001  inc by 1
-    @0C 0x30  00000001  counter starts at 0
+    @0C 0x30  00000001  counter starts at 1
     @0D 0x34  00000000
     @0E 0x38  00000000
     @0F 0x3C  00000028  address of data section
@@ -249,8 +249,7 @@ Data:
 ## Fibonacci
 fibo.ram
 
-0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144
-   x1 x2
+0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181, 6765, 10946, 17711, 28657, 46368, 75025, 121393, 196418, 317811
 
 loop
     x3 = x1 + x2
@@ -261,16 +260,16 @@ loop
 ## Memory layout
 ```
     @00 0x00  00000002
-    @01 0x04  000000B3  add x1, x0, x0      // 0
+    @01 0x04  000000B3  add  x1, x0, x0     // 0
     @02 0x08  00100113  addi x2, x0, 1      // 1
-    @03 0x0C  00A00213  addi x4, x0, 0xa    // x4 = 10
-    @04 0x10  000002B3  add x5, x0, x0      // x5 = 0
+    @03 0x0C  01B00213  addi x4, x0, 0x1b   // x4 = 27 = how many
+    @04 0x10  000002B3  add  x5, x0, x0     // x5 = 0
 Next:
-    @05 0x14  002081B3  add x3, x1, x2
-    @06 0x18  000100B3  add x1, x2, x0      // x1 = x2
-    @07 0x1C  00018133  add x2, x3, x0      // x2 = x3
+    @05 0x14  002081B3  add  x3, x1, x2     // next fibonacci #
+    @06 0x18  000100B3  add  x1, x2, x0     // x1 = x2
+    @07 0x1C  00018133  add  x2, x3, x0     // x2 = x3
     @08 0x20  00128293  addi x5, x5, 1      // x5++
-    @09 0x24  FE42C8E3  blt x5, x4, Next
+    @09 0x24  FE42C8E3  blt  x5, x4, Next
     @0A 0x28  00100073  ebreak              // Halt
     @0B 0x2C  00000000  
     @0C 0x30  00000000  
