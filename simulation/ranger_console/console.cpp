@@ -341,6 +341,7 @@ void Console::show(Model &mdl)
 
     showRegFile(2, 40, mdl.regFile->bank);
     showRegisterBin(37, 40, "Reg", mdl.regFile->bank[mdl.selectedReg]);
+    showRegisterInt(38, 40, "Reg", mdl.regFile->bank[mdl.selectedReg]);
 
     mvaddstr(mdl.p_pcMarker, mdl.markerCol - 1, "    ");
     mvaddstr(mdl.p_pcpMarker, mdl.markerCol - 1, "    ");
@@ -402,6 +403,15 @@ void Console::showRegisterBin(int row, int col, const std::string &header, int v
     printw("%s: ", header.c_str());
     attrset(A_BOLD);
     printw("%s", int_to_bin(value, "").c_str());
+}
+
+void Console::showRegisterInt(int row, int col, const std::string &header, int value)
+{
+    move(row, col);
+    attrset(A_NORMAL);
+    printw("%s: ", header.c_str());
+    attrset(A_BOLD);
+    printw("%d", value);
 }
 
 void Console::showClockEdge(int row, int col, int clkState, int when)
