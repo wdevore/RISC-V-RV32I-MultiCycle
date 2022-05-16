@@ -415,7 +415,8 @@ void Console::showRegisterBin(int row, int col, const std::string &header, int v
 
 void Console::showRegisterInt(int row, int col, const std::string &header, int value)
 {
-    move(row, col);
+    mvaddstr(row, col, "                      ");
+    move(row,col);
     attrset(A_NORMAL);
     printw("%s: ", header.c_str());
     attrset(A_BOLD);

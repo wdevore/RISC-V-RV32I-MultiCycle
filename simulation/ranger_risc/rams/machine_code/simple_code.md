@@ -238,13 +238,16 @@ NoEq:
     @14 0x50  00000000
 Data: 
     @15 0x54  42454546  BEEF
-    @16 0x58  44454546  DEEF
+    @16 0x58  42454546  DEEF
     @17 0x5C  00000000
     @18 0x60  00000000
     @19 0x64  00000000
     @1A 0x68  00000054  address of data section
     @1B 0x6C  00000000  
 ```
+
+sg reset
+mm 0x015 0x44454546
 
 ## Fibonacci
 fibo.ram
