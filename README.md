@@ -33,7 +33,7 @@ This repository represents the **[After Hours Engineering](https://www.youtube.c
 Simulating the softcore processor was done two ways: *Gtkwave* and *NCurses console*.
 
 ## NCurses console
-![NCursesConsole](NcursesConsole.png)
+![RangerRiscConsole](RangerRiscConsole.gif)
 
 ## Gtkwave
 ![Gtkwave](Gtkwave_CountUp.png)
