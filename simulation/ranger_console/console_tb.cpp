@@ -314,30 +314,3 @@ int main(int argc, char *argv[])
     exit(EXIT_SUCCESS);
 }
 
-// Tasks:
-// add run to PC
-// Add mem mapped IO and interrupts
-// Or UART as a blackbox
-
-// - add run to Flag set
-// - J (jump) command. Sets PC to address.
-//    - Call (???)
-
-// - UART or PIO
-// This requires a plain testbench that interacts solely with a terminal
-
-// async futures
-// https://devdreamz.com/question/844791-user-input-without-pausing-code-c-console-application
-// https://forum.juce.com/t/async-input-stream/48817/4
-// https://www.codeproject.com/Questions/5275669/How-can-I-use-input-without-waiting-user-to-give-s
-// https://www.linuxquestions.org/questions/programming-9/how-do-i-watch-for-keyboard-input-without-waiting-in-c-858521/
-// http://www.cplusplus.com/forum/general/242502/
-
-// curses
-// https://stackoverflow.com/questions/7772341/how-to-get-a-character-from-stdin-without-waiting-for-user-to-put-it
-// http://www.c-faq.com/osdep/cbreak.html
-
-// coredumps:
-// ulimit -c unlimited
-// gdb /media/RAMDisk/VRangerRisc
-//    backtrace
