@@ -1,6 +1,6 @@
 {
-    "Assembly": "addi x4, x0, 0x1b",
-    "PC": "0x24",
+    "Assembly": "mret",
+    "PC": "0x118",
     "Labels": [
         {
             "Cnt": "0x14"
@@ -33,7 +33,7 @@
             "NoEq": "0x44"
         },
         {
-            "Next": "0x14"
+            "Main": "0x0"
         }
     ],
     "RegFile": [

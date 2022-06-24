@@ -46,8 +46,11 @@ func IntToBinaryString(value int64) string {
 		return fmt.Sprintf("%032b", value)
 	} else {
 		v := fmt.Sprintf("%032b", -value)
+
 		binArr := BinaryStringToArray(v)
+
 		TwosComplement(binArr)
+
 		return BinaryArrayToString(binArr, false)
 	}
 }

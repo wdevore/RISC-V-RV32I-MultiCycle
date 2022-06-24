@@ -32,8 +32,8 @@ logic [DATA_WIDTH-1:0] bank [0:WORDS-1] /*verilator public*/;
 initial begin
     `ifdef POPULATE_REGISTERS
         // $display("------Populating RegisterFile----");
-        bank[0] =  32'h00000002;       // Simple data for testing
-        bank[1] =  32'h00000005;
+        bank[0] =  32'h00000000;       // Simple data for testing
+        bank[1] =  32'h00000099;
         bank[2] =  32'h00000006;
         bank[3] =  32'h00000008;
         bank[4] =  32'h00000028;   // x4
@@ -41,7 +41,7 @@ initial begin
         bank[6] =  32'h0000000C;
         bank[7] =  32'h0000000D;
         bank[8] =  32'h0000000E;
-        bank[9] =  32'h0000000F;
+        bank[9] =  32'h00000101;
         bank[10] = 32'h00000012;   // x10
         bank[11] = 32'h00000014;
         bank[12] = 32'h00000016;

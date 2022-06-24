@@ -3,18 +3,31 @@
 `timescale 1ns/1ps
 `endif
 
+// **__**__**__**__**__**__**__**__**__**__**__**__**__**__**__
+// This module is not used. It was an early design that
+// didn't pan out.
+// **__**__**__**__**__**__**__**__**__**__**__**__**__**__**__
+
+// I turn the warning off because the Makefile
+// will properly copy .sv to "ControlMatrix.sv"
+
+/* verilator lint_off DECLFILENAME */
 module ControlMatrix
+/* verilator lint_on DECLFILENAME */
 #(
     parameter DATA_WIDTH = 32
 )
 (
     input logic clk_i,
     // verilator lint_off UNUSED
-    input logic [DATA_WIDTH-1:0] ir_i,    // Instruction register (some bits aren't evaluated)
+    input logic [DATA_WIDTH-1:0] ir_i,        // Instruction register (some bits aren't evaluated)
     // verilator lint_on UNUSED
-    input logic reset_i,                  // CPU reset (active low)
-    input logic mem_busy_i,               // Memory ready (active high)
-    input logic [`FlagSize-1:0] flags_i,  // Flags: V,N,C,Z
+    input logic reset_i,                      // CPU reset (active low)
+    input logic mem_busy_i,                   // Memory ready (active high)
+    input logic [`FlagSize-1:0] flags_i,      // Flags: V,N,C,Z
+    // verilator lint_off UNUSED
+    input logic [DATA_WIDTH-1:0] csrs_i [0:`CSRCnt-1],
+    // verilator lint_on UNUSED
     
     // **--**--**--**--**--**--**--**--**--**--**--**--**--
     // Outputs
@@ -33,7 +46,19 @@ module ControlMatrix
     output logic [`BMuxSelectSize-1:0] b_src_o,     // B_Mux source select
     output logic alu_ld_o,                          // ALU output register load
     output logic [`ALUOpSize-1:0] alu_op_o,         // ALU operation
-    output logic [`WDSelectSize-1:0] wd_src_o,       // Write-Data source select
+    output logic [`WDSelectSize-1:0] wd_src_o,      // Write-Data source select
+    // -----------------------
+    // CSR controls
+    // -----------------------
+    output logic rsa_ld_o,                          // RsA load
+    output logic csr_rd_o,                          // CSR Read
+    output logic csr_wr_o,                          // CSR Write
+    output logic [`CSRAddrSize-1:0] csr_addr_o,     // CSR Address
+    output logic csradr_src_o,
+    output logic [1:0] csr_src_o,
+    output logic [DATA_WIDTH-1:0] csr_data_o,        // Data for CSR register
+    output logic [DATA_WIDTH-1:0] csr_ir_o,          // Psuedo IR
+    output logic csrir_src_o,
 
     // **--**--**--**--**--**--**--**--**--**--**--**--**--
     // DEBUGGING Outputs
@@ -118,6 +143,31 @@ logic [`ALUOpSize-1:0] alu_op;
 
 logic take_branch;
 
+// ----------------------------------------------------
+// CSRs
+// ----------------------------------------------------
+logic [4:0] regFDest = ir_i[11:7]; // CSR reg file destination
+logic [4:0] regFRs1 = ir_i[19:15]; // reg file rs1
+logic rsa_ld;
+logic csr_rd;
+logic csr_wr;
+
+// Standard flip-flop style registers
+logic [DATA_WIDTH-1:0] csrs [0:`CSRCnt-1] /*verilator public*/;
+logic irqDetected;
+logic rdIsX0 = regFDest == 5'b00000;
+logic rs1IsX0 = regFRs1 == 5'b00000;
+
+// logic [`CSRAddrSize-1:0] csr_addr;
+// logic csradr_src;
+// logic [1:0] csr_src;
+// logic [DATA_WIDTH-1:0] csr_mie;
+// logic [DATA_WIDTH-1:0] csr_mstatus;
+// logic [DATA_WIDTH-1:0] csr_mip;
+// logic [DATA_WIDTH-1:0] csr_data;
+// logic [DATA_WIDTH-1:0] csr_ir;
+// logic csrir_src;
+
 // ---------------------------------------------------
 // Simulation
 // ---------------------------------------------------
@@ -178,6 +228,23 @@ always_comb begin
     take_branch = 1'b0;
 
     rst_src = 1'b0;     // Default to IR funct3 source
+
+    rsa_ld = RgLdEnabled;
+
+    // CSRs
+    irqDetected = 1'b0;
+
+    // csr_wr = RWInActive;
+    // csr_rd = RWInActive;
+    // csradr_src = 1'b1;
+    // csr_src = CSRSrcRsA;
+    // csr_addr = ir_i[31:20];
+    // csr_mie = csrs_i[`CSR_Mie];
+    // csr_mstatus = csrs_i[`CSR_Mstatus];
+    // csr_mip = csrs_i[`CSR_Mip];
+    // csr_data = {DATA_WIDTH{1'b0}};
+    // csr_ir = {DATA_WIDTH{1'b0}};
+    // csrir_src = IIRSource;
 
     // ======================================
     // Main state machine
@@ -288,10 +355,17 @@ always_comb begin
             // Set next InsRtuction state
             case (ir_opcode)
                 `ITYPE_E: begin
-                    if (ir_i[20] == 1'b1)
-                        next_ir_state = ITEbreak;
+                    // For CSRs funct3 indicates the next IR state
+                    if (funct3 == 3'b000) begin
+                        if (ir_i[20] == 1'b1)
+                            next_ir_state = ITEbreak;
+                        else begin
+                            next_ir_state = ITECall;
+                        end
+                    end
                     else begin
-                        next_ir_state = ITECall;
+                        // Must be a CSR instruction
+                        next_ir_state = ITCSR;
                     end
                 end
 
@@ -369,8 +443,7 @@ always_comb begin
                     // transition to fetch.
                     // This effectively is a NOP
                     if (dstRg == 5'b00000) begin
-                        mem_rd = 1'b0;
-                        next_state = Fetch;
+                        next_ir_state = PreFetch;
                     end
                     else
                         next_ir_state = RTCmpl;
@@ -384,9 +457,7 @@ always_comb begin
                     rg_wr = RgLdEnabled;
 
                     // Setup Fetch next instruction the PC is pointing at.
-                    mem_rd = 1'b0;
-
-                    next_state = Fetch;
+                    next_ir_state = PreFetch;
                 end
 
                 // ---------------------------------------------------
@@ -413,8 +484,7 @@ always_comb begin
                     // transition to fetch.
                     // This effectively is a NOP
                     if (dstRg == 5'b00000) begin
-                        mem_rd = 1'b0;
-                        next_state = Fetch;
+                        next_ir_state = PreFetch;
                     end
                     else
                         next_ir_state = ITALUCmpl;
@@ -429,8 +499,7 @@ always_comb begin
 
 
                     // Setup Fetch next instruction the PC is pointing at.
-                    mem_rd = 1'b0;
-                    next_state = Fetch;
+                    next_ir_state = PreFetch;
                 end
 
                 // ---------------------------------------------------
@@ -481,12 +550,7 @@ always_comb begin
                     wd_src = WDSrcMDR;
                     rg_wr = RgLdEnabled;   // Enable loading RegisterFile
 
-                    // This is the last state for this instruction, so
-                    // we setup to read the next instruction for the
-                    // Fetch state.
-                    mem_rd = 1'b0;
-
-                    next_state = Fetch;
+                    next_ir_state = PreFetch;
                 end
 
                 // ---------------------------------------------------
@@ -647,15 +711,10 @@ always_comb begin
                     if (take_branch) begin
                         pc_src = PCSrcAluImm;
                         pc_ld = RgLdEnabled;
-                        // Need extra state to "re"-load PC with branch
-                        next_ir_state = PreFetch;
                     end
-                    else begin
-                        // Branch NOT taken continue to next instruction.
-                        // Fetch next instruction the PC is pointing at.
-                        mem_rd = 1'b0;
-                        next_state = Fetch;
-                    end
+
+                    // Need extra state to "re"-load PC with branch
+                    next_ir_state = PreFetch;
                 end
 
                 // ---------------------------------------------------
@@ -673,7 +732,8 @@ always_comb begin
                     // ------ Optimization ------
                     // If the destination register is x0 then
                     // we don't need a writeback cycle so just
-                    // transition to prefetch.
+                    // transition to prefetch and not fetch because
+                    // we need the extra cycle.
                     if (dstRg == 5'b00000) begin
                         next_ir_state = PreFetch;
                     end
@@ -724,7 +784,7 @@ always_comb begin
                 end
 
                 // ---------------------------------------------------
-                // I-Type ecall, ebreak 
+                // I-Type System instructions: ecall, ebreak, mret
                 // ---------------------------------------------------
                 ITEbreak: begin
                     ready = 1'b0; // Signal the great unknown!
@@ -736,8 +796,161 @@ always_comb begin
                     next_ir_state = ITECall;
                 end
 
+                ITMret: begin
+                    // Return from a Trap handler.
+                    // The address is in Mepc CSR
+                    next_ir_state = ITECall;
+                end
+
+                // ---------------------------------------------------
+                // I-Type CSRs
+                // ---------------------------------------------------
+                ITCSR: begin
+                    // RsA was loaded while transitioning from
+                    // Decode to Execute
+                    rsa_ld = RgLdDisabled;
+
+                    case (funct3)
+                        CSRRW: begin
+                            if (rdIsX0) begin
+                                // For this instruction configuration
+                                // the specs say we bypass read side effects.
+                                // But we do Write rs1 (aka x0) to CSR for potential
+                                // write side-effects.
+                                
+                                // Write RsA to CSR
+                                // Causes Write side-effects on csr.
+                                csr_wr = RWActive;
+
+                                // Fetch next instruction at the same time.
+                                mem_rd = 1'b0;
+                                next_state = Fetch;
+                            end
+                            else begin
+                                // Read CSR
+                                csr_rd = RWActive;
+                                next_ir_state = ITCSRLd;
+                            end
+                        end
+                        CSRRS, CSRRC: begin
+                            if (rs1IsX0) begin
+                                // We only read from CSR and throw it into the void
+                                csr_rd = RWActive;
+
+                                // Fetch next instruction at the same time.
+                                mem_rd = 1'b0;
+                                next_state = Fetch;
+                            end
+                            else begin
+                                // Read CSR
+                                csr_rd = RWActive;
+                                next_ir_state = ITCSRLd;
+                            end
+                        end
+                        CSRRWI, CSRRSI, CSRRCI: begin
+                            // Read CSR
+                            csr_rd = RWActive;
+                            next_ir_state = ITCSRLd;
+                        end
+                        default:
+                            // Should really treat this as an illegal instruction.
+                            next_state = Fetch;
+                    endcase
+                end
+
+                ITCSRLd: begin
+                    rsa_ld = RgLdDisabled;  // Sustain signal
+
+                    // Write csr to rd.
+                    // Causes Read side-effects on csr.
+                    wd_src = WDSrcCSR;
+                    rg_wr = RWActive;
+                    next_ir_state = ITCSRRdLd;
+                end
+
+                ITCSRRdLd: begin
+                    rsa_ld = RgLdDisabled;  // Sustain signal
+                    
+                    // Write RsA to CSR
+                    // Causes Write side-effects on csr.
+                    // If set/clear then a boolean expression is applied
+                    csr_wr = RWActive;
+                    next_ir_state = PreFetch;
+                end
+
                 PreFetch: begin
-                    // Setup Fetch next instruction the PC is pointing at.
+                    // Check if an interrupt occurred and that we can honor it.
+                    //            Global enable                 M-mode enable                Pending interrupts
+                    irqDetected = csr_mstatus[`CSR_Mstatus_MIE] && csr_mie[`CSR_Mie_MEIE] && csr_mip[`CSR_Mip_MEIE];
+
+                    if (irqDetected) begin
+                        // Okay, there is an interrupt pending
+
+                        // Backup Global bit
+                        // csr_mstatus[`CSR_Mstatus_MPIE] = csr_mstatus[`CSR_Mstatus_MIE];
+
+                        // csr_mstatus[`CSR_Mstatus_MIE] = 1'b0;
+
+                        // // Disable Global interrupts via a synthized CSRRC
+                        // csr_src = CSRSrcCM;  
+                        // csr_data = 32'h00000008; // The mask 0x0000_0008
+                        // // csr_wr = RWActive;
+
+                        // csradr_src = CMCSRAddr;
+                        // csr_addr = Mstatus;
+
+                        // csrir_src = CMCSRIr;
+                        // csr_ir = 32'h30047073;// csrrci x0, mstatus, 0x08
+
+                        next_ir_state = IRQ0;
+
+                    $display("Global: %h", csr_mstatus);  //0000_0080
+                    // $display("Global: %b", csr_mstatus[`CSR_Mstatus_MIE]);
+                    // $display("M-mode: %b", csr_mie[`CSR_Mie_MEIE]);
+                    // $display("Mip: %b", csr_mip[`CSR_Mip_MEIE]);
+                    end
+                    else begin
+                        // Setup Fetch next instruction the PC is pointing at.
+                        mem_rd = 1'b0;
+                        next_state = Fetch;
+                    end
+                end
+
+                IRQ0: begin
+                    // Jump to Trap by loading
+                    // PC <== mtvec
+
+                        // Disable Global interrupts via a synthized CSRRC
+                        csr_src = CSRSrcCM;  
+                        csr_data = 32'h00000008; // The mask 0x0000_0008
+                        csr_wr = RWActive;
+
+                        csradr_src = CMCSRAddr;
+                        csr_addr = Mstatus;
+
+                        csrir_src = CMCSRIr;
+                        csr_ir = 32'h30047073;// csrrci x0, mstatus, 0x08
+
+                        // csr_wr = RWActive;
+
+                    // pc_src = PCSrcCSR;
+                    // csr_rd = RWActive;
+                    // csradr_src = CMCSRAddr;
+                    // csr_addr = Mtvec;
+
+                    next_ir_state = IRQ1;
+                end
+
+                IRQ1: begin
+                    pc_src = PCSrcCSR;
+                    pc_ld = RgLdEnabled;
+                    csradr_src = CMCSRAddr;
+                    csr_addr = Mtvec;
+
+                    next_ir_state = IRQ2;
+                end
+
+                IRQ2: begin
                     mem_rd = 1'b0;
                     next_state = Fetch;
                 end
@@ -794,6 +1007,17 @@ assign alu_ld_o = alu_ld;
 assign rst_src_o = rst_src;
 assign mdr_ld_o = mdr_ld;
 assign alu_op_o = alu_op;
+
+assign rsa_ld_o = rsa_ld;
+assign csr_rd_o = csr_rd;
+assign csr_wr_o = csr_wr;
+
+assign csr_addr_o = csr_addr;
+assign csradr_src_o = csradr_src;
+assign csr_src_o = csr_src;
+assign csr_data_o = csr_data;
+assign csr_ir_o = csr_ir;
+assign csrir_src_o = csrir_src;
 
 `ifdef DEBUG_MODE
 // assign out_ld_o = out_ld;

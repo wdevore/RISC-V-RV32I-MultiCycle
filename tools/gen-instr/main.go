@@ -69,6 +69,10 @@ func main() {
 		machineCode, err = assemblers.ItypeAlu(context)
 	case "beq", "bne", "blt", "bge", "bltu", "bgeu":
 		machineCode, err = assemblers.BtypeBranch(context)
+	case "csrrw", "csrrs", "csrrc", "csrrwi", "csrrsi", "csrrci":
+		machineCode, err = assemblers.ItypeCSR(context)
+	case "mret":
+		machineCode, err = assemblers.MRet(context)
 	}
 
 	if err != nil {

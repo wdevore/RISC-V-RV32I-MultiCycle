@@ -1,4 +1,4 @@
 0 Jal/R
 1 ALUOut
 2 MDR
-3 unused
+3 CSR

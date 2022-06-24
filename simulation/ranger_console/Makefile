@@ -1,5 +1,15 @@
+# With (yes) or Without (no) CSRs
+WITH_CSRs = yes
+
 # Top module is the HDL component being tested.
-TOP = RangerRisc
+
+ifeq ($(WITH_CSRs), yes)
+	TOP = RangerRiscCSRs
+	MATRIX = ControlMatrixCSRs
+else
+	TOP = RangerRisc
+	MATRIX = ControlMatrix
+endif
 
 # A cpp test-bench driver
 TEST_BENCH = \
@@ -12,10 +22,10 @@ TEMPLATE_HEADER = \
 	console_module.h
 
 HEADERS = \
+	model.h \
 	commands.h \
 	row_indices.h \
 	console.h \
-	model.h \
 	simulation.h \
 	utils.h \
 	property.h
@@ -27,13 +37,14 @@ MODULES_FILES =  \
 	../../modules/Mux8.sv \
 	../../modules/Mux4.sv \
 	../../modules/Mux2.sv \
-	../../modules/ControlMatrix.sv \
+	../../modules/${MATRIX}.sv \
 	../../modules/Register.sv \
 	../../modules/Memory.sv \
 	../../modules/ALU.sv \
 	../../modules/Immediate.sv \
 	../../modules/RegisterFile.sv \
 	../../modules/Pmmu.sv \
+	../../modules/CSRs.sv \
 	${TOP}.sv
 	
 # output build directory
@@ -60,6 +71,7 @@ clean:
 # 2) run "make" against make file and append extra flags for
 #    for stronger warnings and ncurses library dependency
 # 3) run the executable produced by the ".mk" makefile
+
 console: buildSimMk runMake launch
 	@echo "################## Console ##################"
 
@@ -79,7 +91,10 @@ buildSimMk:
 
 runMake:
 	@echo "################## Running Makefile ##################"
-	make -j4 -C ${BUILD_DIR} -f V${TOP}.mk CXXFLAGS='-Wall -Wextra -g' LIBS='-lncurses'
+	make -j4 \
+	-C ${BUILD_DIR} \
+	-f V${TOP}.mk \
+	CXXFLAGS='-Wall -Wextra -g' LIBS='-lncurses'
 
 launch:
 	@echo "################## Simulating ##################"

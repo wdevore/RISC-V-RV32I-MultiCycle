@@ -1,4 +1,5 @@
 0 ALUImm
 1 ALUOut
 2 ResetVector
-3 ResetAddr
+3 CSROut
+4 ResetAddr

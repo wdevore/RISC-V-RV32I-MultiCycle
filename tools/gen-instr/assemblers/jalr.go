@@ -61,6 +61,7 @@ func Jalr(json map[string]interface{}) (macCode string, err error) {
 	//  31                                                            0    logical order
 	//  MSB                                                           LSB
 
+	// 111111111111 1111 1111 1111 1011 1100
 	// Immediate
 	instruction[31] = produced[20]
 	instruction[30] = produced[21]

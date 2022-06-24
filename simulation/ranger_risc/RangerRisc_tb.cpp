@@ -43,7 +43,7 @@ void dumpMem(VRangerRisc_Memory *bram)
 {
     std::cout << "--------Top Mem-------" << std::endl;
     std::cout << std::setfill('0') << std::hex;
-    for (size_t i = 0; i < 35; i++)
+    for (size_t i = 0; i < 200; i++)
     {
         vluint32_t data = bram->mem[i];
         std::cout << "Memory[" << std::setw(2) << i << "] = 0x" << std::setw(8) << std::uppercase << data << std::endl;
@@ -78,9 +78,6 @@ int main(int argc, char *argv[])
 
     // Provides access to the sub-modules either privately or publicly.
     VRangerRisc_RangerRisc *const risc = top->RangerRisc;
-    // The sub-modules
-    VRangerRisc_ControlMatrix *cm = risc->matrix;
-    VRangerRisc_Register *ir = risc->ir;
 
     VRangerRisc_Pmmu *pmmu = risc->pmmu;
     VRangerRisc_Memory *bram = pmmu->bram;
@@ -94,6 +91,8 @@ int main(int argc, char *argv[])
     // The reset signal can be held for 0 or more Units for the CPU to sync
     // to the first vector reset state.
     int duration = 0;
+
+    top->irq_i = 1;
 
     // Allow any initial blocks to execute
     tb->eval();

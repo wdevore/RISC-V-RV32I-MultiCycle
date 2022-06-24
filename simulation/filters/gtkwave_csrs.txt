@@ -1,0 +1,8 @@
+768 Mstatus
+772 Mie
+773 Mtvec
+832 Mscratch
+833 Mepc
+834 Mcause
+835 Mtval
+836 Mip

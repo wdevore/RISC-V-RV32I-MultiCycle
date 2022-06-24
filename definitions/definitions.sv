@@ -20,10 +20,11 @@
 `define AMuxSelectSize 2
 `define BMuxSelectSize 2
 `define ImmSelectSize 3
-`define PCSelectSize 2
+`define PCSelectSize 3
 `define WDSelectSize 2
 `define ALUOpSize 6
 `define FlagSize 4
+`define IRStateSize 6
 
 `define SrcZero 32'b0
 `define SrcFour 32'h00000004
@@ -41,3 +42,27 @@
 `define FLAG_CARRY    1
 `define FLAG_NEGATIVE 2
 `define FLAG_OVERFLOW 3
+
+// ---------------------------------------------
+// CSRs
+// ---------------------------------------------
+`define CSRAddrSize 12
+`define CSRCnt 9
+
+`define CSR_Mstatus 0
+`define CSR_Mie 1
+`define CSR_Mtvec 2
+`define CSR_Mscratch 3
+`define CSR_Mepc 4
+`define CSR_Mcause 5
+`define CSR_Mtval 6
+`define CSR_Mip 7
+
+`define CSR_Mie_MEIE 11
+
+`define CSR_Mip_MEIE 11
+
+`define CSR_Mcause_MEI 11
+
+`define CSR_Mstatus_MIE 3
+`define CSR_Mstatus_MPIE 7

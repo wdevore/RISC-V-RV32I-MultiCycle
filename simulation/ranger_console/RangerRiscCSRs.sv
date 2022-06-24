@@ -13,8 +13,8 @@ module RangerRisc
    output logic ready_o,
    output logic halt_o
 `else
-   input logic reset_i,
-   input logic irq_i
+   input logic reset_i
+   // input logic irq_i
 `endif
 );
 
@@ -90,6 +90,12 @@ logic [DATA_WIDTH-1:0] wd_src_out;
 logic [`FlagSize-1:0] alu_flags_cm;
 logic [`FlagSize-1:0] alu_flags_out;
 
+// CSR wires
+logic [DATA_WIDTH-1:0] csr_out;
+logic cm_to_rsa_ld;
+logic cm_csr_rd;
+logic cm_csr_wr;
+
 // Signal sequencer
 ControlMatrix matrix
 (
@@ -113,6 +119,9 @@ ControlMatrix matrix
    .alu_ld_o(cm_to_alu_ld),
    .alu_op_o(cm_to_alu_op),
    .wd_src_o(cm_to_wd_src),
+   .rsa_ld_o(cm_to_rsa_ld),
+   .csr_rd_o(cm_csr_rd),
+   .csr_wr_o(cm_csr_wr),
 `ifdef DEBUG_MODE
    .mdr_ld_o(cm_to_mdr_ld),
    .ready_o(ready_o),
@@ -274,7 +283,7 @@ RegisterFile reg_file
 Register rsa
 (
    .clk_i(clk_i),
-   .ld_i(`ALWAYS_LOAD),
+   .ld_i(cm_to_rsa_ld),
    .data_i(rs1_out),
    .data_o(rsa_out)
 );
@@ -291,12 +300,23 @@ Register rsb
 // Write back data to WD
 Mux4 #(.DATA_WIDTH(DATA_WIDTH)) wd_mux
 (
-    .select_i(cm_to_wd_src),
-    .data0_i(alu_imm_out),
-    .data1_i(alu_out),
-    .data2_i(mdr_out),
-    .data3_i(`SrcUnused),
-    .data_o(wd_src_out)
+   .select_i(cm_to_wd_src),
+   .data0_i(alu_imm_out),
+   .data1_i(alu_out),
+   .data2_i(mdr_out),
+   .data3_i(csr_out),
+   .data_o(wd_src_out)
+);
+
+// Control and Status registers
+CSRs #(.DATA_WIDTH(DATA_WIDTH*2)) csr
+(
+   .clk_i(clk_i),
+   .ir_i(ir_out),
+   .wr_i(cm_csr_wr),
+   .rd_i(cm_csr_rd),
+   .data_i(rsa_out),
+   .data_o(csr_out)
 );
 
 endmodule
