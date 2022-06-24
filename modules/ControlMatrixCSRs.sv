@@ -274,24 +274,21 @@ always_comb begin
             csr_data = rsa_i;
         end
 
-        // Capture value prior to possible modification.
-        rd_data = csr_data;
-
         case (funct3)
             CSRRWI: begin
                 algo_data = {{DATA_WIDTH-IMM_SIZE{1'b0}}, immediate}; // Zero extend
             end
             CSRRC: begin
-                algo_data = ~rsa_i & rd_data;
+                algo_data = ~rsa_i & csr_data;
             end
             CSRRCI: begin
-                algo_data = ~{{DATA_WIDTH-IMM_SIZE{1'b0}}, immediate} & rd_data;
+                algo_data = ~{{DATA_WIDTH-IMM_SIZE{1'b0}}, immediate} & csr_data;
             end
             CSRRS: begin
-                algo_data = rsa_i | rd_data;
+                algo_data = rsa_i | csr_data;
             end
             CSRRSI: begin
-                algo_data = {{DATA_WIDTH-IMM_SIZE{1'b0}}, immediate} | rd_data;
+                algo_data = {{DATA_WIDTH-IMM_SIZE{1'b0}}, immediate} | csr_data;
             end
             default:
                 ;
@@ -896,7 +893,6 @@ always_comb begin
                                 // Transfer CSR to rd
                                 wd_src = WDSrcCSR;
                                 rg_wr = RWActive;
-                                // rd_data is already set from above
 
                                 next_ir_state = ITCSRLd;
                             end
@@ -905,7 +901,6 @@ always_comb begin
                             // Transfer CSR to rd
                             wd_src = WDSrcCSR;
                             rg_wr = RWActive;
-                            // rd_data is already set from above
 
                             next_ir_state = ITCSRLd;
                         end
@@ -989,6 +984,8 @@ always_comb begin
                         csr_data[`CSR_Mstatus_MIE] = 1'b0;
                         // Select CSR address
                         csr_addr = Mstatus;
+
+                        next_ir_state = IRQ0;
                     end
                     else begin
                         // Because we disabled IRQs above we won't detect
