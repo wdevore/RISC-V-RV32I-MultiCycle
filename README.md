@@ -28,14 +28,29 @@ This repository represents the **[After Hours Engineering](https://www.youtube.c
     [x] Testbench GtkWave
     [x] Testbench NCurses
 
+# Howto(s)
 
 # RangerRisc Console
 Simulating the softcore processor was done two ways: *Gtkwave* and *NCurses console*.
 
 ## NCurses console
+XXX
+
 ![RangerRiscConsole](RangerRiscConsole.gif)
 
 ## Gtkwave
+### Run simulation
+- Navigate into the *RISC-V-RV32I-MultiCycle/simulation/ranger_risc* directory.
+- Modify *memory.sv* ```defines``` to reference your *.ram* file.
+   ```
+   `define ROM_PATH "rams/"
+   `define ROM_EXTENSION ".ram"
+   `define MEM_CONTENTS "itype_csrs/intr1"
+   ```
+- Run "make go"
+
+You should now see the Gtkwave output as shown below.
+
 ![Gtkwave](Gtkwave_CountUp.png)
 
 # Hardware

@@ -122,7 +122,7 @@ typedef enum logic [2:0] {
 // ------------------------------------------------------
 // CSRs
 // ------------------------------------------------------
-typedef enum logic [2:0] {
+typedef enum logic [2:0] {  // Funct3
     CSRRW  = 3'b001,
     CSRRS  = 3'b010,
     CSRRC  = 3'b011,
@@ -141,19 +141,3 @@ typedef enum logic[`CSRAddrSize-1:0] {
     Mtval    = 12'h343,
     Mip      = 12'h344
 } CSReg /*verilator public*/; 
-
-// typedef enum logic {
-//     CMCSRAddr  = 1'b0,  // Control matrix supplies address
-//     IRSource   = 1'b1   // Immediate in IR
-// } CSRAddrSrc /*verilator public*/; 
-
-// typedef enum logic [1:0] {
-//     CSRSrcCM  = 2'b10,  // CM data sources
-//     CSRSrcPC  = 2'b01,  // PC sources
-//     CSRSrcRsA = 2'b00   // RsA sources
-// } CSRSrc /*verilator public*/; 
-
-// typedef enum logic {
-//     CMCSRIr    = 1'b0,  // Control matrix supplies address
-//     IIRSource  = 1'b1   // Immediate in IR
-// } CSRIRSrc /*verilator public*/; 

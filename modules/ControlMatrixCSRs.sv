@@ -145,7 +145,6 @@ logic rs1IsX0;
 logic rsa_ld;
 
 // Standard flip-flop style registers
-// logic [DATA_WIDTH-1:0] csrs [0:`CSRCnt-1] /*verilator public*/;
 logic [DATA_WIDTH-1:0] mstatus;
 logic [DATA_WIDTH-1:0] mie;
 logic [DATA_WIDTH-1:0] mip;
@@ -231,11 +230,11 @@ always_comb begin
 
     rst_src = 1'b0;     // Default to IR funct3 source
 
+    // -------------------------------------------------
+    // CSRs related signals
+    // -------------------------------------------------
     rsa_ld = RgLdEnabled;
 
-    // -------------------------------------------------
-    // CSRs
-    // -------------------------------------------------
     irqDetected = 1'b0;
     isCSRInstr = 1'b0;
     rdIsX0 = 1'b0;
@@ -868,11 +867,11 @@ always_comb begin
                                 writeCSR = 1'b1;
 
                                 // Fetch next instruction at the same time.
-                                mem_rd = 1'b0;
-                                next_state = Fetch;
+                                next_ir_state = PreFetch;
                             end
                             else begin
                                 // Transfer CSR to rd
+                                rd_data = csr_data;
                                 wd_src = WDSrcCSR;
                                 rg_wr = RWActive;
 
@@ -886,11 +885,11 @@ always_comb begin
                                 // This is the only scenario where we don't write to a CSR register.
 
                                 // Fetch next instruction at the same time.
-                                mem_rd = 1'b0;
-                                next_state = Fetch;
+                                next_ir_state = PreFetch;
                             end
                             else begin
                                 // Transfer CSR to rd
+                                rd_data = csr_data;
                                 wd_src = WDSrcCSR;
                                 rg_wr = RWActive;
 
@@ -899,6 +898,7 @@ always_comb begin
                         end
                         CSRRWI, CSRRSI, CSRRCI: begin
                             // Transfer CSR to rd
+                            rd_data = csr_data;
                             wd_src = WDSrcCSR;
                             rg_wr = RWActive;
 
@@ -934,15 +934,16 @@ always_comb begin
                 // ---------------------------------------------------
                 ITMret: begin
                     // Return from Trap handler
-                    // 1) PC <== Mepc
-                    rd_data = mepc;
+                    // 1) PC <== Mepc. Mask bits [1:0]=0 for alignment
+                    
+                    rd_data = {mepc[31:2], 2'b00};  // IALIGN = 1 = 32bits
                     pc_src = PCSrcRDCSR;
                     pc_ld = RgLdEnabled;
 
-                    // 2) mstatus.MIE <== mstatus.MPIE
+                    // 2) Restore: mstatus.MIE <== mstatus.MPIE
+
                     // Modify a copy of CSR
                     csr_data = mstatus;
-
                     writeCSR = 1'b1;    // Enable writing to CSR
 
                     // Restore Global interrupts.
@@ -1083,7 +1084,6 @@ always_ff @(negedge clk_i, negedge irq_i) begin
 
     // Mip is a "hardware" based register. It has a bit (MEIP)
     // directly connected to hardware IRQ IO.
-    // This also bypasses any write side-effects.
     //                          |``````MEIP
     //                          v
     // 0000_0000_0000_0000_0000_1000_0000_0000
@@ -1094,9 +1094,6 @@ always_ff @(negedge clk_i, negedge irq_i) begin
 
         // Indicate what the cause is: Machine external interrupt
         // csrs[`CSR_Mcause][`CSR_Mcause_MEI] = 1'b1;
-
-        // Copy Mie bit to previous register bit mstatus.MPIE
-        // csrs[0] <= csrs[0] | {{20{1'b0}}, 1'b1, {11{1'b0}}};
     end
 end
 

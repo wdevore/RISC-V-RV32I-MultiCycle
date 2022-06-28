@@ -7,8 +7,8 @@ Formats:
 ## csrrw1.ram
 
 ```
+mstatus is preloaded 32'h000_0008
 x9 is preloaded 32'h00000101
-mstatus is preloaded 32'h000_000A
 x2 is loaded with mstatus
 
 @00 0x00 00000002
@@ -78,9 +78,15 @@ x2 is just for completeness it is not affected.
 Set bits 1 and 3.
 
 ```
+mstatus is pre initialized to 32'h0000_0008
 x9 is loaded 32'h00000005
-mstatus is pre initialized to 32'h0000_000A
-x2 is loaded with whatever mstatus was
+x2 is loaded with what mstatus was
+
+0000_1000   <- mstatus
+0000_0101   <- Set mask
+---------
+0000_1101
+     0x0D
 
 @00 0x00 00000002  
 @01 0x04 02802483  lw x9, 0x28(x0)
