@@ -72,7 +72,18 @@ int main(int argc, char *argv[])
 
     con->start();
 
-    con->show(mdl);
+    // IRQ by default is low. We need to set it high to
+    // prevent an interrupt occuring
+    mdl.top->irq_i = 1;
+    mdl.irq_prev = mdl.top->irq_i;
+
+    // --------------------------------------------------
+    // Development settings to reduce redundant configuring
+    // --------------------------------------------------
+    mdl.breakAddr = word_to_byte_addr(0x060);
+    mdl.irqTriggerPoint = 1202;
+    // move(0, 100);
+    // printw("%d ", mdl.breakAddr);
 
     // Default to "not" holding CPU in reset state. Reset is active low.
     mdl.top->reset_i = INACTIVE_SIG;
@@ -80,6 +91,8 @@ int main(int argc, char *argv[])
     Simulation sim = Simulation{};
 
     con->showMemory(2, 70, mdl.fromAddr, 1024, mdl.bram->mem);
+
+    con->show(mdl);
 
     while (looping)
     {
@@ -152,11 +165,14 @@ int main(int argc, char *argv[])
         {
             mdl.fromAddr = con->getArg1Int();
             con->showMemory(2, 70, mdl.fromAddr, 1024, mdl.bram->mem);
+            con->clearPCMarkerCol(3, 70, 32, mdl);
+            con->showPCMarker(mdl);
+            con->showPCPriorMarker(mdl);
         }
         break;
         case Command::MemModify:
         {
-            mdl.memAddr = con->getArg1Int();
+            mdl.memAddr = word_to_byte_addr(con->getArg1Int());
 
             int value = con->getArg2Int();
 
@@ -170,18 +186,21 @@ int main(int argc, char *argv[])
             if (mdl.fromAddr < 0)
                 mdl.fromAddr = 0;
 
-            con->showPCMarker(mdl);
-
             con->showMemory(2, 70, mdl.fromAddr, 1024, mdl.bram->mem);
+            con->clearPCMarkerCol(3, 70, 32, mdl);
+            con->showPCMarker(mdl);
+            con->showPCPriorMarker(mdl);
             break;
         case Command::MemScrollDwn:
             // Inc address
             mdl.fromAddr++;
             if (mdl.fromAddr > 1023)
                 mdl.fromAddr = 1023;
-            con->showPCMarker(mdl);
 
             con->showMemory(2, 70, mdl.fromAddr, 1024, mdl.bram->mem);
+            con->clearPCMarkerCol(3, 70, 32, mdl);
+            con->showPCMarker(mdl);
+            con->showPCPriorMarker(mdl);
             break;
         case Command::SetReg:
             mdl.selectedReg = con->getArg1Int();
@@ -200,12 +219,22 @@ int main(int argc, char *argv[])
         {
             // Note: I set the output even though during simulation
             // you would set the input, load and clock falling edge.
-            mdl.pc->data_o = con->getArg1Int();
+            mdl.p_pcpMarker = mdl.p_pcMarker;
+            mdl.pc_prior->data_o = mdl.pc->data_o;  // This is unrealistic relative to the CPU
+            mdl.pc->data_o = word_to_byte_addr(con->getArg1Int());
 
             con->showIntAsHexProperty(+RowPropId::PC, 1, "PC", mdl.pc->data_o);
 
             // Update PC marker
+            con->clearPCMarkerCol(3, 70, 32, mdl);
             con->showPCMarker(mdl);
+            con->showPCPriorMarker(mdl);
+        }
+        break;
+        case Command::SetBreak:
+        {
+            mdl.breakAddr = word_to_byte_addr(con->getArg1Int());
+            con->showIntAsHexProperty(+RowCSRPropId::BREAK_ADDR, 100, "Break At", mdl.breakAddr);
         }
         break;
         case Command::LoadProg:
@@ -260,6 +289,7 @@ int main(int argc, char *argv[])
             }
 
             con->showMemory(2, 70, mdl.fromAddr, 1024, mdl.bram->mem);
+            con->showCSRs(2, 100, mdl.cm);
         }
         break;
         case Command::EnableDelay:
@@ -267,7 +297,31 @@ int main(int argc, char *argv[])
             break;
         case Command::DelayTime:
             mdl.timeStepDelayms = con->getArg1Int();
-            con->showIntProperty(+RowPropId::DelayTime, 1, "Delay time", mdl.timeStepDelayms);
+            con->show(mdl);
+            break;
+        case Command::EnableFree:
+            mdl.freeRun = con->getArg1Bool();
+            con->show(mdl);
+            break;
+        case Command::EnableBreak:
+            mdl.breakEnabled = con->getArg1Bool();
+            con->show(mdl);
+            break;
+        case Command::EnableStepping:
+            mdl.steppingEnabled = con->getArg1Bool();
+            con->show(mdl);
+            break;
+        case Command::EnableIRQ:
+            mdl.irqEnabled = con->getArg1Bool();
+            con->show(mdl);
+            break;
+        case Command::SetIRQ:
+            mdl.irqTriggerPoint = con->getArg1Int();
+            con->show(mdl);
+            break;
+        case Command::SetIRQDur:
+            mdl.irqDuration = con->getArg1Int();
+            con->show(mdl);
             break;
         case Command::Exit:
             looping = false;
@@ -279,8 +333,23 @@ int main(int argc, char *argv[])
         // ---------------------------------------------------
         // Simulation update
         // ---------------------------------------------------
-        if (mdl.stepCnt < mdl.stepSize)
+        mdl.top->irq_i = 1;
+
+        if (mdl.canStep())
         {
+            // ---------------------------------------------------
+            // Interrupts
+            // ---------------------------------------------------
+            mdl.top->irq_i = mdl.interruptState();
+            if (mdl.irqEnabled)
+            {
+                if (mdl.irq_prev == 1 && mdl.top->irq_i == 0)
+                {
+                    mdl.irqTriggered = true;
+                    mdl.irqEnabled = false;
+                }
+            }
+
             sim.begin(mdl);
 
             tb->eval(); // each eval() is 1 "time-unit" = 1ns
@@ -293,6 +362,11 @@ int main(int argc, char *argv[])
         {
             sim.end(mdl);
             con->showBoolProperty(+RowPropId::SimRunning, 1, "Sim running", mdl.simRunning);
+        }
+
+        if (mdl.isDirty()) {
+            mdl.setDirty(false);
+            con->show(mdl);
         }
 
         con->update();
@@ -313,4 +387,3 @@ int main(int argc, char *argv[])
 
     exit(EXIT_SUCCESS);
 }
-

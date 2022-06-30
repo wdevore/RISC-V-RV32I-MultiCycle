@@ -34,7 +34,81 @@ This repository represents the **[After Hours Engineering](https://www.youtube.c
 Simulating the softcore processor was done two ways: *Gtkwave* and *NCurses console*.
 
 ## NCurses console
-XXX
+### Run simulation
+- Navigate into the *RISC-V-RV32I-MultiCycle/simulation/ranger_console* directory.
+- Modify *memory.sv* ```defines``` to reference your *.ram* file.
+   ```
+   `define ROM_PATH "rams/"
+   `define ROM_EXTENSION ".ram"
+   `define MEM_CONTENTS "itype_csrs/intr1"
+   ```
+
+- execute "make console"
+
+### Commands the console recognizes
+- Hitting "return" repeats the previous command -- if there was one
+- **rn** Run to a specific state or instruction, for example
+   - rn fetch **or** rn fe
+   - rn decode **or** rn de
+   - rn execute **or** rn ex
+   - rn ebreak **or** rn eb
+   - rn pc *word addrs*
+      - rn pc 0x10
+- **reset** resets simulation
+- **sg** Send a (l)ow/(h)igh signal
+   - sg reset h
+- **ss** Start simulation. Runs N steps before stopping
+   - To run for 1000000 steps and then stop
+      - ss 1000000
+- **h** Halts simulation if running
+- **ns** Steps a single unit-step
+- **hc** Steps a half clock cycle
+- **fl** Steps a full clock cycle
+- **delay** enables/disables thread sleep delay
+   - delay on
+   - delay off
+- **dt** Change thread sleep delay time
+   - dt delay-number
+      - dt 1
+      - dt 10
+- **srg** Makes a RegFile register active for display in binary and decimal
+   - srg 3
+- **crg** Change a RegFile value
+   - change x3 to 0
+      - crg 3
+   - change x9 to 0xAA
+      - crg 9 0xAA
+- **mr** Set starting memory display range *Word-address* format. Default is 0
+   - mr 0x040
+- **mm** Modify a memory address *Word-address* format.
+   - mm 0x4c 0x0000ABCD
+- **ld** Load a program from *rams* folder, without *.ram* extension.
+   - To load lr.ram
+      ld lr
+- **pc** Set PC register to a *Word-address*
+   - pc 0x04D
+- **bra** Break a *Word-address*
+   - bra 0xC0
+- **br** Break enable/disable
+   - br on
+   - br off
+      - **or** br
+- **fr** FreeRun enable/disable
+   - fr on
+   - fr off
+      - **or** fr
+- **stp** Stepping enable/disable
+   - stp on
+   - stp off
+      - **or** stp
+- **irq** IRQ enable/disable
+   - irq on
+   - irq off
+      - **or** irq
+- **irqt** Set trigger point (Units are in unit-step)
+   - irqt 0x04D
+- **irqd** Set IRQ duration. Default = 3
+   - irqd 5
 
 ![RangerRiscConsole](RangerRiscConsole.gif)
 
@@ -47,7 +121,7 @@ XXX
    `define ROM_EXTENSION ".ram"
    `define MEM_CONTENTS "itype_csrs/intr1"
    ```
-- Run "make go"
+- execute "make go"
 
 You should now see the Gtkwave output as shown below.
 

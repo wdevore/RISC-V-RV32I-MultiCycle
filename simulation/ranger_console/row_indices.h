@@ -38,6 +38,19 @@ enum class RowPropId
     B_SRC,
     B_MUX_OUT,
     IMM_EXT_OUT,
+};
+
+enum class RowCSRPropId
+{
+    BREAK_ADDR = 9,
+    IRQ_TRIG_PT,
+    IRQ_DURATION,
+    IRQ_ENABLED,
+    IRQ_TRIGGERED,
+    BRK_ENABLED,
+    FREERUN_ENABLED,
+    STEPPING_ENABLED,
+    SKIP_LINE,
     ALU_OP,
     ALU_IMM_OUT,
     ALU_LD,

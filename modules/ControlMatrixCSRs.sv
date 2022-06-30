@@ -145,11 +145,11 @@ logic rs1IsX0;
 logic rsa_ld;
 
 // Standard flip-flop style registers
-logic [DATA_WIDTH-1:0] mstatus;
-logic [DATA_WIDTH-1:0] mie;
-logic [DATA_WIDTH-1:0] mip;
-logic [DATA_WIDTH-1:0] mepc;
-logic [DATA_WIDTH-1:0] mtvec;
+logic [DATA_WIDTH-1:0] mstatus /*verilator public*/;
+logic [DATA_WIDTH-1:0] mie /*verilator public*/;
+logic [DATA_WIDTH-1:0] mip /*verilator public*/;
+logic [DATA_WIDTH-1:0] mepc /*verilator public*/;
+logic [DATA_WIDTH-1:0] mtvec /*verilator public*/;
 
 logic [`CSRAddrSize-1:0] csr_addr;
 
@@ -1087,7 +1087,7 @@ always_ff @(negedge clk_i, negedge irq_i) begin
     //                          |``````MEIP
     //                          v
     // 0000_0000_0000_0000_0000_1000_0000_0000
-    if (~irq_i) begin
+    if (~irq_i && ready) begin
         // Set pending bit in Mip register
         // Note: You can clear the bit using CSRRC with 0x000000800
         mip[`CSR_Mip_MEIE] <= 1'b1;

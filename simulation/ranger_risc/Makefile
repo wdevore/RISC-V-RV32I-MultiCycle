@@ -38,8 +38,7 @@ MODULES_FILES =  \
 	../../modules/Immediate.sv \
 	../../modules/RegisterFile.sv \
 	../../modules/Pmmu.sv \
-	../../modules/CSRs.sv \
-	${RR_CSR}.sv
+	../../modules/${RR_CSR}.sv
 	
 # output build directory
 BUILD_DIR = /media/RAMDisk

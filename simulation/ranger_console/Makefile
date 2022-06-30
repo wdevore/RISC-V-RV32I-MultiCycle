@@ -2,21 +2,21 @@
 WITH_CSRs = yes
 
 # Top module is the HDL component being tested.
+TOP = RangerRisc
 
 ifeq ($(WITH_CSRs), yes)
-	TOP = RangerRiscCSRs
 	MATRIX = ControlMatrixCSRs
+	RR_CSR = RangerRiscCSRs
 else
-	TOP = RangerRisc
 	MATRIX = ControlMatrix
+	RR_CSR = RangerRisc
 endif
 
 # A cpp test-bench driver
 TEST_BENCH = \
 	console.cpp \
 	simulation.cpp \
-	utils.cpp \
-	console_tb.cpp
+	utils.cpp
 
 TEMPLATE_HEADER = \
 	console_module.h
@@ -44,14 +44,20 @@ MODULES_FILES =  \
 	../../modules/Immediate.sv \
 	../../modules/RegisterFile.sv \
 	../../modules/Pmmu.sv \
-	../../modules/CSRs.sv \
-	${TOP}.sv
+	../../modules/${RR_CSR}.sv
 	
 # output build directory
 BUILD_DIR = /media/RAMDisk
 
 # Verilator is the simulator
 SIMULATION_TOOLCHAIN = /usr/local/bin/verilator
+
+# Set your reset vector address here, and it should be in
+# Byte-Address form. For example, if you have a Word-address
+# of @00000010 then the Byte-address is 10*4 = 0x00000040
+# RESET_BOOT_VECTOR = "32'h00000040" # @010
+RESET_BOOT_VECTOR = "32'h00000300" # @0C0
+# RESET_BOOT_VECTOR = "32'h0000006C"
 
 # .PHONY: all
 
@@ -80,13 +86,15 @@ buildSimMk:
 	cp ${TEST_BENCH} ${BUILD_DIR}
 	cp ${TEMPLATE_HEADER} ${BUILD_DIR}
 	cp ${HEADERS} ${BUILD_DIR}
+	cp console_tb.cpp ${BUILD_DIR}/console_tb.cpp
 	${SIMULATION_TOOLCHAIN} --cc \
 	--Mdir ${BUILD_DIR} \
 	--top-module ${TOP} \
-	--exe ${TEST_BENCH} ${MODULES_FILES} \
-	-DDEBUG_MODE \
+	--exe console_tb.cpp ${TEST_BENCH} ${MODULES_FILES} \
 	-DSIMULATE \
 	-DPOPULATE_REGISTERS \
+	-DPOPULATE_CSR_REGISTERS \
+	-DRESET_VECTOR=${RESET_BOOT_VECTOR} \
 	-DUSE_ROM
 
 runMake:

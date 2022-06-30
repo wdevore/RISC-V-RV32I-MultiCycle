@@ -9,12 +9,12 @@ module RangerRisc
 (
    input logic clk_i,
 `ifdef DEBUG_MODE
-   input logic reset_i,
-   output logic ready_o,
+   input  logic reset_i,
    output logic halt_o
 `else
-   input logic reset_i,
-   input logic irq_i
+   input  logic reset_i,
+   input  logic irq_i
+   output logic ready_o /*verilator public*/,
 `endif
 );
 
@@ -113,9 +113,9 @@ ControlMatrix matrix
    .alu_ld_o(cm_to_alu_ld),
    .alu_op_o(cm_to_alu_op),
    .wd_src_o(cm_to_wd_src),
+   .ready_o(ready_o),
 `ifdef DEBUG_MODE
    .mdr_ld_o(cm_to_mdr_ld),
-   .ready_o(ready_o),
    .halt_o(halt_o)
 `else
    .mdr_ld_o(cm_to_mdr_ld)

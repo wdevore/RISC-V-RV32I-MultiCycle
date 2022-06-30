@@ -49,6 +49,14 @@ RVector:
 
 Add the "mret" instruction
 
+Ncurse setup
+- dt 1
+- bra 0x60
+- irqt 1202
+- irqd 3
+- irq on
+- fr on
+
 ```
 Main:
     @000 0x000 20802083  lw x1, 0x208(x0) // Enable Global interrupts

@@ -52,7 +52,18 @@ struct Model
     const int rowOffset = 3;
     int selectedReg = 0;
     int targetPC = 0;
-    
+    int breakAddr = 0;
+
+    bool freeRun = false;
+    bool breakEnabled = false;
+    bool steppingEnabled = false;
+    bool irqEnabled = false;
+    int irq_prev = 1;
+    bool irqTriggered = false;
+
+    int irqTriggerPoint = 0;
+    int irqDuration = 3;
+
     vluint64_t timeStep_ns = 0;
     int timeStepDelayms = 10; // Default 10ms = 100Hz
     bool resetActive = false;
@@ -71,6 +82,8 @@ struct Model
     int stepCnt = 0;
     bool simRunning = false;
     int p_clk_i;
+
+    bool dirty = true;
 
     Model(VRangerRisc *cpu)
     {
@@ -106,4 +119,56 @@ struct Model
     }
 
     ~Model() {}
+
+    bool canStep()
+    {
+        bool step = false;
+
+        if (freeRun)
+        {
+            if (breakEnabled)
+            {
+                if (breakAddr == pc->data_o)
+                {
+                    // std::cout << "break" << std::endl;
+                    breakEnabled = false;
+                    freeRun = false;
+                    dirty = true;
+                }
+                else
+                    step = true;
+            }
+            else
+            {
+                step = true;
+            }
+        }
+
+        if (steppingEnabled)
+        {
+            if (stepCnt >= stepSize)
+            {
+                step = false;
+            }
+            else
+                step = true;
+        }
+
+        return step;
+    }
+
+    bool interruptState()
+    {
+        return !(timeStep_ns >= irqTriggerPoint && timeStep_ns < (irqTriggerPoint + irqDuration));
+    }
+
+    bool isDirty()
+    {
+        return dirty;
+    }
+
+    void setDirty(bool v)
+    {
+        dirty = v;
+    }
 };

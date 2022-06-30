@@ -3,31 +3,31 @@
 `timescale 1ns/1ps
 `endif
 
+// I turn the warning off because the Makefile
+// will properly copy .sv to "RangerRisc.sv"
+/* verilator lint_off DECLFILENAME */
 module RangerRisc
+/* verilator lint_on DECLFILENAME */
 #(
     parameter DATA_WIDTH = 32)
 (
    input logic clk_i,
 `ifdef DEBUG_MODE
    input logic reset_i,
-   output logic ready_o,
    output logic halt_o
 `else
-   input logic reset_i
-   // input logic irq_i
+   input logic reset_i,
+   input logic irq_i,
+   output logic ready_o
 `endif
 );
 
 /*verilator public_module*/
 
-// address d1023 = 0x3FF word-address = 0xFFC byte-address
-// word 0000_0000_0000_0000_0000_0011_1111_1111
-// byte 0000_0000_0000_0000_0000_1111_1111_1100
-// localparam ResetVector = 32'h00000FFC; // Reset Vector 0x3FF word = 0xFFC byte address
-
-// Instead set ResetVector to Low address as this makes the rom file smaller.
-localparam ResetVector = 32'h00000010 * 4; // Reset Vector 0x10 word = 0x040 byte address format
-// localparam ResetVector = 32'h0000006C; // Reset Vector @1B
+// -()-()-()-()-()-()-()-()-()-()-()-()-()-()-()-()-()-()-()-()-()-
+//               --------- ResetVector ---------
+// -()-()-()-()-()-()-()-()-()-()-()-()-()-()-()-()-()-()-()-()-()-
+localparam ResetVector = `RESET_VECTOR; // See Makefile for values
 
 // --++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++
 // Wires and Buses connecting modules
@@ -91,10 +91,8 @@ logic [`FlagSize-1:0] alu_flags_cm;
 logic [`FlagSize-1:0] alu_flags_out;
 
 // CSR wires
-logic [DATA_WIDTH-1:0] csr_out;
 logic cm_to_rsa_ld;
-logic cm_csr_rd;
-logic cm_csr_wr;
+logic [DATA_WIDTH-1:0] cm_rd_data;
 
 // Signal sequencer
 ControlMatrix matrix
@@ -104,6 +102,9 @@ ControlMatrix matrix
    .reset_i(reset_i),
    .mem_busy_i(`MEM_NOT_BUSY),
    .flags_i(alu_flags_cm),
+   .rsa_i(rsa_out),
+   .pc_i(pc_out),
+   .irq_i(irq_i),
    .ir_ld_o(cm_to_ir_ld),
    .pc_ld_o(cm_to_pc_ld),
    .pcp_ld_o(cm_to_pcp_ld),
@@ -120,8 +121,7 @@ ControlMatrix matrix
    .alu_op_o(cm_to_alu_op),
    .wd_src_o(cm_to_wd_src),
    .rsa_ld_o(cm_to_rsa_ld),
-   .csr_rd_o(cm_csr_rd),
-   .csr_wr_o(cm_csr_wr),
+   .rd_data_o(cm_rd_data),
 `ifdef DEBUG_MODE
    .mdr_ld_o(cm_to_mdr_ld),
    .ready_o(ready_o),
@@ -145,13 +145,17 @@ Pmmu pmmu
 );
 
 // PC_Src mux
-Mux4 #(.DATA_WIDTH(DATA_WIDTH)) pc_mux
+Mux8 #(.DATA_WIDTH(DATA_WIDTH)) pc_mux
 (
     .select_i(cm_to_pc_src),
     .data0_i(alu_imm_out),
     .data1_i(alu_out),
     .data2_i(ResetVector),
-    .data3_i(pmmu_out),
+    .data3_i(cm_rd_data),
+    .data4_i(pmmu_out),
+    .data5_i(`SrcZero),
+    .data6_i(`SrcZero),
+    .data7_i(`SrcZero),
     .data_o(pc_src_out)
 );
 
@@ -304,19 +308,8 @@ Mux4 #(.DATA_WIDTH(DATA_WIDTH)) wd_mux
    .data0_i(alu_imm_out),
    .data1_i(alu_out),
    .data2_i(mdr_out),
-   .data3_i(csr_out),
+   .data3_i(cm_rd_data),
    .data_o(wd_src_out)
-);
-
-// Control and Status registers
-CSRs #(.DATA_WIDTH(DATA_WIDTH*2)) csr
-(
-   .clk_i(clk_i),
-   .ir_i(ir_out),
-   .wr_i(cm_csr_wr),
-   .rd_i(cm_csr_rd),
-   .data_i(rsa_out),
-   .data_o(csr_out)
 );
 
 endmodule

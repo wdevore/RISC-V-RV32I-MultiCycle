@@ -238,6 +238,51 @@ Command Console::handleInput()
             std::vector<std::string> fields = split_string(keyBuffer);
             arg1 = fields.size() > 1 ? fields[1] : "0x0";
         }
+        else if (keyBuffer.rfind("bra", 0) == 0)
+        {
+            // Set Break address
+            cmd = Command::SetBreak;
+            std::vector<std::string> fields = split_string(keyBuffer);
+            arg1 = fields.size() > 1 ? fields[1] : "0x0";
+        }
+        else if (keyBuffer.rfind("br", 0) == 0)
+        {
+            cmd = Command::EnableBreak;
+            std::vector<std::string> fields = split_string(keyBuffer);
+            arg1 = fields.size() > 1 ? fields[1] : "off";
+        }
+        else if (keyBuffer.rfind("fr", 0) == 0)
+        {
+            cmd = Command::EnableFree;
+            std::vector<std::string> fields = split_string(keyBuffer);
+            arg1 = fields.size() > 1 ? fields[1] : "off";
+        }
+        else if (keyBuffer.rfind("stp", 0) == 0)
+        {
+            cmd = Command::EnableStepping;
+            std::vector<std::string> fields = split_string(keyBuffer);
+            arg1 = fields.size() > 1 ? fields[1] : "off";
+        }
+        else if (keyBuffer.rfind("irqt", 0) == 0)
+        {
+            // Set IRQ trigger point. Units are in time-step
+            cmd = Command::SetIRQ;
+            std::vector<std::string> fields = split_string(keyBuffer);
+            arg1 = fields.size() > 1 ? fields[1] : "0";
+        }
+        else if (keyBuffer.rfind("irqd", 0) == 0)
+        {
+            // Set IRQ active duration. Units are in time-step
+            cmd = Command::SetIRQDur;
+            std::vector<std::string> fields = split_string(keyBuffer);
+            arg1 = fields.size() > 1 ? fields[1] : "0";
+        }
+        else if (keyBuffer.rfind("irq", 0) == 0)
+        {
+            cmd = Command::EnableIRQ;
+            std::vector<std::string> fields = split_string(keyBuffer);
+            arg1 = fields.size() > 1 ? fields[1] : "off";
+        }
 
         dataDirty = true;
 
@@ -312,6 +357,12 @@ void Console::show(Model &mdl)
     showIntAsHexProperty(+RowPropId::PC, 1, "PC", pcWA);
     pcWA = byte_to_word_addr(mdl.pc_prior->data_o);
     showIntAsHexProperty(+RowPropId::PCPrior, 1, "PC-prior", pcWA);
+
+    // move(1, 100);
+    // printw("%d ", mdl.breakAddr);
+
+    pcWA = byte_to_word_addr(mdl.breakAddr);
+
     showIntProperty(+RowPropId::PC_LD, 1, "PC_ld", mdl.cm->pc_ld);
     showIntProperty(+RowPropId::PC_SRC, 1, "PC_src", mdl.cm->pc_src);
     showIntAsHexProperty(+RowPropId::PC_SRC_OUT, 1, "PC_src_out", mdl.risc->pc_src_out);
@@ -324,6 +375,8 @@ void Console::show(Model &mdl)
     showIntAsHexProperty(+RowPropId::MDR, 1, "MDR", mdl.mdr->data_o);
     showIntProperty(+RowPropId::ADDR_SRC, 1, "Addr_src", mdl.cm->addr_src);
     showIntProperty(+RowPropId::RST_SRC, 1, "Rst_src", mdl.cm->rst_src);
+
+    showIntProperty(+RowPropId::DelayTime, 1, "Delay time", mdl.timeStepDelayms);
 
     showIntProperty(+RowPropId::IR_LD, 1, "IR_ld", mdl.ir->ld_i);
     showIntAsHexProperty(+RowPropId::IR, 1, "IR", mdl.ir->data_o);
@@ -340,16 +393,28 @@ void Console::show(Model &mdl)
 
     showIntAsHexProperty(+RowPropId::IMM_EXT_OUT, 1, "IMM_Ext_Out", mdl.imm_ext->imm_o);
 
-    showALUOp(+RowPropId::ALU_OP, 1, "ALUOp", mdl.alu->func_op_i);
-    showIntAsHexProperty(+RowPropId::ALU_IMM_OUT, 1, "ALU_Imm_Out", mdl.alu->y_o);
-    showIntProperty(+RowPropId::ALU_LD, 1, "ALU_ld", mdl.alu_out->ld_i);
-    showIntAsHexProperty(+RowPropId::ALU_OUT, 1, "ALU_Out", mdl.alu_out->data_o);
-    showIntProperty(+RowPropId::ALU_FLAGS_LD, 1, "ALU_flgs_ld", mdl.alu_flags->ld_i);
-    showALUFlagsProperty(+RowPropId::ALU_FLAGS, 1, "ALU_Flags", mdl.alu_flags->data_o);
+    int col = 110;
+
+    showIntAsHexProperty(+RowCSRPropId::BREAK_ADDR, col, "Break At", pcWA);
+    showALUOp(+RowCSRPropId::ALU_OP, col, "ALUOp", mdl.alu->func_op_i);
+    showIntAsHexProperty(+RowCSRPropId::ALU_IMM_OUT, col, "ALU_Imm_Out", mdl.alu->y_o);
+    showIntProperty(+RowCSRPropId::ALU_LD, col, "ALU_ld", mdl.alu_out->ld_i);
+    showIntAsHexProperty(+RowCSRPropId::ALU_OUT, col, "ALU_Out", mdl.alu_out->data_o);
+    showIntProperty(+RowCSRPropId::ALU_FLAGS_LD, col, "ALU_flgs_ld", mdl.alu_flags->ld_i);
+    showALUFlagsProperty(+RowCSRPropId::ALU_FLAGS, col, "ALU_Flags", mdl.alu_flags->data_o);
 
     showRegFile(2, 40, mdl.regFile->bank);
     showRegisterBin(37, 40, "Reg", mdl.regFile->bank[mdl.selectedReg]);
     showRegisterInt(38, 40, "Reg", mdl.regFile->bank[mdl.selectedReg]);
+
+    showCSRs(2, 110, mdl.cm);
+    showBoolProperty(+RowCSRPropId::IRQ_ENABLED, col, "IRQ Enabled", mdl.irqEnabled);
+    showIntProperty(+RowCSRPropId::IRQ_TRIG_PT, col, "IRQ Trig Pt", mdl.irqTriggerPoint);
+    showIntProperty(+RowCSRPropId::IRQ_DURATION, col, "IRQ Duration", mdl.irqDuration);
+    showBoolProperty(+RowCSRPropId::IRQ_TRIGGERED, col, "IRQ Triggered", mdl.irqTriggered);
+    showBoolProperty(+RowCSRPropId::BRK_ENABLED, col, "Brk Enabled", mdl.breakEnabled);
+    showBoolProperty(+RowCSRPropId::FREERUN_ENABLED, col, "FreeRun Enabled", mdl.freeRun);
+    showBoolProperty(+RowCSRPropId::STEPPING_ENABLED, col, "Stepping Enabled", mdl.steppingEnabled);
 
     mvaddstr(mdl.p_pcMarker, mdl.markerCol - 1, "    ");
     mvaddstr(mdl.p_pcpMarker, mdl.markerCol - 1, "    ");
@@ -416,7 +481,7 @@ void Console::showRegisterBin(int row, int col, const std::string &header, int v
 void Console::showRegisterInt(int row, int col, const std::string &header, int value)
 {
     mvaddstr(row, col, "                      ");
-    move(row,col);
+    move(row, col);
     attrset(A_NORMAL);
     printw("%s: ", header.c_str());
     attrset(A_BOLD);
@@ -729,6 +794,26 @@ void Console::showRegFile(int row, int col, VlUnpacked<IData, 32> values)
     }
 }
 
+void Console::showCSRs(int row, int col, VRangerRisc_ControlMatrix *cm)
+{
+    attrset(COLOR_PAIR(BLACK_WHITE) | A_BOLD);
+    mvaddstr(row, col, "----- CSRs ------");
+    attrset(A_NORMAL);
+
+    attrset(A_NORMAL);
+
+    move(++row, col);
+    printw("%s", int_to_hex(cm->mstatus, "mstatus: ").c_str());
+    move(++row, col);
+    printw("%s", int_to_hex(cm->mie, "    mie: ").c_str());
+    move(++row, col);
+    printw("%s", int_to_hex(cm->mip, "    mip: ").c_str());
+    move(++row, col);
+    printw("%s", int_to_hex(cm->mepc, "   mepc: ").c_str());
+    move(++row, col);
+    printw("%s", int_to_hex(cm->mtvec, "  mtvec: ").c_str());
+}
+
 // Show mem dump from A to B and ascii
 void Console::showMemory(int row, int col, long int fromAddr, int memLen, VlUnpacked<IData, 1024> mem)
 {
@@ -796,6 +881,15 @@ void Console::showMemory(int row, int col, long int fromAddr, int memLen, VlUnpa
     }
 }
 
+void Console::clearPCMarkerCol(int row, int col, int memLen, Model &mdl)
+{
+    for (size_t i = 0; i < memLen; i++)
+    {
+        mvaddstr(row, mdl.markerCol - 1, "    ");
+        row++;
+    }
+}
+
 void Console::showPCMarker(Model &mdl)
 {
     // Calc row based on address using modulo
@@ -805,6 +899,7 @@ void Console::showPCMarker(Model &mdl)
     //         |- ------- -|
     //         0           32
     int pc = byte_to_word_addr(mdl.pc->data_o);
+
     if (pc >= mdl.fromAddr && pc < 1024)
     {
         if (pc < mdl.fromAddr + 32)
@@ -815,13 +910,14 @@ void Console::showPCMarker(Model &mdl)
             mdl.p_pcMarker = r;
         }
     }
-    else
-        mvaddstr(mdl.p_pcMarker, mdl.markerCol - 1, "    ");
+    // else
+    //     mvaddstr(mdl.p_pcMarker, mdl.markerCol - 1, "~~~~");
 }
 
 void Console::showPCPriorMarker(Model &mdl)
 {
     int pc = byte_to_word_addr(mdl.pc_prior->data_o);
+
     if (pc >= mdl.fromAddr && pc < 1024)
     {
         if (pc < mdl.fromAddr + 32)
@@ -832,8 +928,8 @@ void Console::showPCPriorMarker(Model &mdl)
             mdl.p_pcpMarker = r;
         }
     }
-    else
-        mvaddstr(mdl.p_pcpMarker, mdl.markerCol - 1, "    ");
+    // else
+    //     mvaddstr(mdl.p_pcpMarker, mdl.markerCol - 1, "^^^^");
 }
 
 // --------------------------------------------------------------------
