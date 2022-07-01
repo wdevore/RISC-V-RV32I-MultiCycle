@@ -7,12 +7,22 @@ import (
 	"github.com/wdevore/gen-instr/utils"
 )
 
+func GetJalExpr() *regexp.Regexp {
+	rxpr, _ := regexp.Compile(`([a-z]+)[ ]+([xa0-9]+),[ ]*([\w]+)`)
+	return rxpr
+}
+
+func GetJalFields(ass string) []string {
+	rxpr := GetJalExpr()
+
+	return rxpr.FindStringSubmatch(ass)
+}
+
 func Jal(json map[string]interface{}) (macCode string, err error) {
 	ass := fmt.Sprintf("%s", json["Assembly"])
 
-	rxpr, _ := regexp.Compile(`([a-z]+)[ ]+([xa0-9]+),[ ]*([\w]+)`)
+	fields := GetJalFields(ass)
 
-	fields := rxpr.FindStringSubmatch(ass)
 	rd := fields[2]
 	fmt.Println("Destination register: ", rd)
 

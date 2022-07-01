@@ -1,0 +1,5 @@
+{
+    "output": "/media/RAMDisk/interrupt_mret.out",
+    "input": "../source/interrupt_mret.asm",
+    "entryAddr": "0x0"
+}

@@ -79,7 +79,6 @@ Trap:
     @060 0x180 00C04183  lbu x3, 0x0C(x0)  // Trap handler
     @061 0x184 30200073  mret
     @062 0x188 00100073  ebreak   <== Should not be reached
-    ----
 Data:
     @080 0x200 00000180  // Address of Trap handler
     @081 0x204 00000800  // Mask for enable/disable M-mode interrupts

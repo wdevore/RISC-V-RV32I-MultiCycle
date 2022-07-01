@@ -8,13 +8,23 @@ import (
 	"github.com/wdevore/gen-instr/utils"
 )
 
+func GetJalrExpr() *regexp.Regexp {
+	rxpr, _ := regexp.Compile(`([a-z]+)[ ]+([xa0-9]+),[ ]*([\w]+)[ ]*\(([xa0-9]+)\)`)
+	return rxpr
+}
+
+func GetJalrFields(ass string) []string {
+	rxpr := GetJalrExpr()
+
+	return rxpr.FindStringSubmatch(ass)
+}
+
 // Example: jalr x0, jumpto(x1)
 func Jalr(json map[string]interface{}) (macCode string, err error) {
 	ass := fmt.Sprintf("%s", json["Assembly"])
 
-	rxpr, _ := regexp.Compile(`([a-z]+)[ ]+([xa0-9]+),[ ]*([\w]+)[ ]*\(([xa0-9]+)\)`)
+	fields := GetJalrFields(ass)
 
-	fields := rxpr.FindStringSubmatch(ass)
 	rd := fields[2]
 	fmt.Println("Destination register: ", rd)
 

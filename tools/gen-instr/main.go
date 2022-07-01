@@ -47,33 +47,7 @@ func main() {
 
 	instruction := fields[1]
 
-	machineCode := ""
-	switch instruction {
-	case "jal":
-		machineCode, err = assemblers.Jal(context)
-	case "jalr":
-		machineCode, err = assemblers.Jalr(context)
-	case "lui":
-		machineCode, err = assemblers.Lui(context)
-	case "auipc":
-		machineCode, err = assemblers.Auipc(context)
-	case "ebreak":
-		machineCode, err = assemblers.Ebreak()
-	case "lb", "lh", "lw", "lbu", "lhu":
-		machineCode, err = assemblers.Loads(context)
-	case "sb", "sh", "sw":
-		machineCode, err = assemblers.Stores(context)
-	case "add", "sub", "xor", "or", "and", "sll", "srl", "sra", "slt", "sltu":
-		machineCode, err = assemblers.RtypeAlu(context)
-	case "addi", "xori", "ori", "andi", "slli", "srli", "srai", "slti", "sltiu":
-		machineCode, err = assemblers.ItypeAlu(context)
-	case "beq", "bne", "blt", "bge", "bltu", "bgeu":
-		machineCode, err = assemblers.BtypeBranch(context)
-	case "csrrw", "csrrs", "csrrc", "csrrwi", "csrrsi", "csrrci":
-		machineCode, err = assemblers.ItypeCSR(context)
-	case "mret":
-		machineCode, err = assemblers.MRet(context)
-	}
+	machineCode, err := assemblers.Dispatch(instruction, context)
 
 	if err != nil {
 		panic(err)

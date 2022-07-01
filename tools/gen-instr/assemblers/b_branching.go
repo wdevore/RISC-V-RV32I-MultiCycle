@@ -7,14 +7,23 @@ import (
 	"github.com/wdevore/gen-instr/utils"
 )
 
+func GetBranchExpr() *regexp.Regexp {
+	rxpr, _ := regexp.Compile(`([a-z]+)[ ]+([xa0-9]+),[ ]*([xa0-9]+),[ ]*([\w]+)`)
+	return rxpr
+}
+
+func GetBranchFields(ass string) []string {
+	rxpr := GetBranchExpr()
+
+	return rxpr.FindStringSubmatch(ass)
+}
+
 //          beq rs1, rs2, imm
 // Example: beq  x1,  x2, offset
 func BtypeBranch(json map[string]interface{}) (macCode string, err error) {
 	ass := fmt.Sprintf("%s", json["Assembly"])
 
-	rxpr, _ := regexp.Compile(`([a-z]+)[ ]+([xa0-9]+),[ ]*([xa0-9]+),[ ]*([\w]+)`)
-
-	fields := rxpr.FindStringSubmatch(ass)
+	fields := GetBranchFields(ass)
 
 	instru := fields[1]
 

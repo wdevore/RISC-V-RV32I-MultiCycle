@@ -41,6 +41,12 @@ func UintToHexString(value uint64, with0x bool) string {
 
 }
 
+func WordAddrToByteAddrString(wrdAddr string) string {
+	hint, _ := StringHexToInt(wrdAddr)
+	hint *= 4
+	return UintToHexString(uint64(hint), false)
+}
+
 func IntToBinaryString(value int64) string {
 	if value >= 0 {
 		return fmt.Sprintf("%032b", value)
