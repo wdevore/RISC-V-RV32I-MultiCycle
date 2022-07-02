@@ -265,7 +265,9 @@ func assemble(mc_line *machine_line, expr *regexp.Regexp, loadRefExpr *regexp.Re
 		fields := expr.FindStringSubmatch(mc_line.line)
 
 		instruction := fields[1]
-
+		if instruction == "blt" {
+			fmt.Println("")
+		}
 		// Rewrite any instructions to replace references, for example, "lw"
 		mc_line.line, err = rewrite(instruction, mc_line.line, labels, loadRefExpr)
 		if err != nil {
@@ -275,9 +277,17 @@ func assemble(mc_line *machine_line, expr *regexp.Regexp, loadRefExpr *regexp.Re
 		// Some instructions require fetching a label, for example, "jal"
 		label, value, _ := getLabelRef(instruction, mc_line.line, labels, loadRefExpr)
 
-		// addr needs to be converted to Byte-address form
-		byteAddr := utils.WordAddrToByteAddrString(mc_line.addr)
-		context := createContext(mc_line.line, byteAddr, label, value)
+		// All address fields need to be converted to Byte-address form
+		// for the Context--depending on the instruction.
+		switch instruction {
+		case "beq", "bne", "blt", "bge", "bltu", "bgeu":
+			value = utils.WordAddrToByteAddrString(value)
+		}
+
+		// PC address needs to be converted to Byte-address form
+		pcByteAddr := utils.WordAddrToByteAddrString(mc_line.addr)
+
+		context := createContext(mc_line.line, pcByteAddr, label, value)
 
 		macCode, err = assemblers.Dispatch(instruction, context)
 		mc_line.code = macCode
@@ -324,28 +334,27 @@ func rewrite(instruction string, ass string, labels map[string]string, loadRefEx
 			lFields := assemblers.GetLoadsFields(ass)
 			newInstr = lFields[1] + " " + lFields[2] + ", " + value + "(" + lFields[4] + ")"
 		}
+		// case "beq", "bne", "blt", "bge", "bltu", "bgeu":
+		// 	// Rewrite label to branch target value
+		// 	value, err := resolveCalc(instruction, ass, labels)
+
+		// 	if err != nil {
+		// 		return "", err
+		// 	}
+
+		// 	lFields := assemblers.GetLoadsFields(ass)
+		// 	newInstr = lFields[1] + " " + lFields[2] + ", "+ lFields[3] + ", " + value
 	}
 
 	return newInstr, nil
 }
 
-func getLabelRef(instruction string, ass string, labels map[string]string, loadRefExpr *regexp.Regexp) (label string, value string, err error) {
-	label, err = assemblers.GetLabel(instruction, ass)
-	if err != nil {
-		return "", "", err
-	}
-
-	value = labels[label]
-
-	return label, value, nil
-}
-
 func resolveCalc(instruction string, ass string, labels map[string]string) (value string, err error) {
 	switch instruction {
 	case "lb", "lh", "lw", "lbu", "lhu":
-		loadRefExpr, _ := regexp.Compile(`@([\w]+)([+]*)([0-9]*)`)
+		expr, _ := regexp.Compile(`@([\w]+)([+]*)([0-9]*)`)
 
-		fields := loadRefExpr.FindStringSubmatch(ass)
+		fields := expr.FindStringSubmatch(ass)
 
 		if len(fields) > 0 {
 			if fields[2] == "+" {
@@ -375,10 +384,49 @@ func resolveCalc(instruction string, ass string, labels map[string]string) (valu
 
 				value = utils.UintToHexString(uint64(bad), true)
 			}
+		} else {
+			// Just a offset value, ex: xx xx, 0(x4)
+			expr, _ := regexp.Compile(`([x0-9]+)\(([xa0-9]+)\)`)
+
+			fields := expr.FindStringSubmatch(ass)
+			bs := utils.WordAddrToByteAddrString(fields[1])
+			byteOffset, err := utils.StringHexToInt(bs)
+			if err != nil {
+				return "", err
+			}
+
+			value = utils.UintToHexString(uint64(byteOffset), false)
 		}
+	case "beq", "bne", "blt", "bge", "bltu", "bgeu":
+		expr, _ := regexp.Compile(`@([\w]+)`)
+
+		fields := expr.FindStringSubmatch(ass)
+		if len(fields) == 0 {
+			return "", fmt.Errorf("branch label required")
+		}
+
+		value = labels[fields[1]]
+		byteAddr := utils.WordAddrToByteAddrString(value)
+		bad, err := utils.StringHexToInt(byteAddr)
+		if err != nil {
+			return "", err
+		}
+
+		value = utils.UintToHexString(uint64(bad), true)
 	}
 
 	return value, nil
+}
+
+func getLabelRef(instruction string, ass string, labels map[string]string, loadRefExpr *regexp.Regexp) (label string, value string, err error) {
+	label, err = assemblers.GetLabel(instruction, ass)
+	if err != nil {
+		return "", "", err
+	}
+
+	value = labels[label]
+
+	return label, value, nil
 }
 
 func writeOutput(context map[string]interface{}, sections []section) {

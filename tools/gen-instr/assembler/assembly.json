@@ -1,5 +1,5 @@
 {
-    "output": "/media/RAMDisk/interrupt_mret.out",
-    "input": "../source/interrupt_mret.asm",
+    "output": "/media/RAMDisk/ram.out",
+    "input": "../source/count_to_5.asm",
     "entryAddr": "0x0"
 }
