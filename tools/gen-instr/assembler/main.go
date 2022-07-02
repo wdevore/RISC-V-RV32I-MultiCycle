@@ -115,10 +115,11 @@ func main() {
 }
 
 func findLabels(scanner *bufio.Scanner, labels map[string]string, labelExpr *regexp.Regexp) (labelNames []string) {
-	// labelExpr, _ := regexp.Compile(`([0-9a-zA-Z]*): @([0-9a-zA-Z]*)`)
+	pc := 0
 
 	for scanner.Scan() {
 		line := scanner.Text()
+
 		if len(line) == 0 {
 			continue
 		}
@@ -128,16 +129,23 @@ func findLabels(scanner *bufio.Scanner, labels map[string]string, labelExpr *reg
 
 		label, addr, err := matchLabel(line, labelExpr)
 		if err == nil {
+			if addr == "" {
+				// Ex: "Data1: @"
+				// An address wasn't supplied. Use current PC instead
+				addr = utils.UintToHexString(uint64(pc), false)
+			}
 			labels[label] = addr
 			labelNames = append(labelNames, label)
+		} else {
+			pc++
 		}
+
 	}
 
 	return labelNames
 }
 
 func processSection(scanner *bufio.Scanner, labels map[string]string, startLabel string, endLabel string, labelExpr *regexp.Regexp) (sect section, err error) {
-	// labelExpr, _ := regexp.Compile(`([a-zA-Z]*): @([0-9a-zA-Z]*)`)
 	rawExpr, _ := regexp.Compile(`([ ]+)d: ([0-9a-zA-z]+)`)
 	addRefExpr, _ := regexp.Compile(`([ ]+)@: ([\w]+)`)
 
@@ -283,7 +291,7 @@ func assemble(mc_line *machine_line, expr *regexp.Regexp, loadRefExpr *regexp.Re
 }
 
 func createContext(ass string, pc string, label string, value string) (context map[string]interface{}) {
-	// value is usually a
+	// Create a context to pass to the assemblers
 	ctx := "{"
 	ctx += "\"Assembly\":\"" + ass + "\","
 	ctx += "\"PC\":\"" + pc + "\","

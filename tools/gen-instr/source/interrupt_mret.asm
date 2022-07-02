@@ -6,7 +6,7 @@ Main: @000
     lbu x1, @Data1(x0)        // <<**IRQ**>>
     lbu x2, @Data1+1(x0)
     ebreak
-Data1: @005
+Data1: @
     d: 0000000C
     d: 0000000B
     d: 0000000A
@@ -14,7 +14,7 @@ Data1: @005
 Boot: @040
     lw x1, @Data+2(x0)        // Disable Global interrupts
     csrrc x0, mstatus, x1
-    lw x1, @Data(x0)        // load mtvec base addr
+    lw x1, @Data(x0)          // load mtvec base addr
     csrrw x0, mtvec, x1
     lw x1, @Data+1(x0)        // Enable M-mode Mie.MEIE 
     csrrs x0, mie, x1
