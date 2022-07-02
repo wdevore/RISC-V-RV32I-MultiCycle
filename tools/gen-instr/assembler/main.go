@@ -375,8 +375,6 @@ func resolveCalc(instruction string, ass string, labels map[string]string) (valu
 
 				value = utils.UintToHexString(uint64(bad), true)
 			}
-		} else {
-
 		}
 	}
 
@@ -414,6 +412,8 @@ func writeOutput(context map[string]interface{}, sections []section) {
 		}
 	}
 
+	// We must write an extra line because SystemVerilog's readmenh
+	// needs to detect a final blank line.
 	_, err = f.WriteString("\n")
 	if err != nil {
 		fmt.Println(err)

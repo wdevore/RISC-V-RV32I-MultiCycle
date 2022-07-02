@@ -8,7 +8,7 @@ import (
 )
 
 func GetBranchExpr() *regexp.Regexp {
-	rxpr, _ := regexp.Compile(`([a-z]+)[ ]+([xa0-9]+),[ ]*([xa0-9]+),[ ]*([\w]+)`)
+	rxpr, _ := regexp.Compile(`([a-z]+)[ ]+([xa0-9]+),[ ]*([xa0-9]+),[ ]*@([\w]+)`)
 	return rxpr
 }
 
@@ -19,7 +19,7 @@ func GetBranchFields(ass string) []string {
 }
 
 //          beq rs1, rs2, imm
-// Example: beq  x1,  x2, offset
+// Example: beq  x1,  x2, @offset
 func BtypeBranch(json map[string]interface{}) (macCode string, err error) {
 	ass := fmt.Sprintf("%s", json["Assembly"])
 

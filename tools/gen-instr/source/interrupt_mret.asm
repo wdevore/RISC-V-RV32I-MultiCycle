@@ -18,9 +18,9 @@ Boot: @040
     csrrw x0, mtvec, x1
     lw x1, @Data+1(x0)        // Enable M-mode Mie.MEIE 
     csrrs x0, mie, x1
-    jal x0, Main
-Trap: @060
-    lbu x3, @Main+3(x0)  // Trap handler
+    jal x0, @Main
+Trap: @060                    // Trap handler
+    lbu x3, @Main+3(x0)  
     mret
     ebreak            // <== Should not be reached
 Data: @080

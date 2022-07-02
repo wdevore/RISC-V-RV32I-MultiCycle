@@ -53,7 +53,7 @@ To test "not" taken branch change either @A or @C to a value different than the 
     @0 0x00  00000002
     @1 0x04  00020083   lw  x1, 0x0(x4)    <-- x4 preloaded with 0x28
     @2 0x08  00820103   lw  x2, 0x8(x4)
-    @3 0x0C  00209663   bne x1, x2, offset
+    @3 0x0C  00209663   bne x1, x2, @offset
     @4 0x10  01022283   lw  x5, 0x10(x4)   <-- not taken path
     @5 0x14  00100073   ebreak
 offset:
@@ -123,7 +123,7 @@ To test "not" taken branch make @A > @C
     @0 0x00  00000002
     @1 0x04  00020083   lw  x1, x4, 0
     @2 0x08  00820103   lw  x2, x4, 8
-    @3 0x0C  0020C663   blt x1, x2, offset
+    @3 0x0C  0020C663   blt x1, x2, @offset
     @4 0x10  01022283   lw  x5, x4, 0x10   <-- not taken path
     @5 0x14  00100073   ebreak
 offset:
@@ -192,7 +192,7 @@ To test "not" taken branch make @A < @C
     @0 0x00  00000002
     @1 0x04  00020083   lw  x1, x4, 0
     @2 0x08  00820103   lw  x2, x4, 8
-    @3 0x0C  0020D663   bge x1, x2, offset
+    @3 0x0C  0020D663   bge x1, x2, @offset
     @4 0x10  01022283   lw  x5, x4, 0x10   <-- not taken path
     @5 0x14  00100073   ebreak
 offset:
@@ -266,7 +266,7 @@ imm[12]|imm[10:5] | rs2 | rs1 | funct3 | imm[4:1]|imm[11] | opcode
     @0 0x00  00000002
     @1 0x04  00020083   lw   x1, x4, 0
     @2 0x08  00820103   lw   x2, x4, 8
-    @3 0x0C  0020E663   bltu x1, x2, offset
+    @3 0x0C  0020E663   bltu x1, x2, @offset
     @4 0x10  01022283   lw   x5, x4, 0x10   <-- not taken path
     @5 0x14  00100073   ebreak
 offset:
@@ -335,7 +335,7 @@ imm[12]|imm[10:5] | rs2 | rs1 | funct3 | imm[4:1]|imm[11] | opcode
     @0 0x00  00000002
     @1 0x04  00020083   lw   x1, x4, 0
     @2 0x08  00820103   lw   x2, x4, 8
-    @3 0x0C  0020F663   bgeu x1, x2, offset
+    @3 0x0C  0020F663   bgeu x1, x2, @offset
     @4 0x10  01022283   lw   x5, x4, 0x10   <-- not taken path
     @5 0x14  00100073   ebreak
 offset:

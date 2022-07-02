@@ -8,7 +8,7 @@ import (
 )
 
 func GetJalExpr() *regexp.Regexp {
-	rxpr, _ := regexp.Compile(`([a-z]+)[ ]+([xa0-9]+),[ ]*([\w]+)`)
+	rxpr, _ := regexp.Compile(`([a-z]+)[ ]+([xa0-9]+),[ ]*@([\w]+)`)
 	return rxpr
 }
 
