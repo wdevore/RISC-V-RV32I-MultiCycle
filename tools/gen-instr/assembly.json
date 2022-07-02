@@ -1,5 +1,5 @@
 {
-    "Assembly": "mret",
+    "Assembly": "lbu x2, 0x18(x0)",
     "PC": "0x118",
     "Labels": [
         {

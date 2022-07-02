@@ -4,7 +4,7 @@
 `endif
 
 // --------------------------------------------------------------------------
-// 1024x32 BRAM memory
+// Nx32 BRAM memory
 // --------------------------------------------------------------------------
 // The path to the data file is relative to the test bench (TB).
 // If the TB is run from this directory then the path would be "ROM.dat"
@@ -16,7 +16,7 @@
 
 module Memory
 #(
-    parameter WORDS = 10,    // 2^WORDS = 1K
+    parameter WORDS = `MEM_WORDS,    // 2^WORDS = 8K
     parameter DATA_WIDTH = 32)
 (
     input  logic                  clk_i,     // pos-edge

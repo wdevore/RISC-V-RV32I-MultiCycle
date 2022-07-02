@@ -5,6 +5,7 @@
 
 #include <ncurses.h>
 
+#include "definitions.h"
 #include "commands.h"
 #include "row_indices.h"
 #include "console.h"
@@ -90,7 +91,7 @@ int main(int argc, char *argv[])
 
     Simulation sim = Simulation{};
 
-    con->showMemory(2, 70, mdl.fromAddr, 1024, mdl.bram->mem);
+    con->showMemory(2, 70, mdl.fromAddr, 1<<MEM_WORDS, mdl.bram->mem);
 
     con->show(mdl);
 

@@ -9,7 +9,7 @@
 
 module Pmmu
 #(
-    parameter WORDS = 10,    // 10-bits 2^WORDS = 1K
+    parameter WORDS = `MEM_WORDS,    // 10-bits 2^WORDS = 1K
     parameter DATA_WIDTH = 32)
 (
     input  logic                  clk_i,     // pos-edge
@@ -137,7 +137,7 @@ end
 Memory #(.WORDS(WORDS)) bram(
     .clk_i(clk_i),
     .data_i(storage_data_in),
-    .addr_i(word_addr[9:0]),
+    .addr_i(word_addr[WORDS-1:0]),
     .wr_i(mwr_i),
     .rd_i(mrd_i),
     .data_o(storage_data_out)

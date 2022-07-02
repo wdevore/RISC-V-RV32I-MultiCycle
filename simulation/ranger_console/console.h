@@ -1,6 +1,7 @@
 #pragma once
 #include <verilated.h>
 
+#include "definitions.h"
 #include "commands.h"
 #include "model.h"
 
@@ -71,7 +72,7 @@ public:
     void showALUFlagsProperty(int row, int col, std::string label, int value);
     void showRegFile(int row, int col, VlUnpacked<IData, 32> values);
     void showCSRs(int row, int col, VRangerRisc_ControlMatrix *cm);
-    void showMemory(int row, int col, long int fromAddr, int memLen, VlUnpacked<IData, 1024> mem);
+    void showMemory(int row, int col, long int fromAddr, int memLen, VlUnpacked<IData, (1<<MEM_WORDS)> mem);
     void clearPCMarkerCol(int row, int col, int memLen, Model &mdl);
     void showPCMarker(Model &model);
     void showPCPriorMarker(Model &model);

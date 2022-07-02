@@ -62,7 +62,7 @@ Main:
     @000 0x000 20802083  lw x1, 0x208(x0) // Enable Global interrupts
     @001 0x004 3000A073  csrrs x0, mstatus, x1
     @002 0x008 01404083  lbu x1, 0x14(x0)   <<**IRQ**>>
-    @003 0x00C 01004103  lbu x2, 0x10(x0)
+    @003 0x00C 01804103  lbu x2, 0x18(x0)
     @004 0x010 00100073  ebreak
     @005 0x014 0000000C
     @006 0x018 0000000B

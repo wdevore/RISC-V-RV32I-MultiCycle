@@ -68,8 +68,10 @@ func main() {
 
 	labels := make(map[string]string)
 
+	labelExpr, _ := regexp.Compile(`([0-9a-zA-Z]*): @([0-9a-zA-Z]*)`)
+
 	// First pass to collect labels
-	labelNames := findLabels(scanner, labels)
+	labelNames := findLabels(scanner, labels, labelExpr)
 
 	// Second pass to collect program lines
 	assFile.Seek(0, 0) // Restart stream.
@@ -80,7 +82,7 @@ func main() {
 	for i := 0; i < len(labelNames)-1; i++ {
 		startLabel := labelNames[i]
 		endLabel := labelNames[i+1]
-		sect, err := processSection(scanner, labels, startLabel, endLabel)
+		sect, err := processSection(scanner, labels, startLabel, endLabel, labelExpr)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(-1)
@@ -88,7 +90,7 @@ func main() {
 		sections = append(sections, sect)
 	}
 
-	sect, err := processSection(scanner, labels, labelNames[len(labelNames)-1], "")
+	sect, err := processSection(scanner, labels, labelNames[len(labelNames)-1], "", labelExpr)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(-1)
@@ -96,11 +98,12 @@ func main() {
 	sections = append(sections, sect)
 
 	instrExpr, _ := regexp.Compile(`([a-z]+)`)
+	loadRefExpr, _ := regexp.Compile(`@([\w]+)([+]*)([0-9]*)`)
 
 	// Assemble program
 	for _, seti := range sections {
 		for _, mc_line := range seti.lines {
-			_, err := assemble(mc_line, instrExpr, labels)
+			_, err := assemble(mc_line, instrExpr, loadRefExpr, labels)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(-1)
@@ -111,8 +114,8 @@ func main() {
 	writeOutput(context, sections)
 }
 
-func findLabels(scanner *bufio.Scanner, labels map[string]string) (labelNames []string) {
-	labelExpr, _ := regexp.Compile(`([a-zA-Z]*): @([0-9a-zA-Z]*)`)
+func findLabels(scanner *bufio.Scanner, labels map[string]string, labelExpr *regexp.Regexp) (labelNames []string) {
+	// labelExpr, _ := regexp.Compile(`([0-9a-zA-Z]*): @([0-9a-zA-Z]*)`)
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -133,8 +136,8 @@ func findLabels(scanner *bufio.Scanner, labels map[string]string) (labelNames []
 	return labelNames
 }
 
-func processSection(scanner *bufio.Scanner, labels map[string]string, startLabel string, endLabel string) (sect section, err error) {
-	labelExpr, _ := regexp.Compile(`([a-zA-Z]*): @([0-9a-zA-Z]*)`)
+func processSection(scanner *bufio.Scanner, labels map[string]string, startLabel string, endLabel string, labelExpr *regexp.Regexp) (sect section, err error) {
+	// labelExpr, _ := regexp.Compile(`([a-zA-Z]*): @([0-9a-zA-Z]*)`)
 	rawExpr, _ := regexp.Compile(`([ ]+)d: ([0-9a-zA-z]+)`)
 	addRefExpr, _ := regexp.Compile(`([ ]+)@: ([\w]+)`)
 
@@ -243,7 +246,7 @@ func matchLabel(line string, expr *regexp.Regexp) (label string, addr string, er
 	return "", "", fmt.Errorf("not a Label line")
 }
 
-func assemble(mc_line *machine_line, expr *regexp.Regexp, labels map[string]string) (macCode string, err error) {
+func assemble(mc_line *machine_line, expr *regexp.Regexp, loadRefExpr *regexp.Regexp, labels map[string]string) (macCode string, err error) {
 
 	switch mc_line.ltype {
 	case "Data":
@@ -255,8 +258,14 @@ func assemble(mc_line *machine_line, expr *regexp.Regexp, labels map[string]stri
 
 		instruction := fields[1]
 
+		// Rewrite any instructions to replace references, for example, "lw"
+		mc_line.line, err = rewrite(instruction, mc_line.line, labels, loadRefExpr)
+		if err != nil {
+			return "", err
+		}
+
 		// Some instructions require fetching a label, for example, "jal"
-		label, value, _ := getLabelRef(instruction, mc_line.line, labels)
+		label, value, _ := getLabelRef(instruction, mc_line.line, labels, loadRefExpr)
 
 		// addr needs to be converted to Byte-address form
 		byteAddr := utils.WordAddrToByteAddrString(mc_line.addr)
@@ -286,7 +295,33 @@ func createContext(ass string, pc string, label string, value string) (context m
 	return context
 }
 
-func getLabelRef(instruction string, ass string, labels map[string]string) (label string, value string, err error) {
+func rewrite(instruction string, ass string, labels map[string]string, loadRefExpr *regexp.Regexp) (newInstr string, err error) {
+	if instruction == "lbu" {
+		fmt.Println("")
+	}
+
+	newInstr = ass
+
+	switch instruction {
+	case "lb", "lh", "lw", "lbu", "lhu":
+		value, err := resolveCalc(instruction, ass, labels)
+
+		if err != nil {
+			return "", err
+		}
+
+		if value == "" {
+			newInstr = ass
+		} else {
+			lFields := assemblers.GetLoadsFields(ass)
+			newInstr = lFields[1] + " " + lFields[2] + ", " + value + "(" + lFields[4] + ")"
+		}
+	}
+
+	return newInstr, nil
+}
+
+func getLabelRef(instruction string, ass string, labels map[string]string, loadRefExpr *regexp.Regexp) (label string, value string, err error) {
 	label, err = assemblers.GetLabel(instruction, ass)
 	if err != nil {
 		return "", "", err
@@ -295,6 +330,49 @@ func getLabelRef(instruction string, ass string, labels map[string]string) (labe
 	value = labels[label]
 
 	return label, value, nil
+}
+
+func resolveCalc(instruction string, ass string, labels map[string]string) (value string, err error) {
+	switch instruction {
+	case "lb", "lh", "lw", "lbu", "lhu":
+		loadRefExpr, _ := regexp.Compile(`@([\w]+)([+]*)([0-9]*)`)
+
+		fields := loadRefExpr.FindStringSubmatch(ass)
+
+		if len(fields) > 0 {
+			if fields[2] == "+" {
+				// Ex: @Data+3
+				value = labels[fields[1]]
+				byteAddr := utils.WordAddrToByteAddrString(value)
+				bad, err := utils.StringHexToInt(byteAddr)
+				if err != nil {
+					return "", err
+				}
+
+				baOffset := utils.WordAddrToByteAddrString(fields[3])
+				offset, err := utils.StringHexToInt(baOffset)
+				if err != nil {
+					return "", err
+				}
+				v := uint64(bad + offset)
+				value = utils.UintToHexString(v, true)
+			} else {
+				// Ex: @Data
+				value = labels[fields[1]]
+				byteAddr := utils.WordAddrToByteAddrString(value)
+				bad, err := utils.StringHexToInt(byteAddr)
+				if err != nil {
+					return "", err
+				}
+
+				value = utils.UintToHexString(uint64(bad), true)
+			}
+		} else {
+
+		}
+	}
+
+	return value, nil
 }
 
 func writeOutput(context map[string]interface{}, sections []section) {

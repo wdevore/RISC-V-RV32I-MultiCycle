@@ -45,6 +45,8 @@ func GetFields(instruction string, ass string) []string {
 		return GetJalrFields(ass)
 	case "beq", "bne", "blt", "bge", "bltu", "bgeu":
 		return GetBranchFields(ass)
+	case "lb", "lh", "lw", "lbu", "lhu":
+		return GetLoadsFields(ass)
 	}
 
 	return nil
@@ -63,6 +65,8 @@ func GetLabel(instruction string, ass string) (label string, err error) {
 		return fields[3], nil
 	case "beq", "bne", "blt", "bge", "bltu", "bgeu":
 		return fields[4], nil
+	case "lb", "lh", "lw", "lbu", "lhu":
+		return fields[3], nil
 	}
 
 	return "", fmt.Errorf("unknown instruction: " + instruction)

@@ -8,19 +8,30 @@ import (
 	"github.com/wdevore/gen-instr/utils"
 )
 
+func GetLoadsExpr() *regexp.Regexp {
+	rxpr, _ := regexp.Compile(`([a-z]+)[ ]+([xa0-9]+),[ ]*([@+\w]+)[ ]*\(([xa0-9]+)\)`)
+	return rxpr
+}
+
+func GetLoadsFields(ass string) []string {
+	rxpr := GetLoadsExpr()
+
+	return rxpr.FindStringSubmatch(ass)
+}
+
 // Example: lw x19, 0x0A(x0)
 func Loads(json map[string]interface{}) (macCode string, err error) {
 	ass := fmt.Sprintf("%s", json["Assembly"])
 
-	rxpr, _ := regexp.Compile(`([a-z]+)[ ]+([xa0-9]+),[ ]*([\w]+)[ ]*\(([xa0-9]+)\)`)
+	fields := GetLoadsFields(ass)
 
-	fields := rxpr.FindStringSubmatch(ass)
 	rd := fields[2]
 	fmt.Println("Destination register: ", rd)
 
 	imm := fields[3]
 	immAsWA := strings.Contains(imm, "WA:")
 
+	// Can be either, examples: 0x0(x0) or @Ref+1(x0)
 	rs1 := fields[4]
 	fmt.Println("Rs1 register: ", rs1)
 

@@ -17,6 +17,9 @@
 `define HALFWORD_SIZE 2'b01
 `define WORD_SIZE     2'b10
 
+// Also change the Testbench size
+`define MEM_WORDS 13
+
 `define AMuxSelectSize 2
 `define BMuxSelectSize 2
 `define ImmSelectSize 3

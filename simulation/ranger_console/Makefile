@@ -22,6 +22,7 @@ TEMPLATE_HEADER = \
 	console_module.h
 
 HEADERS = \
+	definitions.h \
 	model.h \
 	commands.h \
 	row_indices.h \

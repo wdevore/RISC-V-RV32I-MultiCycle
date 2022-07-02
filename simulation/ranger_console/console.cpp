@@ -815,7 +815,7 @@ void Console::showCSRs(int row, int col, VRangerRisc_ControlMatrix *cm)
 }
 
 // Show mem dump from A to B and ascii
-void Console::showMemory(int row, int col, long int fromAddr, int memLen, VlUnpacked<IData, 1024> mem)
+void Console::showMemory(int row, int col, long int fromAddr, int memLen, VlUnpacked<IData, (1<<MEM_WORDS)> mem)
 {
     // Addr           data          Ascii
     // 0x0000000a     0x01010101    ..ll
