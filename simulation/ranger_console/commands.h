@@ -32,4 +32,5 @@ enum class Command
     EnableIRQ,
     SetIRQ,
     SetIRQDur,
+    TriggerIRQ,
 };

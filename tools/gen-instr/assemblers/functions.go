@@ -59,9 +59,7 @@ func GetLabel(instruction string, ass string) (label string, err error) {
 	}
 
 	switch instruction {
-	case "jal":
-		return fields[3], nil
-	case "jalr":
+	case "jal", "jalr":
 		return fields[3], nil
 	case "beq", "bne", "blt", "bge", "bltu", "bgeu":
 		return fields[4], nil

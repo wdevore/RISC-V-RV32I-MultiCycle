@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
+	"strings"
 
 	"github.com/wdevore/gen-instr/assemblers"
 	"github.com/wdevore/gen-instr/utils"
@@ -111,7 +112,8 @@ func main() {
 		}
 	}
 
-	writeOutput(context, sections)
+	writeRamFile(context, sections)
+	writeOutFile(context, sections)
 }
 
 func findLabels(scanner *bufio.Scanner, labels map[string]string, labelExpr *regexp.Regexp) (labelNames []string) {
@@ -146,8 +148,8 @@ func findLabels(scanner *bufio.Scanner, labels map[string]string, labelExpr *reg
 }
 
 func processSection(scanner *bufio.Scanner, labels map[string]string, startLabel string, endLabel string, labelExpr *regexp.Regexp) (sect section, err error) {
-	rawExpr, _ := regexp.Compile(`([ ]+)d: ([0-9a-zA-z]+)`)
-	addRefExpr, _ := regexp.Compile(`([ ]+)@: ([\w]+)`)
+	rawExpr, _ := regexp.Compile(`([ ]*)d: ([0-9a-zA-z]+)`)
+	addRefExpr, _ := regexp.Compile(`([ ]*)@: ([\w]+)`)
 
 	sect = section{label: startLabel}
 	pc, err := utils.StringHexToInt(labels[startLabel])
@@ -158,6 +160,7 @@ func processSection(scanner *bufio.Scanner, labels map[string]string, startLabel
 	// Scan from start to end label
 	for scanner.Scan() {
 		line := scanner.Text()
+		line = strings.Trim(line, " ")
 
 		if len(line) == 0 {
 			continue
@@ -280,12 +283,15 @@ func assemble(mc_line *machine_line, expr *regexp.Regexp, loadRefExpr *regexp.Re
 		// All address fields need to be converted to Byte-address form
 		// for the Context--depending on the instruction.
 		switch instruction {
-		case "beq", "bne", "blt", "bge", "bltu", "bgeu":
+		case "beq", "bne", "blt", "bge", "bltu", "bgeu", "jal":
 			value = utils.WordAddrToByteAddrString(value)
 		}
 
 		// PC address needs to be converted to Byte-address form
 		pcByteAddr := utils.WordAddrToByteAddrString(mc_line.addr)
+		// if strings.Contains(instruction, "jal") {
+		// 	fmt.Println("debug")
+		// }
 
 		context := createContext(mc_line.line, pcByteAddr, label, value)
 
@@ -314,10 +320,6 @@ func createContext(ass string, pc string, label string, value string) (context m
 }
 
 func rewrite(instruction string, ass string, labels map[string]string, loadRefExpr *regexp.Regexp) (newInstr string, err error) {
-	if instruction == "lbu" {
-		fmt.Println("")
-	}
-
 	newInstr = ass
 
 	switch instruction {
@@ -384,19 +386,20 @@ func resolveCalc(instruction string, ass string, labels map[string]string) (valu
 
 				value = utils.UintToHexString(uint64(bad), true)
 			}
-		} else {
-			// Just a offset value, ex: xx xx, 0(x4)
-			expr, _ := regexp.Compile(`([x0-9]+)\(([xa0-9]+)\)`)
-
-			fields := expr.FindStringSubmatch(ass)
-			bs := utils.WordAddrToByteAddrString(fields[1])
-			byteOffset, err := utils.StringHexToInt(bs)
-			if err != nil {
-				return "", err
-			}
-
-			value = utils.UintToHexString(uint64(byteOffset), false)
 		}
+		//  else {
+		// 	// Just a offset value, ex: xx xx, 0(x4)
+		// 	expr, _ := regexp.Compile(`([x0-9]+)\(([xa0-9]+)\)`)
+
+		// 	fields := expr.FindStringSubmatch(ass)
+		// 	bs := utils.WordAddrToByteAddrString(fields[1])
+		// 	byteOffset, err := utils.StringHexToInt(bs)
+		// 	if err != nil {
+		// 		return "", err
+		// 	}
+
+		// 	value = utils.UintToHexString(uint64(byteOffset), false)
+		// }
 	case "beq", "bne", "blt", "bge", "bltu", "bgeu":
 		expr, _ := regexp.Compile(`@([\w]+)`)
 
@@ -429,10 +432,11 @@ func getLabelRef(instruction string, ass string, labels map[string]string, loadR
 	return label, value, nil
 }
 
-func writeOutput(context map[string]interface{}, sections []section) {
-	fmt.Println("Writing: ", context["output"])
+func writeRamFile(context map[string]interface{}, sections []section) {
+	file := context["RamFile"]
+	fmt.Println("Writing: ", file)
 
-	outfile := fmt.Sprint(context["output"])
+	outfile := fmt.Sprint(file)
 	f, err := os.Create(outfile)
 
 	if err != nil {
@@ -462,13 +466,50 @@ func writeOutput(context map[string]interface{}, sections []section) {
 
 	// We must write an extra line because SystemVerilog's readmenh
 	// needs to detect a final blank line.
-	_, err = f.WriteString("\n")
+	// _, err = f.WriteString("\n")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	os.Exit(-1)
+	// }
+
+	f.Sync()
+
+	fmt.Println("File written: ", file)
+}
+
+func writeOutFile(context map[string]interface{}, sections []section) {
+	file := context["OutFile"]
+	fmt.Println("Writing: ", context["OutFile"])
+
+	outfile := fmt.Sprint(file)
+	f, err := os.Create(outfile)
+
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(-1)
 	}
 
+	defer f.Close()
+
+	for _, seti := range sections {
+		for _, mc_line := range seti.lines {
+			var err error
+
+			switch mc_line.ltype {
+			case "Data", "AddrRef":
+				_, err = f.WriteString("@" + mc_line.addr + " " + mc_line.value + " " + mc_line.line + "\n")
+			default:
+				_, err = f.WriteString("@" + mc_line.addr + " " + mc_line.code + " " + mc_line.line + "\n")
+			}
+
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(-1)
+			}
+		}
+	}
+
 	f.Sync()
 
-	fmt.Println("File written: ", context["output"])
+	fmt.Println("File written: ", file)
 }

@@ -1,5 +1,6 @@
 {
-    "output": "/media/RAMDisk/ram.out",
-    "input": "../source/count_to_5.asm",
+    "RamFile": "/media/RAMDisk/code.ram",
+    "OutFile": "/media/RAMDisk/code.out",
+    "input": "../source/interrupt_check.asm",
     "entryAddr": "0x0"
 }

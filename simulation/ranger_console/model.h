@@ -57,12 +57,18 @@ struct Model
     bool freeRun = false;
     bool breakEnabled = false;
     bool steppingEnabled = false;
+
+    // ------------------------------------------------------
+    // Interrupts
+    // ------------------------------------------------------
     bool irqEnabled = false;
     int irq_prev = 1;
     bool irqTriggered = false;
-
     int irqTriggerPoint = 0;
+    // When triggered we lower irq for the current duration
+    // value.
     int irqDuration = 3;
+    int irqCnt = 0;
 
     vluint64_t timeStep_ns = 0;
     int timeStepDelayms = 10; // Default 10ms = 100Hz

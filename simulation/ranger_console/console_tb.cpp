@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
 
     Simulation sim = Simulation{};
 
-    con->showMemory(2, 70, mdl.fromAddr, 1<<MEM_WORDS, mdl.bram->mem);
+    con->showMemory(2, 70, mdl.fromAddr, 1 << MEM_WORDS, mdl.bram->mem);
 
     con->show(mdl);
 
@@ -221,7 +221,7 @@ int main(int argc, char *argv[])
             // Note: I set the output even though during simulation
             // you would set the input, load and clock falling edge.
             mdl.p_pcpMarker = mdl.p_pcMarker;
-            mdl.pc_prior->data_o = mdl.pc->data_o;  // This is unrealistic relative to the CPU
+            mdl.pc_prior->data_o = mdl.pc->data_o; // This is unrealistic relative to the CPU
             mdl.pc->data_o = word_to_byte_addr(con->getArg1Int());
 
             con->showIntAsHexProperty(+RowPropId::PC, 1, "PC", mdl.pc->data_o);
@@ -324,6 +324,11 @@ int main(int argc, char *argv[])
             mdl.irqDuration = con->getArg1Int();
             con->show(mdl);
             break;
+        case Command::TriggerIRQ:
+            mdl.irqCnt = 0;
+            mdl.irqTriggered = true;
+            mdl.top->irq_i = 0;
+            break;
         case Command::Exit:
             looping = false;
             continue;
@@ -341,13 +346,25 @@ int main(int argc, char *argv[])
             // ---------------------------------------------------
             // Interrupts
             // ---------------------------------------------------
-            mdl.top->irq_i = mdl.interruptState();
+            // mdl.top->irq_i = mdl.interruptState();
             if (mdl.irqEnabled)
             {
-                if (mdl.irq_prev == 1 && mdl.top->irq_i == 0)
+                // if (mdl.irq_prev == 1 && mdl.top->irq_i == 0)
+                // {
+                //     mdl.irqTriggered = true;
+                //     mdl.irqEnabled = false;
+                // }
+                if (mdl.irqTriggered)
                 {
-                    mdl.irqTriggered = true;
-                    mdl.irqEnabled = false;
+                    if (mdl.irqCnt > mdl.irqDuration)
+                    {
+                        mdl.irqTriggered = false;
+                    }
+                    else
+                    {
+                        mdl.top->irq_i = 0;
+                        mdl.irqCnt++;
+                    }
                 }
             }
 
@@ -365,7 +382,8 @@ int main(int argc, char *argv[])
             con->showBoolProperty(+RowPropId::SimRunning, 1, "Sim running", mdl.simRunning);
         }
 
-        if (mdl.isDirty()) {
+        if (mdl.isDirty())
+        {
             mdl.setDirty(false);
             con->show(mdl);
         }

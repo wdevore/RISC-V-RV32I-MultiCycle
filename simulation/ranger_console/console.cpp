@@ -135,6 +135,10 @@ Command Console::handleInput()
     {
         cmd = Command::MemScrollDwn;
     }
+    else if (ch == KEY_HOME)
+    {
+        cmd = Command::TriggerIRQ;
+    }
     else if (ch == '\n')
     {
         col = startCmdLineCol;
