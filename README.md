@@ -191,9 +191,9 @@ At the end of each retired instruction the Sim checks ownership bits. Thus the S
 
 ### Console
 
-To send data either Console or Sim must grab the semaphore first. The one that has the semaphore can send data.
-The other must poll until the semaphore is freed.
-PIO.control[0] = semaphore
+To send data either Console or Sim must grab the mutex first. The one that has the mutex can send data.
+The other must poll until the mutex is freed.
+PIO.control[0] = mutex
 PIO.control[1] = send-ready signal
 PIO.control[2] = data-ready signal
 PIO.control[3] = data-end signal
@@ -202,13 +202,28 @@ PIO.control[3] = data-end signal
 
 ## Circuit
 
-UART as a blackbox
+### UART
+
+BitRate/ClockFrq = (9600/1000000000)/(1000000000/50000000) = 5208.333333333
+
+Ceil(5208.333333333) = 13
+
+and 2^13 = 8192
+
+% difference is: 0.853333333 = 8.5% which is < 10% allowable max.
+
+#### Links
+- https://nandland.com/uart-serial-port-module/
+- https://www.fpga4fun.com/SerialInterface2.html
+- https://www.maximintegrated.com/en/design/technical-documents/tutorials/2/2141.html
+- https://community.silabs.com/s/article/baud-rate-accuracy-using-the-hfrco?language=en_US
+- https://erg.abdn.ac.uk/users/gorry/eg3576/UART.html
+- https://www.sciencedirect.com/topics/engineering/baud-rate
+- https://en.wikipedia.org/wiki/Crystal_oscillator_frequencies#:~:text=115200-,UART%20clock%20allows%20integer%20division%20to%20common%20baud%20rates%20up,)%20or%20230%2C400(x8x3).&text=audio-,Used%20in%20CD%2DDA%20systems%20and%20CD%2DROM%20drives%3B,22.05%20kHz%2C%20and%2011.025%20kHz.
 
 
-## UART or PIO
-This requires a plain testbench that interacts solely with a terminal
 
-async futures
+##@ async futures
 - https://devdreamz.com/question/844791-user-input-without-pausing-code-c-console-application
 - https://forum.juce.com/t/async-input-stream/48817/4
 - https://www.codeproject.com/Questions/5275669/How-can-I-use-input-without-waiting-user-to-give-s
