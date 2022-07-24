@@ -91,8 +91,10 @@ int main(int argc, char *argv[])
     // The reset signal can be held for 0 or more Units for the CPU to sync
     // to the first vector reset state.
     int duration = 0;
-
+    
+#if(IRQ_ENABLED == 1)
     top->irq_i = 1;
+#endif
 
     // Allow any initial blocks to execute
     tb->eval();

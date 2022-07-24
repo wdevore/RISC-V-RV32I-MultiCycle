@@ -34,12 +34,14 @@ int loop(int timeStep, int baseTime, int duration,
         tb->eval();
 
         // Toggle interrupt: Cause falling edge 1 -> 0
+#if(IRQ_ENABLED == 1)
         if (timeStep == 1202) { // 162 650 1202
             top->irq_i = 0;
         }
         if (timeStep == 1205) { // 167 655 1205
             top->irq_i = 1;
         }
+#endif
 
         timeStep = step(timeStep, tb, top);
     }

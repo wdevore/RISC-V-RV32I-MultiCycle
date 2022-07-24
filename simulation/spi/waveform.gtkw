@@ -1,0 +1,89 @@
+[*]
+[*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
+[*] Sat Jul 23 22:30:54 2022
+[*]
+[dumpfile] "/media/RAMDisk/waveform.vcd"
+[dumpfile_mtime] "Sat Jul 23 22:21:55 2022"
+[dumpfile_size] 22134
+[savefile] "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/spi/waveform.gtkw"
+[timestart] 1
+[size] 2511 963
+[pos] 1282 72
+*-8.000000 1442 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] TOP.
+[treeopen] TOP.Top.
+[treeopen] TOP.Top.SPI_Master_Inst.
+[sst_width] 274
+[signals_width] 299
+[sst_expanded] 1
+[sst_vpaned_height] 272
+@28
+TOP.Top.r_Clk
+TOP.Top.r_Rst_L
+@200
+-SPI interface
+@28
+TOP.Top.w_SPI_Clk
+[color] 3
+TOP.Top.w_SPI_CS_n
+@200
+-TX (MOSI)
+@28
+TOP.Top.r_Master_TX_Count[1:0]
+@c00022
+TOP.Top.r_Master_TX_Byte[7:0]
+@28
+(0)TOP.Top.r_Master_TX_Byte[7:0]
+(1)TOP.Top.r_Master_TX_Byte[7:0]
+(2)TOP.Top.r_Master_TX_Byte[7:0]
+(3)TOP.Top.r_Master_TX_Byte[7:0]
+(4)TOP.Top.r_Master_TX_Byte[7:0]
+(5)TOP.Top.r_Master_TX_Byte[7:0]
+(6)TOP.Top.r_Master_TX_Byte[7:0]
+(7)TOP.Top.r_Master_TX_Byte[7:0]
+@1401200
+-group_end
+@28
+[color] 1
+TOP.Top.r_Master_TX_DV
+TOP.Top.SPI_Master_Inst.SPI_Protocol_Inst.r_TX_Bit_Count[2:0]
+@200
+-RX (MISO)
+@28
+TOP.Top.w_Master_RX_Count[1:0]
+TOP.Top.w_Master_RX_DV
+@22
+TOP.Top.w_Master_RX_Byte[7:0]
+@25
+TOP.Top.SPI_Master_Inst.SPI_Protocol_Inst.r_RX_Bit_Count[2:0]
+@200
+-Master
+@28
+TOP.Top.SPI_Master_Inst.w_Master_Ready
+TOP.Top.SPI_Master_Inst.r_TX_Count[1:0]
+TOP.Top.SPI_Master_Inst.i_TX_DV
+@2024
+^1 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/spi/sm_cs.txt
+TOP.Top.SPI_Master_Inst.r_SM_CS[1:0]
+@28
+TOP.Top.SPI_Master_Inst.r_CS_n
+@22
+TOP.Top.SPI_Master_Inst.r_CS_Inactive_Count[3:0]
+@200
+-Protocol
+@28
+TOP.Top.SPI_Master_Inst.SPI_Protocol_Inst.i_SPI_MISO
+[color] 7
+TOP.Top.SPI_Master_Inst.SPI_Protocol_Inst.o_SPI_MOSI
+TOP.Top.SPI_Master_Inst.SPI_Protocol_Inst.r_Leading_Edge
+TOP.Top.SPI_Master_Inst.SPI_Protocol_Inst.r_Trailing_Edge
+TOP.Top.SPI_Master_Inst.SPI_Protocol_Inst.w_CPHA
+TOP.Top.SPI_Master_Inst.SPI_Protocol_Inst.w_CPOL
+@24
+TOP.Top.SPI_Master_Inst.SPI_Protocol_Inst.r_SPI_Clk_Count[2:0]
+@22
+TOP.Top.SPI_Master_Inst.SPI_Protocol_Inst.r_SPI_Clk_Edges[4:0]
+@24
+TOP.Top.SPI_Master_Inst.SPI_Protocol_Inst.r_TX_Bit_Count[2:0]
+[pattern_trace] 1
+[pattern_trace] 0

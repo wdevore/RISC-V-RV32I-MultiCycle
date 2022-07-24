@@ -9,7 +9,7 @@
 
 module Pmmu
 #(
-    parameter WORDS = `MEM_WORDS,    // 10-bits 2^WORDS = 1K
+    parameter WORDS = `MEM_WORDS,
     parameter DATA_WIDTH = 32)
 (
     input  logic                  clk_i,     // pos-edge
@@ -54,6 +54,7 @@ logic [DATA_WIDTH-1:0] storage_data_out;    // Output from BRAM
 logic [7:0] byte_data;
 logic [1:0] byte_selector = byte_addr_i[1:0];    // Use byte-addressing
 
+logic isMemoryAddress = 
 Mux4 #(.DATA_WIDTH(DATA_WIDTH/4)) byte_mux
 (
     .select_i(byte_selector),

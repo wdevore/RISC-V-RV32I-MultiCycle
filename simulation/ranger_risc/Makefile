@@ -1,5 +1,5 @@
 # With (yes) or Without (no) CSRs
-WITH_CSRs = yes
+WITH_CSRs = no
 
 # Top module is the HDL component being tested.
 TOP = RangerRisc
@@ -7,9 +7,11 @@ TOP = RangerRisc
 ifeq ($(WITH_CSRs), yes)
 	MATRIX = ControlMatrixCSRs
 	RR_CSR = RangerRiscCSRs
+	IGNORE_IRQ = 0
 else
 	MATRIX = ControlMatrix
 	RR_CSR = RangerRisc
+	IGNORE_IRQ = 1
 endif
 
 # A cpp test-bench driver
@@ -76,6 +78,7 @@ compile:
 	-DPOPULATE_REGISTERS \
 	-DPOPULATE_CSR_REGISTERS \
 	-DRESET_VECTOR=${RESET_BOOT_VECTOR} \
+	-DIRQ_ENABLED=${IGNORE_IRQ} \
 	-DUSE_ROM
 
 run:

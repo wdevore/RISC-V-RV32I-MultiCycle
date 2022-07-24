@@ -123,13 +123,17 @@ Pmmu pmmu
 );
 
 // PC_Src mux
-Mux4 #(.DATA_WIDTH(DATA_WIDTH)) pc_mux
+Mux8 #(.DATA_WIDTH(DATA_WIDTH)) pc_mux
 (
     .select_i(cm_to_pc_src),
     .data0_i(alu_imm_out),
     .data1_i(alu_out),
     .data2_i(ResetVector),
     .data3_i(pmmu_out),
+    .data4_i(`SrcZero),
+    .data5_i(`SrcZero),
+    .data6_i(`SrcZero),
+    .data7_i(`SrcZero),
     .data_o(pc_src_out)
 );
 

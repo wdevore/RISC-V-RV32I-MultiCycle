@@ -127,6 +127,14 @@ You should now see the Gtkwave output as shown below.
 
 ![Gtkwave](Gtkwave_CountUp.png)
 
+# Synthesis
+For synthesis a modification was made to the PMMU to support memory mapped IO.
+
+- Upload softcore
+  - and write program to blink onboard LED
+  - And button input to trigger interrupt
+
+
 # Hardware
 
 ## Folknology
@@ -141,7 +149,11 @@ You should now see the Gtkwave output as shown below.
 
 https://www.exploringbinary.com/twos-complement-converter/
 
-## Misc
+# Misc
+
+## Crossing domains 2-FF Synchronizer
+- https://electronics.stackexchange.com/questions/237725/how-does-2-ff-synchronizer-ensure-proper-synchonization
+- https://www.icdesigntips.com/2020/12/two-ff-synchronizer-explained.html
 
 Tasks:
 - Store PC in mepc
@@ -276,3 +288,40 @@ Leave the XXX:: prefix off:
 
                 //     next_ir_state = IRQ1;
                 // end
+
+# QspiMem
+
+The 4 bit QSPI is halfduplex so the it can write and read over the same wires. I think Din is for when you want to send data back to the STM32
+
+You have to connect up Data in/Out and Address using RD and WR to signal transactions.
+
+This is slice access also used in rust. Basically think of it as accessing members of an array (actually list in python) x[4]  4th element, x[:4] is first 4 elements x[:-4] Last four elements. x[:4]  is shorthand for x[0:4] elements i.e a blanked zero! Take a look here https://amaranth-lang.org/docs/amaranth/latest/lang.html#signals One thing to be careful of is the bit order, it is the opposite way around to Verilog which is very confusing! 
+
+The circuit being controlled does not see qd or qd_oe. They are internal to QspiMem. The qd nibble is what is used to send data between the STM32 and QspiMem.
+
+But the circuit under control does use din, or at least will when we implement reads from the STM32. When rd in asserted it is requesting data, and the circuit under control should ensure that din is set to the value corresponding to addr on the next clock cycle. So it can be used to a read status register at that address or memory at that address. 
+
+So,  when BlackCrab implements the 0x04 command to read data from QspiMem, one thing you might use it for is to read back the value of your softcore rom or ram for diagnostic purposes. To do that the circuit being controlled sets din to the memory address corresponding to addr, whenever rd is asserted.
+
+In amaranth when you set dir="io" on a pin or set of pins in its resource definition, an SB_IO primitive is automatically generated. That separates a port such as qd, into three signals, qd.i, qd.o, and qd,oe. They are passed to QspiMem as qd_i, qd_o, and qd_oe. When you set qd_oe to zero, it sets the qd pins to input and allows you to read the value from qd_i. When you set qd_oe to 1, it sets the qd pins to output and allows you to assign values to qd_o.
+
+The alternative way to do this without SB_IO in Verilog is to use qd directly and set qd to 4'bzzzz when you want the pins to be in input mode. This is called tri-stating the pins, and is not well supported by Yosys. You have to do it in the top-level module. It is better to use SB_IO. You can sets pins to dir="-" in amaranth and use the SB_IO primitive explictly if you want to, but letting it do the automatic thing is easier.
+
+Note that "oe" stands for output enable.
+
+Also, note that the STM32 has to do the corresponding action on the pins in Rust, so that when the HDL sets the qd pins to input, the STM32 must set them to output, and when the HDL sets them to output, the Rust firmware must set them to input. This is done by both ends using the same QspiMem protocol and knowing which direction data is flowing at any point.
+
+- https://stackoverflow.com/questions/60957971/understanding-the-sb-io-primitive-in-lattice-ice40
+
+To make a tristate inout you can't just declare inout signal at the top-level module, you need fpga-specific primitive.
+
+Most FPGA specific IO primitives implement it by having a PACKAGE_PIN which points to top-level inout signal and OUTPUT ENABLE signal.
+- Input signal is always valid (D_IN_0) and represents the value of PACKAGE_PIN,
+- while D_OUT_0 is connected in hardware by tristate buffer to the PACKAGE_PIN so when OUTPUT ENABLE is 1 and driving it Hi-Z when OUTPUT ENABLE is 0.
+
+## Comment
+It could be replaced with the following generic Verilog, repeated 4 times from 0 to 4.
+```
+assign flash_io0 = flash_io0_oe ? flash_io0_do : 1'bz;
+assign flash_io0_di = flash_io0;
+```

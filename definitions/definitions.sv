@@ -18,7 +18,15 @@
 `define WORD_SIZE     2'b10
 
 // Also change the Testbench size
+// 0001_1111_1111_1111 = 8191 = 0x1FFF
+// 0010_0000_0000_0000 = 8192 = 0x2000
 `define MEM_WORDS 13
+
+// Memory map. If bit 14 set then accessing IO
+`define MEM_LOW  0x00000000
+`define MEM_HIGH 0x00001FFF
+`define IO_LOW   0x00002000
+`define IO_HIGH  0x00002100
 
 `define AMuxSelectSize 2
 `define BMuxSelectSize 2

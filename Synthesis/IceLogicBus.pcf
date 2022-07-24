@@ -1,0 +1,146 @@
+set_io clk B7
+
+# Tile 1
+set_io -nowarn  tile1[0] F1
+set_io -nowarn  tile1[1] F2
+set_io -nowarn  tile1[2] F4
+set_io -nowarn  tile1[3] F3
+set_io -nowarn  tile1[4] G1
+set_io -nowarn  tile1[5] G2
+set_io -nowarn  tile1[6] G3
+set_io -nowarn  tile1[7] H3
+set_io -nowarn  tile1[8] H1
+set_io -nowarn  tile1[9] H2
+set_io -nowarn  tile1[10] J1
+set_io -nowarn  tile1[11] K1
+
+# Tile 2
+set_io -nowarn  tile2[0] K11
+set_io -nowarn  tile2[1] H10
+set_io -nowarn  tile2[2] J10
+set_io -nowarn  tile2[3] G8
+set_io -nowarn  tile2[4] H11
+set_io -nowarn  tile2[5] G10
+set_io -nowarn  tile2[6] D9
+set_io -nowarn  tile2[7] E11
+set_io -nowarn  tile2[8] G9
+set_io -nowarn  tile2[9] G11
+set_io -nowarn  tile2[10] F10
+set_io -nowarn  tile2[11] F9
+
+# Tile 3
+set_io -nowarn tile3[0] B1
+set_io -nowarn  tile3[1] B2
+set_io -nowarn  tile3[2] C4
+set_io -nowarn  tile3[3] C3
+set_io -nowarn  tile3[4] C2
+set_io -nowarn  tile3[5] C1
+set_io -nowarn  tile3[6] E1
+set_io -nowarn  tile3[7] D1
+set_io -nowarn  tile3[8] D2
+set_io -nowarn  tile3[9] D3
+set_io -nowarn  tile3[10] E2
+set_io -nowarn  tile3[11] E3
+
+# Tile 4
+set_io -nowarn  tile4[0] A9
+set_io -nowarn  tile4[1] C8
+set_io -nowarn  tile4[2] A8
+set_io -nowarn  tile4[3] C7
+set_io -nowarn  tile4[4] A6
+set_io -nowarn  tile4[5] A5
+set_io -nowarn  tile4[6] A2
+set_io -nowarn  tile4[7] A3
+set_io -nowarn  tile4[8] F11
+set_io -nowarn  tile4[9] E9
+set_io -nowarn  tile4[10] E10
+set_io -nowarn  tile4[11] E8
+
+# BLADE 1
+set_io -nowarn  blade1[0] K7
+set_io -nowarn  blade1[1] L7
+set_io -nowarn  blade1[2] J7
+set_io -nowarn  blade1[3] H7
+set_io -nowarn  blade1[4] L8
+set_io -nowarn  blade1[5] J8
+
+# BLADE 2
+set_io -nowarn  blade2[0] B3
+set_io -nowarn  blade2[1] A1
+set_io -nowarn  blade2[2] A4
+set_io -nowarn  blade2[3] B4
+set_io -nowarn  blade2[4] B5
+set_io -nowarn  blade2[5] D5
+
+# BLADE 3
+set_io -nowarn  blade3[0] D7
+set_io -nowarn  blade3[1] B6
+set_io -nowarn  blade3[2] A7
+set_io -nowarn  blade3[3] B8
+set_io -nowarn  blade3[4] B9
+set_io -nowarn  blade3[5] C9
+
+# BLADE 4
+set_io -nowarn  blade4[0] D10
+set_io -nowarn  blade4[1] D11
+set_io -nowarn  blade4[2] C11
+set_io -nowarn  blade4[3] B11
+set_io -nowarn  blade4[4] A11
+set_io -nowarn  blade4[5] A10
+
+# HyperRam
+#set_io -nowarn  dq[0] K3
+#set_io -nowarn  dq[1] K4
+#set_io -nowarn  dq[2] L1
+#set_io -nowarn  dq[3] K5
+#set_io -nowarn  dq[4] J3
+#set_io -nowarn  dq[5] L3
+#set_io -nowarn  dq[6] L4
+#set_io -nowarn  dq[7] J5
+#set_io -nowarn  dqk L2
+#set_io -nowarn  dqr J4
+#set_io -nowarn  ds0 K6
+
+# HyperRam/Flash
+set_io --warn-no-port hram_dq[0] K3
+set_io --warn-no-port hram_dq[1] K4
+set_io --warn-no-port hram_dq[2] L1
+set_io --warn-no-port hram_dq[3] K5
+set_io --warn-no-port hram_dq[4] J3
+set_io --warn-no-port hram_dq[5] L3
+set_io --warn-no-port hram_dq[6] L4
+set_io --warn-no-port hram_dq[7] J5
+
+set_io --warn-no-port hram_rwds J4
+set_io --warn-no-port hram_ck L2
+
+set_io --warn-no-port hram_cs_n[0] J2 # HyperRam
+set_io --warn-no-port hram_cs_n[1] K2 # HyperFlash
+
+#set_io --warn-no-port hram_rst_n handled by STM32 when programming Ice40
+
+# QsPie
+set_io -nowarn  qd[0] J9  # SDI
+set_io -nowarn  qd[1] K9  # SDO
+set_io -nowarn  qd[2] K6
+set_io -nowarn  qd[3] L5
+set_io -nowarn  qck L10   # Clk
+set_io -nowarn  qss K10   # /SS
+
+# Blade(s)
+set_io -nowarn  qdr J7    # Old name for LED or /INT now it is a Blade pin
+
+# SPI
+set_io -nowarn  si K9
+set_io -nowarn  so J9
+set_io -nowarn  sck L10
+set_io -nowarn  ss L7
+
+# Uart
+#set_io -nowarn  tx L7
+#set_io -nowarn  rx K7
+
+# LED
+set_io -nowarn  led J11
+# Mezzanine
+
