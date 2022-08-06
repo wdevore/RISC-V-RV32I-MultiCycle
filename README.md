@@ -311,6 +311,24 @@ Note that "oe" stands for output enable.
 
 Also, note that the STM32 has to do the corresponding action on the pins in Rust, so that when the HDL sets the qd pins to input, the STM32 must set them to output, and when the HDL sets them to output, the Rust firmware must set them to input. This is done by both ends using the same QspiMem protocol and knowing which direction data is flowing at any point.
 
+### SPI clock from Edge Nxt
+The qspi clock speed is set by BlackCrab on line 149 - https://github.com/folknology/BlackCrab/blob/BiNxt/src/main.rs#L149
+
+I believe the prescaler value 07 sets the qspi clock speed to **108/8 = 13.5MHz**, but @Folknology can confirm.
+
+QspiMem samples that clock, so by the Nyquist theorem, it needs a clock speed on twice that, or **27MHz**. It certainly did not work reliably with the system clock value of **25MHz**. I currently use a PLL to run QspiMem at **100MHz**.
+
+Formula is SystemClock/(prescaler+1). If the STM's system clock is 216MHz then we get 216/(7+1) = 27MHz.
+
+Thus based on the Nyquist then QspiMem's clock should be at least 2*SPI clock = **54MHz**. The frequency is the FPGA's PLL' frequency.
+
+For a prescaler of 4 then we get a QSPI clock of 43.2MHz. If the FPGA's PLL is set 100MHz then it should work.
+
+A prescaler of 3 (54 MHz) fails with a 100 MHz pll, but works with a 110 or 120MHz pll. This is because of the 2-FF delay.
+
+So with sampling 54MHz qck is probably the practical maximum.
+
+## SB_IO primitive
 - https://stackoverflow.com/questions/60957971/understanding-the-sb-io-primitive-in-lattice-ice40
 
 To make a tristate inout you can't just declare inout signal at the top-level module, you need fpga-specific primitive.

@@ -1,4 +1,3 @@
-- https://github.com/nandland/spi-master
 - https://sites.google.com/site/tgptechnologies/fpga-project/spi
 - https://electronics.stackexchange.com/questions/553981/spi-clock-signal-sclk-usage-in-fpga-spi-slave
 - https://coertvonk.com/hw/math-talk/byte-exchange-with-a-fpga-as-slave-30818

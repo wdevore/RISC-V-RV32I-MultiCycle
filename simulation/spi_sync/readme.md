@@ -1,8 +1,20 @@
+# Summary
+```
+Usage:
+First write a byte to the module's internal buffer.
+On rising-edge of write begin transmitting and receiving.
+When data is fully sent then set complete signal.
+```
+
+# Search term
+"spi slave synchronization fpga"
+
+- https://embdev.net/topic/451554
 - https://github.com/nandland/spi-master
+- https://www.fpga4fun.com/CrossClockDomain.html
 - https://sites.google.com/site/tgptechnologies/fpga-project/spi
 - https://electronics.stackexchange.com/questions/553981/spi-clock-signal-sclk-usage-in-fpga-spi-slave
 - https://coertvonk.com/hw/math-talk/byte-exchange-with-a-fpga-as-slave-30818
-- https://www.fpga4fun.com/CrossClockDomain.html
 - https://github.com/cvonk/FPGA_SPI/blob/master/spi_byte_if/xilinx/spi_byte_if.v
 - https://support.xilinx.com/s/question/0D52E00006iHvynSAC/fpga-as-spi-slave-advice-on-timing-constraints?language=en_US
 
@@ -20,7 +32,8 @@ Writing timing constraints is one of the hardest parts of FPGA design. You need 
 
 You may not need global clock routing, but I would recommend at least regional clock routing. If you use certain pins on some FPGAs it can be routed to clock buffers more easily.
 
-```
+# 2-FF + Synchronizer
+```verilog
 logic [2:0] async_r;  // 3 bits
 always @(posedge sysClk)
     async_r <= { async_r[1:0], async };
