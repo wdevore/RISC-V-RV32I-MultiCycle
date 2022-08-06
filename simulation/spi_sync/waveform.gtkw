@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
-[*] Sat Aug  6 02:12:00 2022
+[*] Sat Aug  6 15:00:17 2022
 [*]
 [dumpfile] "/media/RAMDisk/waveform.vcd"
-[dumpfile_mtime] "Sat Aug  6 02:09:28 2022"
+[dumpfile_mtime] "Sat Aug  6 14:58:27 2022"
 [dumpfile_size] 88113
 [savefile] "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/spi_sync/waveform.gtkw"
 [timestart] 0
 [size] 3520 963
-[pos] 247 172
-*-9.000000 2616 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[pos] 161 377
+*-9.000000 663 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
 [treeopen] TOP.Top.
 [sst_width] 221
@@ -18,18 +18,19 @@
 [sst_vpaned_height] 272
 @28
 TOP.Top.pllClk_i
+@201
+-Top
+@28
 [color] 1
 TOP.Top.Rst_i_n
 TOP.send_i_n
-@200
--Top
-@28
+@42020
 [color] 7
+^1 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/spi_sync/ready_filter.txt
 TOP.Top.ready
+@28
 TOP.Top.sysMstClk
 TOP.Top.sysSlvClk
-@22
-TOP.Top.byte_from_slave[7:0]
 @200
 -Master
 @28
@@ -37,11 +38,13 @@ TOP.Top.byte_from_slave[7:0]
 TOP.Top.master.spiClk_o
 @2024
 [color] 5
-^1 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/spi_sync/state_filter.txt
+^2 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/spi_sync/state_filter.txt
 TOP.Top.master.state[2:0]
 @28
 [color] 7
 TOP.Top.master.mosi_o
+@2028
+^3 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/spi_sync/bitcount_filter.txt
 TOP.Top.master.bitCnt[2:0]
 @22
 TOP.Top.master.tx_data[7:0]
@@ -60,16 +63,14 @@ TOP.Top.slave.SS_sync
 TOP.Top.slave.SClk_sync
 @2024
 [color] 5
-^1 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/spi_sync/state_filter.txt
+^2 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/spi_sync/state_filter.txt
 TOP.Top.slave.state[2:0]
 @28
 TOP.Top.slave.SClk_risingedge
 TOP.Top.slave.SClk_fallingedge
 TOP.Top.slave.bitCnt[2:0]
-@29
 [color] 7
 TOP.Top.slave.miso_o
-@28
 [color] 1
 TOP.Top.slave.MOSI_sync
 @22
