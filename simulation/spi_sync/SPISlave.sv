@@ -14,7 +14,6 @@ module SPISlave
 (
     input  logic sysClk_i,            // system domain clock (PLL)
     input  logic reset_i,
-    output logic ready_o,
     output logic transmitting_o,
     input  logic mosi_i,              // output (1 bit at a time)
     output logic miso_o,
@@ -95,8 +94,9 @@ initial begin
     $display("Sim init");
 
     // Be default the CPU always attempts to start in Reset mode.
-    state = Reset;
+    state = Idle;
     next_state = Idle;
+    bitCnt = 3'b111;
 end
 
 // ----------------------------------------------
@@ -104,17 +104,11 @@ end
 // ----------------------------------------------
 always_comb begin
     transmitting_o = 1'b1;   // not transmitting
-    next_state = Reset;
+    next_state = Idle;
     miso_o = 1'b0;
-    ready_o = 1'b0;
 
     case (state)
-        Reset: begin
-            next_state = Idle;
-        end
-
         Idle: begin
-            ready_o = 1'b1;
             if (~SS_sync)
                 next_state = Transmitting;
             else
@@ -127,19 +121,15 @@ always_comb begin
             miso_o = tx_data[bitCnt];
 
             if (bitCnt == 3'b000) begin
-                next_state = Complete;
+                next_state = Idle;
             end
             else begin
                 next_state = Transmitting;
             end
         end
 
-        Complete: begin
-            next_state = Idle;
-        end
-
         default: begin
-            next_state = Reset;
+            next_state = Idle;
         end
     endcase
 end
@@ -150,16 +140,11 @@ end
 // use the sync signal instead. The other way is to FIFOs if
 // that desirable or the only option.
 always_ff @(posedge SClk_sync) begin
-    if (~reset_i) begin
-        state <= Reset;
-    end
-    else begin
-        state <= next_state;
-    end
+    state <= next_state;
 
     case (state) 
         Idle: begin
-            // Maintaine bit count at Most-Significant-bit (MSb)
+            // Maintain bit count at Most-Significant-bit (MSb)
             bitCnt <= 3'b111;
         end
 
@@ -173,11 +158,18 @@ always_ff @(posedge SClk_sync) begin
     endcase
 end
 
-always_ff @(posedge SClk_fallingedge) begin
-    if (state == Transmitting) begin
+`ifdef MODE0
+always_ff @(negedge SClk_sync) begin  // Mode 0
+`elsif MODE1
+always_ff @(posedge SClk_fallingedge) begin  // Mode 1
+`endif
+    if (state == Idle) begin
+        byte_received_o <= 8'b00000000;
+    end
+    else if (state == Transmitting) begin
         // Receive on the falling edge
         // We use Shift-left register (since we receive the data MSb first)
-        byte_received_o = {byte_received_o[6:0], MOSI_sync};
+        byte_received_o <= {byte_received_o[6:0], MOSI_sync};
     end
 end
 

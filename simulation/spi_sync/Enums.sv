@@ -1,8 +1,10 @@
+// Either MODE0 or MODE1
+`define MODE0
 
 typedef enum logic [2:0] {
-    Reset,
+    Reset,          // Unused
     Idle,           // Waiting to transmit
-    BeginTx,        // Prepare to transmit
+    BeginTx,        // Unused
     Transmitting,   // Sending bits
-    Complete        // Bits sent
+    Complete        // Unused
 } TxState /*verilator public*/; 

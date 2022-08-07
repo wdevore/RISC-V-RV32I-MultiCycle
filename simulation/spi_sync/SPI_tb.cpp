@@ -74,19 +74,18 @@ int main(int argc, char *argv[])
     // ---------------------------------------------
     // Perform reset
     // ---------------------------------------------
-    duration = 100 + timeStep;
+    duration = 500 + timeStep;
     timeStep = assertReset(timeStep, duration, tb, top);
 
     // ---------------------------------------------
     // Master sends a byte 0xC5 = 8'b1100_0101
     // Slave sends a byte 0xE4 = 8'b1110_0100
     // ---------------------------------------------
-    int edgeCnt = 0;
     top->byte_to_slave = 0xC5;
     top->byte_to_master = 0xE4;
 
     std::cout << "timeStep: " << timeStep << std::endl;
-    
+
     // Just for visuals, delay 100 PLL clocks before we lower the send signal.
     duration = 100 + timeStep;
     while (timeStep < duration)
@@ -108,19 +107,42 @@ int main(int argc, char *argv[])
     top->send_i_n = 1;
     // VL_PRINTF("send_i_n: %d\n", top->send_i_n);
 
-    // Gap
-    // duration = 300 + timeStep;
-    // while (timeStep < duration)
-    // {
-    //     timeStep = step(timeStep, tb, top);
-    // }
+    // std::cout << "WB timeStep: " << timeStep << std::endl;
 
-    // Allow enough time for the transmission.
-    duration = 10000 + timeStep;
+    // Wait for the Master to become ready
+    while (!(p_ready == 0 && top->ready == 1))
+    {
+        p_ready = top->ready;
+        timeStep = step(timeStep, tb, top);
+    }
+    // std::cout << "WA timeStep: " << timeStep << std::endl;
+
+    top->byte_to_slave = 0xA2;
+
+    // Set signal low
+    top->send_i_n = 0;
+    // and wait for response
+    while (!(p_ready == 1 && top->ready == 0))
+    {
+        p_ready = top->ready;
+        timeStep = step(timeStep, tb, top);
+    }
+    top->send_i_n = 1;
+
+    // Wait for the Master to become ready
+    while (!(p_ready == 0 && top->ready == 1))
+    {
+        p_ready = top->ready;
+        timeStep = step(timeStep, tb, top);
+    }
+
+    // Add a filler 
+    duration = 500 + timeStep;
     while (timeStep < duration)
     {
         timeStep = step(timeStep, tb, top);
     }
+
 
     // :--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--
     std::cout << "Finish TB." << std::endl;

@@ -13,7 +13,6 @@ module Top (
     input logic  pllClk_i,     // System High Freq Clock (PLL)
 
     // Master
-    // input  logic SPI_CS_i_n,   // Chip select SSEL
     input  logic send_i_n /*verilator public*/,
     output logic ready,
     input  logic [7:0] byte_to_slave,   // Data from Master to Slave
@@ -43,6 +42,15 @@ assign sysSlvClk = spiSCnt[1];
 
 assign ready = m_ss_s;
 
+// ---------------------------------------------------
+// Simulation
+// ---------------------------------------------------
+initial begin
+    $display("Top Sim init");
+    m_ss_s = 1'b1;
+end
+
+
 // -----------------------------------------------------------
 // wires and buses
 // -----------------------------------------------------------
@@ -52,7 +60,7 @@ logic m_cs_s;    // Master CS/SS to slave
 
 logic s_miso_m;
 logic m_ss_s;
-logic slave_ready;
+// logic slave_ready;
 logic slave_transmitting;
 
 // -----------------------------------------------------------
@@ -62,7 +70,7 @@ logic slave_transmitting;
 SPIMaster master (
     .sysClk_i(sysMstClk),
     .reset_i(Rst_i_n),
-    .ready_o(ready),
+    // .ready_o(ready),
     .send_i_n(send_i_n),
     .ss_o_n(m_ss_s),
     .mosi_o(m_mosi_s),
@@ -76,7 +84,7 @@ SPIMaster master (
 SPISlave slave (
     .sysClk_i(sysSlvClk),
     .reset_i(Rst_i_n),
-    .ready_o(slave_ready),
+    // .ready_o(slave_ready),
     .transmitting_o(slave_transmitting),
     .mosi_i(m_mosi_s),
     .miso_o(s_miso_m),

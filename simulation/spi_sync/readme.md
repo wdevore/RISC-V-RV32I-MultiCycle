@@ -1,9 +1,27 @@
 # Summary
-```
 Usage:
 First write a byte to the module's internal buffer.
+
+## CPOL = 0
+The CPOL bit sets the polarity of the clock signal during the idle state. The idle state is defined as the period when *CS is high* and transitioning to low at the start of the transmission and when *CS is low* and transitioning to high at the end of the transmission. 
+
+CPOL = 0 means the leading edge is posedge.
+
+## CPHA = 1
+The CPHA bit selects the clock phase. Depending on the CPHA bit, the rising or falling clock edge is used to sample and/or shift the data.
+
 On rising-edge of write begin transmitting and receiving.
-When data is fully sent then set complete signal.
+
+```
+SPI Mode	CPOL	CPHA	Clock Polarity in Idle State	Clock Phase Used to Sample
+                                                             and/or Shift the Data
+---------------------------------------------------------------------------------------------
+   0	      0	      0	          Logic low	                 Data sampled on rising edge
+                                                             and
+                                                             shifted out on the falling edge
+   1          0       1           Logic low                  Data sampled on the falling edge
+                                                             and
+                                                             shifted out on the rising edge
 ```
 
 # Search term
