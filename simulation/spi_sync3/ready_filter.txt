@@ -1,0 +1,2 @@
+0 Not Ready
+1 Ready

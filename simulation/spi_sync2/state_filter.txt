@@ -1,0 +1,5 @@
+0 Reset
+1 Idle
+2 BeginTx
+3 Transmitting
+4 Complete

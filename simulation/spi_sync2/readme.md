@@ -1,0 +1,61 @@
+# Summary
+Usage:
+First write a byte to the module's internal buffer.
+
+## CPOL = 0
+The CPOL bit sets the polarity of the clock signal during the idle state. The idle state is defined as the period when *CS is high* and transitioning to low at the start of the transmission and when *CS is low* and transitioning to high at the end of the transmission. 
+
+CPOL = 0 means the leading edge is posedge.
+
+## CPHA = 1
+The CPHA bit selects the clock phase. Depending on the CPHA bit, the rising or falling clock edge is used to sample and/or shift the data.
+
+On rising-edge of write begin transmitting and receiving.
+
+```
+SPI Mode	CPOL	CPHA	Clock Polarity in Idle State	Clock Phase Used to Sample
+                                                             and/or Shift the Data
+---------------------------------------------------------------------------------------------
+   0	      0	      0	          Logic low	                 Data sampled on rising edge
+                                                             and
+                                                             shifted out on the falling edge
+   1          0       1           Logic low                  Data sampled on the falling edge
+                                                             and
+                                                             shifted out on the rising edge
+```
+
+# Search term
+"spi slave synchronization fpga"
+
+- https://embdev.net/topic/451554
+- https://github.com/nandland/spi-master
+- https://www.fpga4fun.com/CrossClockDomain.html
+- https://sites.google.com/site/tgptechnologies/fpga-project/spi
+- https://electronics.stackexchange.com/questions/553981/spi-clock-signal-sclk-usage-in-fpga-spi-slave
+- https://coertvonk.com/hw/math-talk/byte-exchange-with-a-fpga-as-slave-30818
+- https://github.com/cvonk/FPGA_SPI/blob/master/spi_byte_if/xilinx/spi_byte_if.v
+- https://support.xilinx.com/s/question/0D52E00006iHvynSAC/fpga-as-spi-slave-advice-on-timing-constraints?language=en_US
+
+As soon as you introduce a SPI slave interface into your FPGA design, you introduce a new clock (the SPI clock) and a second clock domain. All of the SPI signals belong to that second domain, and you are now faced with the problem of reliably transferring information across the boundary. This is commonly referred to as "CDC" (clock domain crossing), and there's plenty of information about this topic if you search for it.
+
+By far the most common approach, if the FPGA's main clock is fast enough, is to synchronize the three incoming signals (SSEL, SCLK, MOSI) into the main clock domain right away (two FFs per signal), run the SPI state machine in that clock domain, and ignore the jitter that this introduces into the output signal (MISO) feeding back into the SPI clock domain. This generally works fine.
+
+An alternative approach is to run the SPI state machine in the SPI clock domain, and transfer information between the two clock domains a byte or word at a time using asynchronous (dual-clock) FIFOs. This approach can potentially run faster, but it requires careful design of the state machine that takes into account the limited number of clock edges available to it.
+
+In either case, you will have one set of timing constraints for the FPGA clock domain, another set of constraints for the SPI clock domain, and a third set that covers the CDC.
+
+If the FPGA clock is >= 4X the SPI clock rate it is relatively easy to digitally detect the edges. Nyquist says you only need 2X, but its really hard to guarantee that you'll see all the edges. If they are almost the same speed you should use the SCLK. It should go through the FPGA clock buffers so that you will have a low amount of clock skew. There are clock conditioners / PLLs that will let you take in the SCLK and adjust the phase so that you can drive it to the Flip-Flops in the I/O registers.
+
+Writing timing constraints is one of the hardest parts of FPGA design. You need to look at the SPI spec and also account for board routing delays. If you define the phase relationship between the data and the clock at the IO pin, the tools will let you know if it will meet timing at the flip-flops.
+
+You may not need global clock routing, but I would recommend at least regional clock routing. If you use certain pins on some FPGAs it can be routed to clock buffers more easily.
+
+# 2-FF + Synchronizer
+```verilog
+logic [2:0] async_r;  // 3 bits
+always @(posedge sysClk)
+    async_r <= { async_r[1:0], async };
+logic rising = ( async_r[2:1] == 2'b01 );
+logic falling = ( async_r[2:1] == 2'b10 );
+logic sync = async_r[1];
+```

@@ -4,7 +4,7 @@
 `endif
 
 // CPOL = 1, CPHA = 1
-`define SPI_MODE 3
+`define SPI_MODE 0
 // 6.25 MHz
 `define CLKS_PER_HALF_BIT 4
 // 25 MHz
