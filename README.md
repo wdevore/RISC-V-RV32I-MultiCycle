@@ -33,7 +33,12 @@ This repository represents the **[After Hours Engineering](https://www.youtube.c
 # RangerRisc Console
 Simulating the softcore processor was done two ways: *Gtkwave* and *NCurses console*.
 
+# Assembler(s)
+See *tools/gen-instr/readme.md*
+
 ## NCurses console
+The source is in the *simulation/ranger_console* folder.
+
 ### Run simulation
 - Navigate into the *RISC-V-RV32I-MultiCycle/simulation/ranger_console* directory.
 - Modify *memory.sv* ```defines``` to reference your *.ram* file.
@@ -42,10 +47,64 @@ Simulating the softcore processor was done two ways: *Gtkwave* and *NCurses cons
    `define ROM_EXTENSION ".ram"
    `define MEM_CONTENTS "itype_csrs/intr1"
    ```
+If your assembler.json points some where else be sure to use the defines correctly. For example, your ram file may be named "code.ram" so your ```MEM_CONTENTS``` would be:
+```
+`define MEM_CONTENTS = "code"
+```
 
 - execute "make console"
 
-### Commands the console recognizes
+## Typical usage
+First you would prepared *memory.sv* from above. The main test bench entry point is in *console_tb.cpp*. 
+
+Then you invoked *make console* the simulation. It should now be running and you should see the NCurses terminal gui showing all the simulation variables including memory.
+
+Next you would load a *.ram* ascii-byte file. The ram file needs to be in the **rams** folder at the same level of where you are running the simulation.
+
+Thus use the *ld* command
+```>ld code```
+
+You may want to run the code without breaking or stepping. To do this just type:
+
+```>fr on```
+
+Your program will then begin executing at a speed based on the *delay* time which defaults to 10ms per step, this is so you can **see** it run.
+
+## Interrupt example
+Let's tryout the Interrupt test program called **interrupt_check.asm**.
+
+- First we assemble it using *tools/gen-instr/assembler*
+ - cd into the assembler folder and execute ```$go run .```
+   - this puts a *code.ram* file in the *rams* folder
+ - cd into the console *simulation/ranger_console* folder
+ - run ```$make console```
+   - this should start the Ncurses Gui console
+ - run the load command: ```>ld code```
+   _ this loads the *code.ram* file into the memory module
+ - enable interrupts: ```>irq on```
+ - Now we start the program running
+   - enable free running: ```>fr on```
+ - Use the **Down arrow** key to scroll memory until address 0x00000003 shows at the top
+ - Tap the **Home** key to cause an interrupt to occur.
+
+You should see the program is executing in a tight loop at addresses 0x04 and 0x05. When you tap the **Home** key it jumps to the interrupt service routine at address 0x20 where it increments the *x5* register. Note, that if you tap **Home** while it is in the service routine nothing happens. That is because service routines can't be interrupted in RangerRisc.
+
+That's it. You just simulated an interrupt.
+
+### Example Assembly sources
+Within the *tools/gen-instr/source* folder are several simple RISC-V programs:
+- comp_string.asm
+- count_down.asm
+- count_to_5.asm
+- count_via_mem.asm
+- count_via_sum.asm
+- fibonacci.asm
+- interrupt_check.asm
+- interrupt_mret.asm
+- left_right_comp.asm
+- left_right.asm
+
+## Commands the console recognizes
 - Hitting "return" repeats the previous command -- if there was one
 - **rn** Run to a specific state or instruction, for example
    - rn fetch **or** rn fe
@@ -109,6 +168,18 @@ Simulating the softcore processor was done two ways: *Gtkwave* and *NCurses cons
    - irqt 0x04D
 - **irqd** Set IRQ duration. Default = 3
    - irqd 5
+
+### Special Keys
+- **Home** key
+  - Triggers an soft interrupt for programs that recognize them.
+- Key **Up/Down**
+  - Scrolls up or down in memory
+- **Back-tick** "**`**" key
+  - Exits console simulation
+- **Backspace**
+  - Delete a character on the command line
+- **Return** key
+  - Sends command to console.
 
 ![RangerRiscConsole](RangerRiscConsole.gif)
 

@@ -436,8 +436,12 @@ func writeRamFile(context map[string]interface{}, sections []section) {
 	file := context["RamFile"]
 	fmt.Println("Writing: ", file)
 
+	ramDir := fmt.Sprint(context["RamDir"])
+	_ = os.Mkdir(ramDir, os.ModePerm)
+
 	outfile := fmt.Sprint(file)
-	f, err := os.Create(outfile)
+
+	f, err := os.Create(ramDir + outfile)
 
 	if err != nil {
 		fmt.Println(err)

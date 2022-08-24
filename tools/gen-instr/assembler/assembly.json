@@ -1,5 +1,6 @@
 {
-    "RamFile": "/media/RAMDisk/code.ram",
+    "RamDir": "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/ranger_console/rams/",
+    "RamFile": "code.ram",
     "OutFile": "/media/RAMDisk/code.out",
     "input": "../source/interrupt_check.asm",
     "entryAddr": "0x0"

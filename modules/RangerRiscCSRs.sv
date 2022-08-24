@@ -105,7 +105,7 @@ ControlMatrix matrix
    .rsa_i(rsa_out),
    .pc_i(pc_out),
    .irq_i(irq_i),
-   .eff_addr_i(addr_mux_to_pmmu),  // Map Effective address
+   // .eff_addr_i(addr_mux_to_pmmu),  // Map Effective address
    .ir_ld_o(cm_to_ir_ld),
    .pc_ld_o(cm_to_pc_ld),
    .pcp_ld_o(cm_to_pcp_ld),

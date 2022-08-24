@@ -31,7 +31,7 @@ module ControlMatrix
     // -----------------------
     // Memory map
     // -----------------------
-    input  logic eff_addr_i,
+    // input  logic eff_addr_i,
     
     // **--**--**--**--**--**--**--**--**--**--**--**--**--
     // Outputs
