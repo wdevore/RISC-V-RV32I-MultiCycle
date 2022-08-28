@@ -1,5 +1,5 @@
 
-module shifty(
+module shifty (
 	input  logic clk,
 	output logic led,
 	output logic [5:0] blade
@@ -21,13 +21,13 @@ always_ff @(posedge clk) begin
 	case (state)
 		1'b0: begin
 			// Lattice chips don't guarantee bits being Set
-			// so we need a state to Set them.
+			// on initialization so we need a state to Set them.
 			shifter <= 6'b111_110;
 			state <= 1'b1;
 		end
 		1'b1: begin
 			if (count[21] == 1'b1) begin
-				count <= 0;
+				count[21] <= 0;
 
 				// is bit 4 6'b101_111 = zero
 				if (shifter[4] == 1'b0)
@@ -67,6 +67,7 @@ always_ff @(posedge clk) begin
 				// 	endcase
 				// end
 			end
+
 		end
 	endcase
 end

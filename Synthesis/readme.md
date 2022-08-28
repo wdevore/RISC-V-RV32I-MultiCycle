@@ -4,13 +4,17 @@
   - blinks all the LEDs on the LED Blade while inserted into Slot #1
 - counter
   - The Blade LEDs count in binary in Slot 1
+- shifty
+  - A cylon effect
+- SevenSeg
+  - Decimal to segment decoder and a counter for testing. Uses Tile 1.
 
 # Blades
 The slots are number as 1,2,3,4. The 5th slot is an SD/MMC card slot for the **STM32**.
 
 Looking at the smaller board (aka BlackiceNxt):
 
-From the backside
+From the backside (when connected together)
 ```
               Tile 4              Tile 2
        *-------------------------------------*
@@ -26,7 +30,7 @@ Blade 2|                                     | Blade 1
        |                                     |
        |                                     |
        *-------------------------------------*
-              Tile 3              Tile 4
+              Tile 3              Tile 1
 ```
 
 From the front
