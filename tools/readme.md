@@ -4,6 +4,8 @@ First you place your 1 line of assembly in the *assembly.json* file and include 
 Then you invoke the tool that is in *gen-instr/* folder and invoked as:
 - $go run .
 
+Once done, the copy-buffer has the hex machine code ready for you to paste into you ram file.
+
 # Basic assembler
 This tool takes the line assembler to the next step by assembling *.asm* files. The syntax is fairly simple and is just enough for the video series. It isn't meant as a replacement for a full assembler.
 

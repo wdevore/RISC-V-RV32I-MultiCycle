@@ -15,12 +15,20 @@
 
 module blink(
 	input  logic clk,
-	output logic led
+	output logic led,
+	output logic [5:0] blade
 );
 
 logic [24:0] count;
 
 assign led = count[22];
+
+assign blade[0] = count[23];
+assign blade[1] = count[22];
+assign blade[2] = count[21];
+assign blade[3] = count[20];
+assign blade[4] = count[19];
+assign blade[5] = count[18];
 
 always_ff @(posedge clk)
 	count <= count + 1;

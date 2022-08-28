@@ -102,22 +102,24 @@ set_io -nowarn  blade4[5] A10
 #set_io -nowarn  ds0 K6
 
 # HyperRam/Flash
-set_io --warn-no-port hram_dq[0] K3
-set_io --warn-no-port hram_dq[1] K4
-set_io --warn-no-port hram_dq[2] L1
-set_io --warn-no-port hram_dq[3] K5
-set_io --warn-no-port hram_dq[4] J3
-set_io --warn-no-port hram_dq[5] L3
-set_io --warn-no-port hram_dq[6] L4
-set_io --warn-no-port hram_dq[7] J5
+#set_io --warn-no-port hram_dq[0] K3
 
-set_io --warn-no-port hram_rwds J4
-set_io --warn-no-port hram_ck L2
+set_io -nowarn hram_dq[0] K3
+set_io -nowarn hram_dq[1] K4
+set_io -nowarn hram_dq[2] L1
+set_io -nowarn hram_dq[3] K5
+set_io -nowarn hram_dq[4] J3
+set_io -nowarn hram_dq[5] L3
+set_io -nowarn hram_dq[6] L4
+set_io -nowarn hram_dq[7] J5
 
-set_io --warn-no-port hram_cs_n[0] J2 # HyperRam
-set_io --warn-no-port hram_cs_n[1] K2 # HyperFlash
+set_io -nowarn hram_rwds J4
+set_io -nowarn hram_ck L2
 
-#set_io --warn-no-port hram_rst_n handled by STM32 when programming Ice40
+set_io -nowarn hram_cs_n[0] J2 # HyperRam
+set_io -nowarn hram_cs_n[1] K2 # HyperFlash
+
+set_io -nowarn hram_rst_n handled by STM32 when programming Ice40
 
 # QsPie
 set_io -nowarn  qd[0] J9  # SDI

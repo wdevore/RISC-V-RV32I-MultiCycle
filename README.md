@@ -30,6 +30,17 @@ This repository represents the **[After Hours Engineering](https://www.youtube.c
 
 # Howto(s)
 
+## Updateing the toolchain
+Periodically you may want to update to the latest versions.
+
+This can be done by changing into the directory you need to update, for example, the toolchain sources are in the *download* directory.
+- $ cd ~/download/\<path-to-tool\>
+- $ git pull
+- $ make -j4
+- $ sudo make install
+
+Do this for, **icestorm**, **nextpnr**, **yosys**
+
 # RangerRisc Console
 Simulating the softcore processor was done two ways: *Gtkwave* and *NCurses console*.
 
