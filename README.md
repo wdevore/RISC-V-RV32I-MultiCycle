@@ -68,7 +68,7 @@ If your assembler.json points some where else be sure to use the defines correct
 ## Typical usage
 First you would prepared *memory.sv* from above. The main test bench entry point is in *console_tb.cpp*. 
 
-Then you invoked *make console* the simulation. It should now be running and you should see the NCurses terminal gui showing all the simulation variables including memory.
+Then you invoked *make console* to run the simulation. It should now be running such that you cab see the NCurses terminal gui showing all the simulation variables including memory.
 
 Next you would load a *.ram* ascii-byte file. The ram file needs to be in the **rams** folder at the same level of where you are running the simulation.
 
@@ -91,7 +91,7 @@ Let's tryout the Interrupt test program called **interrupt_check.asm**.
  - run ```$make console```
    - this should start the Ncurses Gui console
  - run the load command: ```>ld code```
-   _ this loads the *code.ram* file into the memory module
+   - this loads the *code.ram* file into the memory module
  - enable interrupts: ```>irq on```
  - Now we start the program running
    - enable free running: ```>fr on```
@@ -110,7 +110,7 @@ Within the *tools/gen-instr/source* folder are several simple RISC-V programs:
 - count_via_mem.asm
 - count_via_sum.asm
 - fibonacci.asm
-- interrupt_check.asm
+- interrupt_check.asm (*see above*)
 - interrupt_mret.asm
 - left_right_comp.asm
 - left_right.asm
