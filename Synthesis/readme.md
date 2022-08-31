@@ -16,38 +16,38 @@ Looking at the smaller board (aka BlackiceNxt):
 
 From the backside (when connected together)
 ```
-              Tile 4              Tile 2
-       *-------------------------------------*
-       |                                     |
-       |                                     |
-Blade 4|                                     | SD/MMC
-       |                                     |
-       |                                     |
-Blade 3|            BlackiceNxt              | USB-C
-       |                                     |
-       |                                     |
-Blade 2|                                     | Blade 1
-       |                                     |
-       |                                     |
-       *-------------------------------------*
-              Tile 3              Tile 1
+               Tile 3              Tile 1
+        *-------------------------------------*
+        |                                     |
+        |                                     |
+Blade 2 |                                     | Blade 1
+        |                                     |        
+        |                                     |        
+Blade 3 |            BlackiceNxt              | USB-C  
+        |                                     |        
+        |                                     |        
+Blade 4 |                                     | SD/MMC 
+        |                                     |
+        |                                     |
+        *-------------------------------------*
+               Tile 4              Tile 2
 ```
 
 From the front
 ```
-              Tile 1              Tile 3
-       *-------------------------------------*
-       |                                     |
-       |                                     |
-Blade 1|                                     | Blade 2
-       |                                     |
-       |                                     |
-USB-C  |            BlackiceNxt              | Blade 3
-       |                                     |
-       |                                     |
-SD/MMC |                                     | Blade 4
-       |                                     |
-       |                                     |
-       *-------------------------------------*
-              Tile 2              Tile 4
+                    Tile 1              Tile 3
+             *-------------------------------------*
+             |                                     |
+             |                                     |
+   Blade 1   |                                     | Blade 2
+             |                                     |
+             |                                     |
+   USB-C     |            BlackiceNxt              | Blade 3
+             |                                     |
+             |                                     |
+   SD/MMC    |                                     | Blade 4
+             |                                     |
+   Blue LED  |                                     |
+             *-------------------------------------*
+                    Tile 2              Tile 4
 ```
