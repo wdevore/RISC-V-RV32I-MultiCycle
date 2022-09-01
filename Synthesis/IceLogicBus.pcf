@@ -1,20 +1,4 @@
 
-#            Tile 1                    Tile 3
-#         *-------------------------------------*
-#         |                                     |
-#         |                                     |
-# Blade 1 |                                     | Blade 2
-#         |                                     |
-#         |                                     |
-# USB     |            BlackiceNxt              | Blade 2
-#         |                                     |
-#         |                                     |
-# SD/MMC  |                                     | Blade 3
-#         |                                     |
-#         |                                     |
-#         *-------------------------------------*
-#            Tile 2                    Tile 4
-
 set_io clk B7
 
 # Tile 1
@@ -119,8 +103,6 @@ set_io -nowarn  blade4[5] A10
 #set_io -nowarn  ds0 K6
 
 # HyperRam/Flash
-#set_io --warn-no-port hram_dq[0] K3
-
 set_io -nowarn hram_dq[0] K3
 set_io -nowarn hram_dq[1] K4
 set_io -nowarn hram_dq[2] L1
@@ -135,19 +117,18 @@ set_io -nowarn hram_ck L2
 
 set_io -nowarn hram_cs_n[0] J2 # HyperRam
 set_io -nowarn hram_cs_n[1] K2 # HyperFlash
+set_io -nowarn hflsh_int_n H9 # HyperFlash
 
-set_io -nowarn hram_rst_n handled by STM32 when programming Ice40
+#set_io -nowarn hram_rst_n handled by STM32 when programming Ice40
 
 # QsPie
-set_io -nowarn  qd[0] J9  # SDI
-set_io -nowarn  qd[1] K9  # SDO
+set_io -nowarn  qd[0] J9
+set_io -nowarn  qd[1] K9
 set_io -nowarn  qd[2] K6
 set_io -nowarn  qd[3] L5
-set_io -nowarn  qck L10   # Clk
-set_io -nowarn  qss K10   # /SS
-
-# Blade(s)
-set_io -nowarn  qdr J7    # Old name for LED or /INT now it is a Blade pin
+set_io -nowarn  qck L10
+set_io -nowarn  qss K10
+set_io -nowarn  qdr J7
 
 # SPI
 set_io -nowarn  si K9
@@ -162,4 +143,103 @@ set_io -nowarn  ss L7
 # LED
 set_io -nowarn  led J11
 # Mezzanine
+
+#PMOD Double Tile pinouts position 1
+
+#PMOD1A
+set_io -nowarn  pm1a[0] F1
+set_io -nowarn  pm1a[1] F4
+set_io -nowarn  pm1a[2] G1
+set_io -nowarn  pm1a[3] G3
+
+#PMOD1B
+set_io -nowarn  pm1b[0] F2
+set_io -nowarn  pm1b[1] F3
+set_io -nowarn  pm1b[2] G2
+set_io -nowarn  pm1b[3] H3
+
+#PMOD2A
+set_io -nowarn  pm2a[0] H1
+set_io -nowarn  pm2a[1] J1
+set_io -nowarn  pm2a[2] B1
+set_io -nowarn  pm2a[3] C4
+
+#PMOD2B
+set_io -nowarn  pm2b[0] H2
+set_io -nowarn  pm2b[1] K1
+set_io -nowarn  pm2b[2] B2 
+set_io -nowarn  pm2b[3] C3
+
+#PMOD3A
+set_io -nowarn  pm3a[0] C2
+set_io -nowarn  pm3a[1] E1 
+set_io -nowarn  pm3a[2] D2
+set_io -nowarn  pm3a[3] E2
+
+#PMOD3B
+set_io -nowarn  pm3b[0] C1
+set_io -nowarn  pm3b[1] D1
+set_io -nowarn  pm3b[2] D3
+set_io -nowarn  pm3b[3] E3
+
+#PMOD Double Tile pinouts position 2
+
+#PMOD4A
+set_io -nowarn  pm4a[0] A9
+set_io -nowarn  pm4a[1] A8
+set_io -nowarn  pm4a[2] A6
+set_io -nowarn  pm4a[3] A2
+
+#PMOD4B
+set_io -nowarn  pm4b[0] C8
+set_io -nowarn  pm4b[1] C7
+set_io -nowarn  pm4b[2] A5
+set_io -nowarn  pm4b[3] A3
+
+#PMOD5A
+set_io -nowarn  pm5a[0] F11
+set_io -nowarn  pm5a[1] E10
+set_io -nowarn  pm5a[2] K11
+set_io -nowarn  pm5a[3] J10
+
+#PMOD5B
+set_io -nowarn  pm5b[0] E9
+set_io -nowarn  pm5b[1] E8
+set_io -nowarn  pm5b[2] H10
+set_io -nowarn  pm5b[3] G8
+#     BirdsEye Board view from the top looking down
+#
+#            Pmod1,2                   Pmod3 
+#         *-------------------------------------*
+#         |  Tile 1                    Tile 3   |
+#         |                                     |
+# Blade 1 |                                     | Blade 2
+#         |                                     |
+#         \                                     |
+#  USB-C  |            BlackiceNxt              | Blade 3
+#         /                                     |
+#         |                                     |
+# SD/MMC  |                                     | Blade 4
+#         |                                     |
+#         |  Tile 2                    Tile 4   |
+#         *-------------------------------------*
+#            Pmod6                    Pmod5,4
+#
+#    Pmod pin orders looking into the Pmod connectors
+#    ___________          ___________ _____ ___________
+#  A|+.-.3.2.1.0|       A|+.-.3.2.1.0|x.x.x|+.-.3.2.1.0|
+#  B|+.-.3.2.1.0|       B|+.-.3.2.1.0|x.x.x|+.-.3.2.1.0|
+#    -----------          ----------- ----- -----------
+
+#PMOD6A
+set_io -nowarn  pm6a[0] H11
+set_io -nowarn  pm6a[1] D9
+set_io -nowarn  pm6a[2] G9
+set_io -nowarn  pm6a[3] F10
+
+#PMOD6B
+set_io -nowarn  pm6b[0] G10
+set_io -nowarn  pm6b[1] E11
+set_io -nowarn  pm6b[2] G11
+set_io -nowarn  pm6b[3] F9
 
