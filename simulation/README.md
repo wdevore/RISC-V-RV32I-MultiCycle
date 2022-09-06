@@ -4,7 +4,8 @@
 - *spi_alt* is the next project--incomplete--at building a state machine variant
 - *spi_sync* isn't quite correct. This is combinational state driven.
 - *spi_sync2* This is correct either.
-- *spi_sync3* This correctly implements Mode 0
+- *spi_sync3* This correctly implements Mode 0 for single byte - full duplex
+- *spi_sync4* This...
 
 
 # Tasks
