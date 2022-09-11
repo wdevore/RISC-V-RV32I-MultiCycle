@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
 
     top->Rst_i_n = 1;
     top->pllClk_i = 0;
-    int p_byte_sent = top->byte_sent;
+    int p_r_Clk = top->pllClk_i;
     top->send = 1;
 
     // Allow any initial blocks to execute
@@ -97,43 +97,54 @@ int main(int argc, char *argv[])
     // VL_PRINTF("send: %d\n", top->send);
     // VL_PRINTF("p_ready: %d, %d\n", p_ready, top->ready);
 
-    // Assert send signal
+    // -----------------------------------------
+    // Wait for the Master to return to Ready
+    // -----------------------------------------
+
+    // Set signal low
     top->send = 0;
-    std::cout << "timeStep: " << timeStep << std::endl;
-
-    while (!(p_byte_sent == 1 && top->byte_sent == 0))
-    {
-        p_byte_sent = top->byte_sent;
-        timeStep = step(timeStep, tb, top);
-    }
-
-    top->byte_to_slave = 0x2A;  // 8'b0010_1010
-    top->byte_to_master = 0x99; // 8'b1001_1001
-    p_byte_sent = top->byte_sent;
-
-    while (!(p_byte_sent == 1 && top->byte_sent == 0))
-    {
-        p_byte_sent = top->byte_sent;
-        timeStep = step(timeStep, tb, top);
-    }
-
-    top->byte_to_slave = 0x32;  // 8'b0010_0011
-    top->byte_to_master = 0xC9; // 8'b1100_0100
-    p_byte_sent = top->byte_sent;
-
-    while (!(p_byte_sent == 1 && top->byte_sent == 0))
-    {
-        p_byte_sent = top->byte_sent;
-        timeStep = step(timeStep, tb, top);
-    }
-
-    // Add a trailing visual buffer
-    duration = 1000 + timeStep;
+    
+    // Add a filler 
+    duration = 6400 + timeStep;
     while (timeStep < duration)
     {
         timeStep = step(timeStep, tb, top);
     }
 
+    top->byte_to_slave = 0x2A;  // 8'b0010_1010
+    top->byte_to_master = 0x99; // 8'b1001_1001
+
+    duration = 6300 + timeStep;
+    while (timeStep < duration)
+    {
+        timeStep = step(timeStep, tb, top);
+    }
+
+    // At this point duration can't be to large otherwise the
+    // byte_to_slave will not be latched into tx_bits.
+    duration = 50 + timeStep;
+    while (timeStep < duration)
+    {
+        timeStep = step(timeStep, tb, top);
+    }
+
+    // 0011_0010
+    top->byte_to_slave = 0x32;  // 8'b0010_0011
+    top->byte_to_master = 0xC9; // 8'b1100_0100
+
+    duration = 6300 + timeStep;
+    while (timeStep < duration)
+    {
+        timeStep = step(timeStep, tb, top);
+    }
+
+    top->send = 1;
+
+    duration = 1500 + timeStep;
+    while (timeStep < duration)
+    {
+        timeStep = step(timeStep, tb, top);
+    }
 
     // :--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--:--
     std::cout << "Finish TB." << std::endl;

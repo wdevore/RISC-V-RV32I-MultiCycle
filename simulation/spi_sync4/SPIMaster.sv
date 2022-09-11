@@ -74,19 +74,14 @@ logic [7:0] tx_bits;
 // Transmitting and Complete. Otherwise it idles low for Mode 0
 assign sClk = ((state == MSTransmitting) || (state == MSComplete)) & ~tx_en & spiClk;
 
-// When tx_en activates the input data should already be present.
-
 // On the trailing edge we setup the data for the leading edge.
 // This means we shift data to the left (LSb to MSb) "<< 1"
 always_ff @(negedge spiClk) begin
     // What ever signals change won't occur until the next *edge*.
-    // Shift out a bit
     case (state)
         MSIdle: begin
-            // if (~tx_en) begin
-                // tx_byte must be present *before* falling edge
-                tx_bits <= tx_byte;
-            // end
+            // tx_byte must be present *before* falling edge
+            tx_bits <= tx_byte;
         end
 
         MSBegin: begin
@@ -112,13 +107,14 @@ end
 logic [7:0] xx_bits;
 
 // Leading rising edge. Sample a bit on this edge.
-// The Slave should also sample on this edge.
+// The Slave should also sample on this edge *after* synchronizing.
 always_ff @(posedge spiClk) begin
     if (state == MSTransmitting) begin
     end
     // What ever signals change won't occur until the next *edge*.
     case (state)
         MSIdle: begin
+            // When tx_en activates the input data should already be present.
             if (~tx_en) begin
                 bitCnt <= 3'b111;
                 rx_bits <= 8'b0;

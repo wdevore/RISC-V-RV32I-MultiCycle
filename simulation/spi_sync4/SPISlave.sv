@@ -75,27 +75,19 @@ logic [1:0] resetCnt;
 // A 3 bit counter to count the bits as they come in/out.
 logic [2:0] bitCnt;
 
-// When tx_en activates the input data should already be present.
-
 // On the trailing edge we setup the data for the leading edge.
 always_ff @(negedge SClk_sync, negedge SS_sync) begin
     // What ever signals change won't occur until the next *pos* edge.
     case (state)
         SLIdle: begin
-            // if (~SS_sync) begin
-                // Make sure the data is present on the output for the next
-                // rising edge
-                miso <= tx_byte[7]; // Output bit
-            // end
+            // Make sure the data is present on the output for the next
+            // rising edge
+            miso <= tx_byte[7]; // Output bit
         end
 
         SLTransmitting: begin
             miso <= tx_byte[bitCnt]; // Output bit
         end
-
-        // SLComplete: begin
-        //     miso <= tx_byte[bitCnt]; // Output bit
-        // end
 
         default: begin
         end
@@ -103,25 +95,16 @@ always_ff @(negedge SClk_sync, negedge SS_sync) begin
 end
 
 // Leading rising edge. Sample a bit on this edge.
-// The Slave should also sample on this edge.
 always_ff @(posedge SClk_sync) begin
     // What ever signals change won't occur until the next *neg* edge.
     case (state)
         SLIdle: begin
-            // bitCnt <= 3'b111;
             if (~SS_sync) begin
                 bitCnt <= 3'b110;
                 rx_byte <= {rx_byte[6:0], MOSI_sync};
                 state <= SLTransmitting;
             end
         end
-
-        // SLBegin: begin
-        //     // $display("B");
-        //     // bitCnt <= 3'b111;
-        //     rx_byte <= {rx_byte[6:0], MOSI_sync}; // Input
-        //     bitCnt <= bitCnt - 3'b001;
-        // end
 
         SLTransmitting: begin
             if (bitCnt == 3'b000)
@@ -132,54 +115,10 @@ always_ff @(posedge SClk_sync) begin
             rx_byte <= {rx_byte[6:0], MOSI_sync}; // Input
         end
 
-        // SLComplete: begin
-        //     // bitCnt <= bitCnt - 3'b001;
-        //         state <= SLIdle;
-        // end
-
         default: begin
         end
     endcase
 end
-
-// always_ff @(posedge sysClk) begin
-//     resetCnt <= resetCnt + 1;
-//     $display("resetcnt %2b, %d", resetCnt, state);
-
-//     case (state)
-//         SLReset: begin
-//             if (resetCnt == 2'b10) begin
-//                 state <= SLIdle;
-//             end
-//         end
-
-//         // SLIdle: begin
-//         //     if (~SS_sync) begin
-//         //         state <= SLBegin;
-//         //     end
-//         // end
-
-//         // SLBegin: begin
-//         //     if (SClk_sync == 1'b1)
-//         //         state <= SLTransmitting;
-//         // end
-
-//         // SLTransmitting: begin
-//         //     if (bitCnt == 3'b000) begin
-//         //         state <= SLComplete;
-//         //     end
-//         // end
-
-//         // SLComplete: begin
-//         //     if (SClk_fallingedge) begin
-//         //         state <= SLIdle;
-//         //     end
-//         // end
-
-//         default: begin
-//         end
-//     endcase
-// end
 
 endmodule
 

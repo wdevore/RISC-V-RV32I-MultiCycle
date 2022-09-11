@@ -12,6 +12,7 @@ module Top (
     // Master
     input  logic send /*verilator public*/,
     output logic ready,
+    output logic byte_sent,
     input  logic [7:0] byte_to_slave,   // Data from Master to Slave
     input  logic [7:0] byte_to_master   // Data to send from Slave to Master
 );
@@ -27,7 +28,6 @@ logic m_mosi_s;  // Master out to Slave in
 logic m_cs_s;    // Master CS/SS to slave
 
 logic s_miso_m;
-logic byte_sent;
 logic spiClk_o;
 
 // -----------------------------------------------------------
