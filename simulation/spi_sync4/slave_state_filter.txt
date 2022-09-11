@@ -1,5 +1,4 @@
-0 Reset
-1 Idle
-2 Begin
-3 Transmitting
-4 Complete
+0 Idle
+1 Begin
+2 Transmitting
+3 Complete

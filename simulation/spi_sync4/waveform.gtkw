@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
-[*] Tue Sep  6 01:23:48 2022
+[*] Sun Sep 11 18:40:26 2022
 [*]
 [dumpfile] "/media/RAMDisk/waveform.vcd"
-[dumpfile_mtime] "Tue Sep  6 01:22:12 2022"
-[dumpfile_size] 184981
+[dumpfile_mtime] "Sun Sep 11 18:35:28 2022"
+[dumpfile_size] 159623
 [savefile] "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/spi_sync4/waveform.gtkw"
 [timestart] 0
 [size] 3480 963
 [pos] 332 108
-*-10.070967 6982 1590 2230 2870 3510 4150 4790 5430 6070 6710 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-10.070967 6976 1590 2230 2870 3510 4150 4790 5430 6070 6710 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
 [treeopen] TOP.Top.
 [treeopen] TOP.Top.master.
@@ -32,13 +32,9 @@ TOP.Top.send
 @28
 [color] 2
 TOP.Top.master.spiClk
-[color] 7
-TOP.Top.master.spiClk_o
-TOP.Top.master.rising_edge
-TOP.Top.master.falling_edge
+[color] 3
+TOP.Top.master.sClk
 @2024
-^1 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/spi_sync4/state_filter.txt
-TOP.Top.master.prev_state[2:0]
 [color] 5
 ^1 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/spi_sync4/state_filter.txt
 TOP.Top.master.state[2:0]
@@ -53,8 +49,15 @@ TOP.Top.master.mosi
 [color] 5
 TOP.Top.master.miso
 TOP.Top.master.MISO_sync
+@23
+TOP.Top.master.tx_bits[7:0]
 @22
 TOP.Top.master.tx_byte[7:0]
+@28
+[color] 7
+TOP.Top.master.byte_tx_complete
+@22
+[color] 3
 TOP.Top.master.rx_bits[7:0]
 TOP.Top.master.rx_byte[7:0]
 @200
@@ -62,10 +65,10 @@ TOP.Top.master.rx_byte[7:0]
 @28
 [color] 2
 TOP.Top.slave.spiClk
-TOP.Top.slave.cs
-TOP.Top.slave.SS_sync
 [color] 7
 TOP.Top.slave.SClk_sync
+TOP.Top.slave.cs
+TOP.Top.slave.SS_sync
 @2024
 [color] 5
 ^3 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/spi_sync4/slave_state_filter.txt
@@ -81,6 +84,7 @@ TOP.Top.slave.MOSI_sync
 TOP.Top.slave.miso
 @22
 TOP.Top.slave.tx_byte[7:0]
+[color] 5
 TOP.Top.slave.rx_byte[7:0]
 [pattern_trace] 1
 [pattern_trace] 0

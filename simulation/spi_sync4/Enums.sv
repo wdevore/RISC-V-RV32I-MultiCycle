@@ -10,7 +10,7 @@ typedef enum logic [2:0] {
 } MasterState /*verilator public*/; 
 
 typedef enum logic [2:0] {
-    SLReset,
+    // SLReset,
     SLIdle,           // Waiting to transmit
     SLBegin,
     SLTransmitting,   // Sending bits

@@ -100,60 +100,9 @@ int main(int argc, char *argv[])
     // -----------------------------------------
     // Wait for the Master to return to Ready
     // -----------------------------------------
-    // Before we activate the "send" signal
-    // we wait for device to become ready by
-    // checking active-high ready signal.
-    // while (top->ready != 1)
-    // {
-    //     timeStep = step(timeStep, tb, top);
-    // }
 
     // Set signal low
     top->send = 0;
-    // and wait for ready's falling edge
-    // while (!(p_ready == 1 && top->ready == 0))
-    // {
-    //     p_ready = top->ready;
-    //     timeStep = step(timeStep, tb, top);
-    // }
-    // top->send = 1;
-
-    // -----------------------------------------
-    // Wait for the Master to return to Ready
-    // -----------------------------------------
-    // while (top->ready != 1)
-    // {
-    //     p_ready = top->ready;
-    //     timeStep = step(timeStep, tb, top);
-    // }
-    // std::cout << "WA timeStep: " << timeStep << std::endl;
-
-    // -----------------------------------------
-    // Send 0xA2
-    // -----------------------------------------
-    // top->byte_to_slave = 0xA2;
-    // top->byte_to_master = 0x5A;
-
-    // Set signal low
-    // top->send = 0;
-    // and wait for response
-    // while (!(p_ready == 1 && top->ready == 0))
-    // {
-    //     p_ready = top->ready;
-    //     timeStep = step(timeStep, tb, top);
-    // }
-    // top->send = 1;
-    // std::cout << "Sent signal timeStep: " << timeStep << std::endl;
-
-    // -----------------------------------------
-    // Wait for the Master to become ready
-    // -----------------------------------------
-    // while (top->ready != 1)
-    // {
-    //     p_ready = top->ready;
-    //     timeStep = step(timeStep, tb, top);
-    // }
-    // std::cout << "WA2 timeStep: " << timeStep << std::endl;
     
     // Add a filler 
     duration = 6400 + timeStep;
@@ -162,7 +111,7 @@ int main(int argc, char *argv[])
         timeStep = step(timeStep, tb, top);
     }
 
-    top->byte_to_slave = 0x1A;  // 8'b0001_1010
+    top->byte_to_slave = 0x2A;  // 8'b0010_1010
     top->byte_to_master = 0x99; // 8'b1001_1001
 
     duration = 6300 + timeStep;
@@ -171,15 +120,16 @@ int main(int argc, char *argv[])
         timeStep = step(timeStep, tb, top);
     }
 
-    // top->send = 1;
-
-    duration = 1500 + timeStep;
+    // At this point duration can't be to large otherwise the
+    // byte_to_slave will not be latched into tx_bits.
+    duration = 50 + timeStep;
     while (timeStep < duration)
     {
         timeStep = step(timeStep, tb, top);
     }
 
-    top->byte_to_slave = 0x23;  // 8'b0010_0011
+    // 0011_0010
+    top->byte_to_slave = 0x32;  // 8'b0010_0011
     top->byte_to_master = 0xC9; // 8'b1100_0100
 
     duration = 6300 + timeStep;

@@ -9,15 +9,8 @@
 // To send a byte
 // - Set byte count input value
 // - First byte is placed on the input
-
-// On falling edge data is shifted
-// On leading edge data is sampled
-// Clocks are only generated for each bit
-// CS remains active until all bytes or byte is transferred.
-
-// For the Slave when CS activates it waits for a rising edge to
-// sample data.
-// On the falling edge it shifts its output register.
+// - tx_en is asserted
+// - The clock when the last bit is sent or tx_en is deasserted.
 
 module SPIMaster
 #(
@@ -62,7 +55,6 @@ CDCSynchron SPI_MISO_Sync (
 // A 3 bit counter to count the bits as they come in/out.
 logic [2:0] bitCnt;
 logic [7:0] rx_bits;
-logic [7:0] tx_bits;
 
 // ---------------------------------------------------
 // Simulation
@@ -77,31 +69,16 @@ assign sClk = ((state == MSTransmitting) || (state == MSComplete)) & ~tx_en & sp
 // When tx_en activates the input data should already be present.
 
 // On the trailing edge we setup the data for the leading edge.
-// This means we shift data to the left (LSb to MSb) "<< 1"
 always_ff @(negedge spiClk) begin
     // What ever signals change won't occur until the next *edge*.
-    // Shift out a bit
     case (state)
-        MSIdle: begin
-            // if (~tx_en) begin
-                // tx_byte must be present *before* falling edge
-                tx_bits <= tx_byte;
-            // end
-        end
-
         MSBegin: begin
-            mosi <= tx_bits[7];
-            tx_bits <= tx_bits << 1;
+            // The MSB bit transmit now.
+            mosi <= tx_byte[bitCnt]; // Output bit
         end
 
         MSTransmitting: begin
-            mosi <= tx_bits[7];
-            tx_bits <= tx_bits << 1;
-        end
-
-        MSComplete: begin
-            mosi <= tx_bits[7];
-            tx_bits <= tx_bits << 1;
+            mosi <= tx_byte[bitCnt]; // Output bit
         end
 
         default: begin
@@ -109,13 +86,9 @@ always_ff @(negedge spiClk) begin
     endcase
 end
 
-logic [7:0] xx_bits;
-
 // Leading rising edge. Sample a bit on this edge.
 // The Slave should also sample on this edge.
 always_ff @(posedge spiClk) begin
-    if (state == MSTransmitting) begin
-    end
     // What ever signals change won't occur until the next *edge*.
     case (state)
         MSIdle: begin
@@ -128,8 +101,8 @@ always_ff @(posedge spiClk) begin
         end
 
         MSBegin: begin
+            // The MSB bit transmit now.
             bitCnt <= bitCnt - 3'b001;
-            rx_bits <= {rx_bits[6:0], MISO_sync}; // Input
             state <= MSTransmitting;
         end
 

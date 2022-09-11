@@ -3,7 +3,7 @@
 `timescale 1ns/1ps
 `endif
 
-// Top creates an IOModule and interfaces with it two buffers accessed by indices.
+// Top creates an IOModule.
 
 module Top (
     input logic  Rst_i_n,      // System Reset
@@ -20,21 +20,6 @@ logic [7:0] byte_from_slave;
 logic [7:0] byte_from_master;
 
 // -----------------------------------------------------------
-// SPI clocks
-// -----------------------------------------------------------
-// bit 0 = 1/2 sysClk
-// bit 1 = 1/4
-// bit 2 = 1/8
-// bit 3 = 1/16
-
-// ---------------------------------------------------
-// Simulation
-// ---------------------------------------------------
-// initial begin
-// end
-
-
-// -----------------------------------------------------------
 // wires and buses
 // -----------------------------------------------------------
 logic m_sclk_s;  // Master sclk to slave
@@ -42,7 +27,7 @@ logic m_mosi_s;  // Master out to Slave in
 logic m_cs_s;    // Master CS/SS to slave
 
 logic s_miso_m;
-logic sent;
+logic byte_sent;
 logic spiClk_o;
 
 // -----------------------------------------------------------
@@ -51,13 +36,13 @@ logic spiClk_o;
 
 SPIMaster master (
     .sysClk(pllClk_i),
-    .spiClk_o(spiClk_o),
+    .sClk(spiClk_o),
     .reset(Rst_i_n),
     .tx_en(send),
     .mosi(m_mosi_s),
     .miso(s_miso_m),
-    // .miso(m_mosi_s),
     .tx_byte(byte_to_slave),
+    .byte_tx_complete(byte_sent),
     .rx_byte(byte_from_slave)
 );
 
