@@ -100,6 +100,8 @@ Memory #(
 logic [4:0] sysClkCnt;
 
 logic mastSpiClk;
+logic p_mastSpiClk;
+
 // The SPI clock is fraction of the system clock.
 assign mastSpiClk = sysClkCnt[CLK_DIVIDER];
 
@@ -144,6 +146,7 @@ always_comb begin
     tx_rd = 1'b1;
     spi_send = 1'b1;
     io_complete = 1'b1;
+    cs = 1'b1;
 
     case (state)
         IOBoot: begin
@@ -156,7 +159,6 @@ always_comb begin
 
         IOReset: begin
             next_state = IOIdle;
-
             reset_complete = 1'b0;
         end
 
@@ -165,17 +167,24 @@ always_comb begin
 
             if (~send) begin
                 io_complete = 1'b0;
+                next_state = IOBegin;
+            end
+        end
+
+        IOBegin: begin
+            next_state = IOBegin;
+            cs = 1'b0;
+            // Wait for the rising edge of the master clock.
+            if (p_mastSpiClk == 1'b0 && mastSpiClk == 1'b1) begin
                 next_state = IOSend;
                 // Fetch byte from buffer
                 tx_rd = 1'b0;
             end
         end
 
-        IOBegin: begin
-        end
-
         IOSend: begin
             next_state = IOSend;
+            cs = 1'b0;
 
             io_complete = 1'b0;
             // The byte is ready. Send data via SPI Master
@@ -193,6 +202,7 @@ always_comb begin
 
         IONext: begin
             next_state = IOSend;
+            cs = 1'b0;
 
             io_complete = 1'b0;
             tx_rd = 1'b0;
@@ -212,6 +222,7 @@ end
 always_ff @(posedge sysClk) begin
     p_byte_sent = byte_sent;
     p_spiClk = spiClk;
+    p_mastSpiClk = mastSpiClk;
 
     if (~reset) begin
         state <= IOReset;

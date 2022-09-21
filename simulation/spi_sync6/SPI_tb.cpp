@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
     // }
 
     // Add a trailing visual buffer
-    duration = 15000 + timeStep;
+    duration = 20000 + timeStep;
     while (timeStep < duration)
     {
         timeStep = step(timeStep, tb, top);

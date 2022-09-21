@@ -1,0 +1,8 @@
+111 MSb
+110 bit 6
+101 bit 5
+100 bit 4
+011 bit 3
+010 bit 2
+001 bit 1
+000 LSb

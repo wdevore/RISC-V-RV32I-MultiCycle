@@ -15,7 +15,7 @@ GTKWAVE_SETTINGS = waveform
 MODULES_FILES =  \
 	definitions.sv \
 	Enums.sv \
-	SPIMaster_IO.sv \
+	SPIMaster.sv \
 	SPISlave_mcp23s17.sv \
 	../../modules/Memory.sv \
 	IOModule.sv \

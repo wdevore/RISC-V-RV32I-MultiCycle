@@ -97,18 +97,12 @@ end
 always_ff @(negedge clk_i) begin
     if (~wr_i) begin
         mem[addr_i] <= data_i;
-        // `ifdef SIMULATE
-        //     $display("%d Mem WRITE Addr (0x%h), Data_o(0x%h), data_i(0x%h)", $stime, addr_i, mem[addr_i], data_i);
-        // `endif
     end
 end
 
 always_ff @(negedge clk_i) begin
     if (~rd_i) begin
         data_o <= mem[addr_i];
-        // `ifdef SIMULATE
-        //     $display("Mem READ Addr (0x%h), Data_o(0x%h), data_i(0x%h)", addr_i, mem[addr_i], data_i);
-        // `endif
     end
 end
 

@@ -21,30 +21,24 @@
 
 module SPIMaster
 #(
-    parameter CLK_DIVIDER = 4,
     parameter DATA_WIDTH = 8
 )
 (
     input  logic sysClk,            // system domain clock for syncing
-    output logic sClk,              // SPI Clock output
+    input  logic spiClk,            // SPI Clock
+    output logic outSpiClk,         // Gated clock based on State (for Slave)
     input  logic reset,             // Reset
     input  logic tx_en,             // Enable transmission of bits (active low)
     output logic mosi,              // output (1 bit at a time) routed to slave
     input  logic miso,              // Bit from slave
     input  logic [7:0] tx_byte,     // Byte to send
-    output logic byte_tx_complete,  // Signal indicating the current byte was sent (active hight)
+    output logic byte_tx_complete,  // Signal indicating the current byte was sent (active high)
     output logic [7:0] rx_byte      // Byte received
 );
 
 /*verilator public_module*/
 
 MasterState state;
-
-logic [4:0] sysClkCnt;
-logic spiClk;
-
-// The SPI clock is fraction of the system clock.
-assign spiClk = sysClkCnt[CLK_DIVIDER];
 
 // ----------------------------------------------------
 // CDC Sync-ed signal for MISO (from slave)
@@ -63,7 +57,6 @@ CDCSynchron SPI_MISO_Sync (
 
 // A 3 bit counter to count the bits as they come in/out.
 logic [2:0] bitCnt;
-logic [DATA_WIDTH-1:0] rx_bits;
 logic [DATA_WIDTH-1:0] tx_bits;
 
 // ---------------------------------------------------
@@ -74,7 +67,7 @@ logic [DATA_WIDTH-1:0] tx_bits;
 
 // The clock is only active during transmission which is
 // Transmitting and Complete. Otherwise it idles low for Mode 0
-assign sClk = ((state == MSTransmitting) || (state == MSComplete)) & ~tx_en & spiClk;
+assign outSpiClk = ((state == MSTransmitting) || (state == MSComplete)) & ~tx_en & spiClk;
 
 // On the trailing edge we setup the data for the leading edge.
 // This means we shift data to the left (LSb to MSb) "<< 1"
@@ -85,6 +78,11 @@ always_ff @(negedge spiClk) begin
             // tx_byte must be present *before* falling edge
             tx_bits <= tx_byte;
         end
+
+        // MSStart: begin
+        //     // tx_byte must be present *before* falling edge
+        //     tx_bits <= tx_byte;
+        // end
 
         MSBegin: begin
             mosi <= tx_bits[DATA_WIDTH-1];
@@ -112,15 +110,19 @@ always_ff @(posedge spiClk) begin
             // When tx_en activates the input data should already be present.
             if (~tx_en) begin
                 bitCnt <= 3'b111;
-                rx_bits <= 8'b0;
+                rx_byte <= 8'b0;
                 state <= MSBegin;
                 byte_tx_complete <= 1'b0;
             end
         end
 
+        // MSStart: begin
+        //     state <= MSBegin;
+        // end
+
         MSBegin: begin
             bitCnt <= bitCnt - 3'b001;
-            rx_bits <= {rx_bits[DATA_WIDTH-2:0], MISO_sync}; // Input
+            rx_byte <= {rx_byte[DATA_WIDTH-2:0], MISO_sync}; // Input
             state <= MSTransmitting;
         end
 
@@ -129,24 +131,20 @@ always_ff @(posedge spiClk) begin
                 state <= MSComplete;
                 byte_tx_complete <= 1'b1;
             end
-            rx_bits <= {rx_bits[DATA_WIDTH-2:0], MISO_sync}; // Input
+            rx_byte <= {rx_byte[DATA_WIDTH-2:0], MISO_sync}; // Input
             bitCnt <= bitCnt - 3'b001;
         end
 
         MSComplete: begin
             state <= MSIdle;
-            rx_byte <= {rx_bits[DATA_WIDTH-2:0], MISO_sync}; // Input
-            byte_tx_complete <= 1'b0;
+            // byte_tx_complete <= 1'b0;
+            byte_tx_complete <= 1'b1;
         end
 
         default: begin
         end
     endcase
 
-end
-
-always_ff @(posedge sysClk) begin
-    sysClkCnt <= sysClkCnt + 4'b0001;
 end
 
 endmodule

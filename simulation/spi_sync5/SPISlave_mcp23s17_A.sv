@@ -71,9 +71,13 @@ CDCSynchron SPI_SS_Sync (
 );
 
 logic [1:0] resetCnt;
+logic p_SClk_sync;
+logic p_SS_sync;
 
 // A 3 bit counter to count the bits as they come in/out.
 logic [2:0] bitCnt;
+logic [7:0] data_out;
+logic [1:0] data_cnt;
 
 // On the trailing edge we setup the data for the leading edge.
 always_ff @(negedge SClk_sync, negedge SS_sync) begin
@@ -82,11 +86,22 @@ always_ff @(negedge SClk_sync, negedge SS_sync) begin
         SLIdle: begin
             // Make sure the data is present on the output for the next
             // rising edge
-            miso <= tx_byte[7]; // Output bit
+            // if (p_SS_sync == 1'b1 && SS_sync == 1'b0)
+            $display("slave il: %d , (%d), miso: %b", data_out[bitCnt], bitCnt, miso);
+            // $display("slave il: %d, miso: %b", data_out[7], miso);
+                miso <= data_out[7];//tx_byte[7]; // Output bit
+            // miso <= tx_byte[7]; // Output bit
         end
 
+        // SLBegin: begin
+        //     $display("slave begin: %d", data_out[7]);
+        //     miso <= 0;//tx_byte[7]; // Output bit
+        // end
+
         SLTransmitting: begin
-            miso <= tx_byte[bitCnt]; // Output bit
+            $display("slave tx: %d , (%d), miso: %b", data_out[bitCnt], bitCnt, miso);
+            miso <= data_out[bitCnt]; //tx_byte[bitCnt]; // Output bit
+            // miso <= tx_byte[bitCnt]; // Output bit
         end
 
         default: begin
@@ -115,10 +130,40 @@ always_ff @(posedge SClk_sync) begin
             rx_byte <= {rx_byte[6:0], MOSI_sync}; // Input
         end
 
+        // SLComplete: begin
+        //     state <= SLIdle;
+        // end
+
         default: begin
         end
     endcase
 end
+
+always_ff @(posedge sysClk) begin
+    p_SClk_sync <= SClk_sync;
+    p_SS_sync <= SS_sync;
+
+    // NOTE: This is a hack to simulate an MCP23S17 IO expander.
+    if (rx_byte == 8'hA1 && (p_SClk_sync == 1'b1 && SClk_sync == 1'b0) && data_cnt == 2'b00) begin
+        data_out <= 8'h79;
+        // $display("A sysClk:data_out %8h", data_out);
+        data_cnt <= data_cnt + 1;
+    end
+    else if (rx_byte == 8'h2A && (p_SClk_sync == 1'b1 && SClk_sync == 1'b0) && data_cnt == 2'b01) begin
+        data_out <= 8'h99;
+        data_cnt <= data_cnt + 1;
+        // $display("B sysClk:data_out %8h", data_out);
+    end
+    else if (data_cnt == 2'b00) begin
+    // else if (rx_byte == 8'h32 && (p_SClk_sync == 1'b1 && SClk_sync == 1'b0) && data_cnt == 2'b00) begin
+        data_out <= 8'hE4;
+        // data_cnt <= data_cnt + 1;
+        // $display("C sysClk:data_out %8h", data_out);
+    end
+
+    // data_out <= 8'h99;
+end
+
 
 endmodule
 

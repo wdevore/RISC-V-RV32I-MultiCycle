@@ -26,7 +26,8 @@ module SPIMaster
 )
 (
     input  logic sysClk,            // system domain clock for syncing
-    output logic sClk,              // SPI Clock output
+    input  logic spiClk,            // SPI Clock
+    output logic outSpiClk,         // Gated output
     input  logic reset,             // Reset
     input  logic tx_en,             // Enable transmission of bits (active low)
     output logic mosi,              // output (1 bit at a time) routed to slave
@@ -39,12 +40,6 @@ module SPIMaster
 /*verilator public_module*/
 
 MasterState state;
-
-logic [4:0] sysClkCnt;
-logic spiClk;
-
-// The SPI clock is fraction of the system clock.
-assign spiClk = sysClkCnt[CLK_DIVIDER];
 
 // ----------------------------------------------------
 // CDC Sync-ed signal for MISO (from slave)
@@ -74,7 +69,7 @@ logic [DATA_WIDTH-1:0] tx_bits;
 
 // The clock is only active during transmission which is
 // Transmitting and Complete. Otherwise it idles low for Mode 0
-assign sClk = ((state == MSTransmitting) || (state == MSComplete)) & ~tx_en & spiClk;
+assign outSpiClk = ((state == MSTransmitting) || (state == MSComplete)) & ~tx_en & spiClk;
 
 // On the trailing edge we setup the data for the leading edge.
 // This means we shift data to the left (LSb to MSb) "<< 1"
@@ -128,6 +123,7 @@ always_ff @(posedge spiClk) begin
             if (bitCnt == 3'b000) begin
                 state <= MSComplete;
                 byte_tx_complete <= 1'b1;
+                rx_byte <= {rx_bits[DATA_WIDTH-2:0], MISO_sync}; // Input
             end
             rx_bits <= {rx_bits[DATA_WIDTH-2:0], MISO_sync}; // Input
             bitCnt <= bitCnt - 3'b001;
@@ -135,7 +131,6 @@ always_ff @(posedge spiClk) begin
 
         MSComplete: begin
             state <= MSIdle;
-            rx_byte <= {rx_bits[DATA_WIDTH-2:0], MISO_sync}; // Input
             byte_tx_complete <= 1'b0;
         end
 
@@ -143,10 +138,6 @@ always_ff @(posedge spiClk) begin
         end
     endcase
 
-end
-
-always_ff @(posedge sysClk) begin
-    sysClkCnt <= sysClkCnt + 4'b0001;
 end
 
 endmodule
