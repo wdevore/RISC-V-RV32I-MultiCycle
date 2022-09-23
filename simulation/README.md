@@ -3,9 +3,11 @@
 - *cross_domain_clock* is a demonstration of CDC without SPI. async_i is the signal that is syncrhonised.
 - *spi_alt* is the next project--incomplete--at building a state machine variant
 - *spi_sync* isn't quite correct. This is combinational state driven.
-- *spi_sync2* This is correct either.
-- *spi_sync3* This correctly implements Mode 0 for single byte - full duplex
+- *spi_sync2* This is not correct either.
+- *spi_sync3* This --broken-- implements Mode 0 for single byte - full duplex
 - *spi_sync4* This...
+- *spi_sync5* This partially works but is still broken
+- **spi_sync6** This is fully functional Mode 0 with an IO module as well.
 
 
 # Tasks

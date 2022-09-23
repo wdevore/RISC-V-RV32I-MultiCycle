@@ -60,12 +60,9 @@ int main(int argc, char *argv[])
 
     vluint64_t timeStep = 0;
     int duration = 0;
-    int p_ready = 1;
 
     top->Rst_i_n = 1;
     top->pllClk_i = 0;
-    // int p_byte_sent = top->byte_sent;
-    // top->send = 1;
 
     // Allow any initial blocks to execute
     tb->eval();
@@ -83,57 +80,9 @@ int main(int argc, char *argv[])
     duration = 100 + timeStep;
     timeStep = assertReset(timeStep, duration, tb, top);
 
-    // ---------------------------------------------
-    // Master sends a byte 0xC5 = 8'b1100_0101
-    // Slave sends a byte 0xE4 = 8'b1110_0100
-    // ---------------------------------------------
-    // top->byte_to_slave = 0xC5;
-    // top->byte_to_slave = 0xA1;  // 8'b1010_0001
-    // top->byte_to_master = 0xE4;
-
     std::cout << "timeStep: " << timeStep << std::endl;
 
-    // Just for visuals, delay 100 PLL clocks before we lower the send signal.
-    // duration = 500 + timeStep;
-    // while (timeStep < duration)
-    // {
-    //     timeStep = step(timeStep, tb, top);
-    // }
-
-    // VL_PRINTF("send: %d\n", top->send);
-    // VL_PRINTF("p_ready: %d, %d\n", p_ready, top->ready);
-
-    // // Assert send signal
-    // top->send = 0;
-    // std::cout << "timeStep: " << timeStep << std::endl;
-
-    // while (!(p_byte_sent == 1 && top->byte_sent == 0))
-    // {
-    //     p_byte_sent = top->byte_sent;
-    //     timeStep = step(timeStep, tb, top);
-    // }
-
-    // top->byte_to_slave = 0x2A;  // 8'b0010_1010
-    // top->byte_to_master = 0x99; // 8'b1001_1001
-    // p_byte_sent = top->byte_sent;
-
-    // while (!(p_byte_sent == 1 && top->byte_sent == 0))
-    // {
-    //     p_byte_sent = top->byte_sent;
-    //     timeStep = step(timeStep, tb, top);
-    // }
-
-    // top->byte_to_slave = 0x32;  // 8'b0010_0011
-    // top->byte_to_master = 0xC9; // 8'b1100_0100
-    // p_byte_sent = top->byte_sent;
-
-    // while (!(p_byte_sent == 1 && top->byte_sent == 0))
-    // {
-    //     p_byte_sent = top->byte_sent;
-    //     timeStep = step(timeStep, tb, top);
-    // }
-
-    // Add a trailing visual buffer
+    // Run enough clocks for IOModule to send 3 bytes
     duration = 20000 + timeStep;
     while (timeStep < duration)
     {
