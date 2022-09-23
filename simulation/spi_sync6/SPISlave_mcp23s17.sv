@@ -86,9 +86,6 @@ logic ss_sync_fall;
 assign ss_sync_fall = p_SS_sync == 1'b1 && SS_sync == 1'b0;
 
 always_ff @(posedge sysClk) begin
-    p_SClk_sync <= SClk_sync;
-    p_SS_sync <= SS_sync;
-
     if (SClk_fallingedge) begin
         case (state)
             SLTransmitting: begin
@@ -125,7 +122,6 @@ always_ff @(posedge sysClk) begin
 
         rx_byte <= {rx_byte[6:0], MOSI_sync}; // Input
     end
-
 end
 
 logic load_tx_byte;
@@ -135,6 +131,9 @@ logic [1:0] delayCnt;
 logic data_loaded;
 
 always_ff @(posedge sysClk) begin
+    p_SClk_sync <= SClk_sync;
+    p_SS_sync <= SS_sync;
+
     // NOTE: This is a hack to simulate an MCP23S17 IO expander.
     if (data_cnt == 2'b00 && load_tx_byte) begin // or data_load_falling
         data_out <= 8'h79;
