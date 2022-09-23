@@ -91,13 +91,10 @@ always_ff @(posedge sysClk) begin
 
     if (SClk_fallingedge) begin
         case (state)
-
             SLTransmitting: begin
                 miso <= data_out[7];  // Output bit for rising edge
                 data_out <= data_out << 1;
                 $display("SLTransmitting (%b) [%d], %8h", data_out[7], bitCnt, data_out);
-
-                // bitCnt <= bitCnt - 3'b001;
             end
 
             default: begin
@@ -108,17 +105,8 @@ always_ff @(posedge sysClk) begin
     if (SClk_risingedge) begin
         case (state)
             SLIdle: begin
-                if (final_fall) begin
-                // if (bitCnt == 3'b110 && data_cnt == 2'b00) begin
-                    state <= SLTransmitting;
-                    rx_byte <= {rx_byte[6:0], MOSI_sync};  // Input
-                    $display("idle rising A");
-                end
-                if (bitCnt == 3'b110 && data_cnt > 2'b00) begin
-                    state <= SLTransmitting;
-                    rx_byte <= {rx_byte[6:0], MOSI_sync};  // Input
-                    $display("idle rising B");
-                end
+                state <= SLTransmitting;
+                $display("idle rising B");
             end
 
             SLTransmitting: begin
@@ -129,53 +117,44 @@ always_ff @(posedge sysClk) begin
                 end
                 else
                     bitCnt <= bitCnt - 3'b001;
-                
-                rx_byte <= {rx_byte[6:0], MOSI_sync}; // Input
             end
 
             default: begin
             end
         endcase
+
+        rx_byte <= {rx_byte[6:0], MOSI_sync}; // Input
     end
 
 end
 
-// At sync_fall or final_fall we setup data
-// each time we inc a count
-
-logic data_load;
-// logic p_data_load;
-assign data_load = ss_sync_fall | final_fall;
-
-// logic data_load_falling;
-// assign data_load_falling = p_data_load == 1'b1 && data_load == 1'b0;
+logic load_tx_byte;
+assign load_tx_byte = ss_sync_fall | final_fall;
 
 logic [1:0] delayCnt;
 logic data_loaded;
 
 always_ff @(posedge sysClk) begin
-    // p_data_load <= data_load;
-
     // NOTE: This is a hack to simulate an MCP23S17 IO expander.
-    if (data_cnt == 2'b00 && data_load) begin // or data_load_falling
+    if (data_cnt == 2'b00 && load_tx_byte) begin // or data_load_falling
         data_out <= 8'h79;
         data_cnt <= data_cnt + 1;
     end
-    if (data_cnt == 2'b01 && data_load) begin
+    if (data_cnt == 2'b01 && load_tx_byte) begin
         data_out <= 8'h99;
         data_cnt <= data_cnt + 1;
     end
-    if (data_cnt == 2'b10 && data_load) begin
+    if (data_cnt == 2'b10 && load_tx_byte) begin
         data_out <= 8'hE4;
         // data_out <= 8'h62;
         data_cnt <= data_cnt + 1;
     end
-    if (data_cnt == 2'b11 && data_load) begin
+    if (data_cnt == 2'b11 && load_tx_byte) begin
         data_out <= 8'hE4;
         data_cnt <= data_cnt + 1;
     end
 
-    if (data_load) begin
+    if (load_tx_byte) begin
         data_loaded <= 1'b1;
         bitCnt <= 3'b110;
     end

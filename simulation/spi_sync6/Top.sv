@@ -78,7 +78,7 @@ IOState next_state;
 logic reset_complete /*verilator public*/;
 
 logic [1:0] tx_byte_cnt;
-logic send_cnt;
+logic [2:0] send_cnt;
 
 always_comb begin
     next_state = SMBoot;
@@ -87,8 +87,6 @@ always_comb begin
     tx_wr = 1'b1;
     tx_byte = 8'h00;
     rx_rd = 1'b1;
-
-    // send = 1'b1;
 
     case (state)
         SMBoot: begin
@@ -105,7 +103,7 @@ always_comb begin
         SMIdle: begin
             next_state = IOIdle;
 
-            if (send_cnt == 1'b0)
+            if (send_cnt == 3'b000)
                 next_state = SMBeginWrite;
         end
 
@@ -141,7 +139,6 @@ always_comb begin
 
         SMSend: begin
             next_state = SMSend;
-            // send = 1'b0;
             if (io_complete) begin
                 next_state = IOIdle;
             end
@@ -161,22 +158,24 @@ always_ff @(posedge pllClk_i) begin
         end
 
         SMReset: begin
+            $display("SYNC SMReset");
             tx_byte_cnt <= 2'b00;
             tx_addr <= 4'b0000;
-            send_cnt <= 1'b0;
-        end
-
-        SMIdle: begin
-            send_cnt <= send_cnt + 1'b0;
+            send_cnt <= 3'b000;
         end
 
         SMWrite: begin
+            $display("SYNC SMWrite");
             tx_byte_cnt <= tx_byte_cnt + 2'b01;
             tx_addr <= tx_addr + 4'b0001;
+            send_cnt <= send_cnt + 3'b001;
         end
 
         SMSend: begin
-            send <= 1'b0;
+            // De-assert "send" when the last byte is sent.
+            if (~io_complete) begin
+                send <= 1'b0;
+            end
         end
 
         default: begin

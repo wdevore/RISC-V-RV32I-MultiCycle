@@ -142,10 +142,10 @@ assign rx_wr = ~(spiClk_falling && byte_sent);
 
 always_comb begin
     next_state = IOReset;
-    reset_complete = 1'b1;   // Default: Reset is complete
+    reset_complete = 1'b1;  // Default: Reset is complete
     tx_rd = 1'b1;
     spi_send = 1'b1;
-    io_complete = 1'b1;
+    io_complete = 1'b0;     // Default: IO Transfer not complete
     cs = 1'b1;
 
     case (state)
@@ -166,7 +166,6 @@ always_comb begin
             next_state = IOIdle;
 
             if (~send) begin
-                io_complete = 1'b0;
                 next_state = IOBegin;
             end
         end
@@ -186,7 +185,6 @@ always_comb begin
             next_state = IOSend;
             cs = 1'b0;
 
-            io_complete = 1'b0;
             // The byte is ready. Send data via SPI Master
             spi_send = 1'b0;
             
@@ -204,7 +202,6 @@ always_comb begin
             next_state = IOSend;
             cs = 1'b0;
 
-            io_complete = 1'b0;
             tx_rd = 1'b0;
         end
 
