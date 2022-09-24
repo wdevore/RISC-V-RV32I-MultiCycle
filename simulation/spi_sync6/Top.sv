@@ -14,8 +14,6 @@ module Top (
     input logic  pllClk_i      // System High Freq Clock (PLL)
 );
 
-logic [7:0] byte_from_master;
-
 logic spiClk_o;
 
 // -----------------------------------------------------------
@@ -58,16 +56,12 @@ IOModule io (
 // -----------------------------------------------------------------
 // Simulated target device
 // -----------------------------------------------------------------
-logic [7:0] data_to_master;
-
 SPISlave slave (
     .sysClk(pllClk_i),
     .spiClk(spiClk_o),
     .cs(cs),
     .mosi(mosi),
-    .miso(miso),
-    .tx_byte(data_to_master),
-    .rx_byte(byte_from_master)
+    .miso(miso)
 );
 
 // ------------------------------------------------------------------------
