@@ -1,0 +1,183 @@
+[*]
+[*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
+[*] Mon Sep 26 00:13:15 2022
+[*]
+[dumpfile] "/media/RAMDisk/waveform.vcd"
+[dumpfile_mtime] "Mon Sep 26 00:11:34 2022"
+[dumpfile_size] 163450
+[savefile] "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/spi_slave/waveform.gtkw"
+[timestart] 0
+[size] 2836 1715
+[pos] 11 361
+*-10.070967 5183 3350 1109 4312 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] TOP.
+[treeopen] TOP.Top.
+[treeopen] TOP.Top.io.
+[sst_width] 259
+[signals_width] 299
+[sst_expanded] 1
+[sst_vpaned_height] 522
+@28
+TOP.Top.pllClk_i
+@200
+-Top
+@28
+[color] 1
+TOP.Top.Rst_i_n
+TOP.Top.reset_complete
+[color] 1
+TOP.Top.send
+TOP.Top.io_complete
+@2024
+[color] 5
+^1 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/spi_sync4/sim_state_filter.txt
+TOP.Top.state[2:0]
+@22
+TOP.Top.tx_addr[3:0]
+@28
+TOP.Top.send_cnt[2:0]
+@22
+TOP.Top.tx_byte[7:0]
+@28
+TOP.Top.tx_byte_cnt[1:0]
+TOP.Top.tx_wr
+@200
+-IO Module
+@28
+[color] 2
+TOP.Top.io.mastSpiClk
+TOP.Top.io.reset
+TOP.Top.io.reset_complete
+[color] 3
+TOP.Top.io.spiClk
+@2024
+[color] 5
+^2 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/spi_sync4/io_state_filter.txt
+TOP.Top.io.state[2:0]
+@28
+TOP.Top.io.spi_send
+[color] 1
+TOP.Top.io.io_complete
+TOP.Top.io.tx_wr
+[color] 3
+TOP.Top.io.tx_rd
+@22
+TOP.Top.io.tx_addr_idx[3:0]
+TOP.Top.io.tx_str_addr[3:0]
+TOP.Top.io.tx_buf.mem[0][7:0]
+TOP.Top.io.tx_buf.mem[1][7:0]
+TOP.Top.io.tx_buf.mem[2][7:0]
+TOP.Top.io.tx_byte_cnt[3:0]
+TOP.Top.io.tx_addr[3:0]
+TOP.Top.io.byte_to_send[7:0]
+[color] 3
+TOP.Top.io.rx_byte[7:0]
+TOP.Top.io.byte_from_slave[7:0]
+@28
+TOP.Top.io.rx_rd
+TOP.Top.io.rx_wr
+@22
+[color] 2
+TOP.Top.io.rx_str_addr[3:0]
+[color] 7
+TOP.Top.io.rx_buf.mem[0][7:0]
+[color] 7
+TOP.Top.io.rx_buf.mem[1][7:0]
+[color] 7
+TOP.Top.io.rx_buf.mem[2][7:0]
+[color] 7
+TOP.Top.io.rx_buf.mem[3][7:0]
+@28
+TOP.Top.io.byte_sent
+TOP.Top.io.byte_sent_falling
+TOP.Top.io.io_complete
+TOP.Top.io.spiClk_falling
+@200
+-Master
+@28
+[color] 2
+TOP.Top.io.master.spiClk
+[color] 3
+TOP.Top.io.master.outSpiClk
+@2024
+^3 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/spi_sync4/master_state_filter.txt
+TOP.Top.io.master.state[2:0]
+@28
+TOP.Top.io.master.reset
+TOP.Top.io.master.tx_en
+@2028
+^4 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/spi_sync4/bitcount_filter.txt
+TOP.Top.io.master.bitCnt[2:0]
+@22
+TOP.Top.io.master.tx_byte[7:0]
+TOP.Top.io.master.tx_bits[7:0]
+@28
+[color] 3
+TOP.Top.io.master.mosi
+TOP.Top.io.master.miso
+@22
+[color] 3
+TOP.Top.io.byte_to_send[7:0]
+@28
+[color] 1
+TOP.Top.io.master.byte_tx_complete
+@22
+TOP.Top.io.master.rx_bits[7:0]
+TOP.Top.io.master.rx_byte[7:0]
+@200
+-Slave
+@28
+TOP.Top.slave.sysClk
+[color] 3
+TOP.Top.slave.SClk_sync
+TOP.Top.slave.SClk_risingedge
+TOP.Top.slave.SClk_fallingedge
+[color] 7
+TOP.Top.slave.final_fall
+TOP.Top.slave.cs
+TOP.Top.slave.SS_sync
+@2024
+[color] 5
+^5 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/spi_sync4/slave_state_filter.txt
+TOP.Top.slave.state[2:0]
+@2028
+^4 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/spi_sync4/bitcount_filter.txt
+TOP.Top.slave.bitCnt[2:0]
+@28
+[color] 1
+TOP.Top.slave.SS_sync
+[color] 7
+TOP.Top.slave.ss_sync_fall
+TOP.Top.slave.mosi
+TOP.Top.slave.MOSI_sync
+[color] 3
+TOP.Top.slave.miso
+@22
+[color] 2
+TOP.Top.slave.rx_byte[7:0]
+@28
+TOP.Top.slave.data_cnt[1:0]
+@c00022
+TOP.Top.slave.data_out[7:0]
+@28
+(0)TOP.Top.slave.data_out[7:0]
+(1)TOP.Top.slave.data_out[7:0]
+(2)TOP.Top.slave.data_out[7:0]
+(3)TOP.Top.slave.data_out[7:0]
+(4)TOP.Top.slave.data_out[7:0]
+(5)TOP.Top.slave.data_out[7:0]
+(6)TOP.Top.slave.data_out[7:0]
+(7)TOP.Top.slave.data_out[7:0]
+@1401200
+-group_end
+@22
+TOP.Top.slave.rx_buf[0][7:0]
+@23
+TOP.Top.slave.rx_buf[1][7:0]
+@22
+TOP.Top.slave.rx_buf[1][7:0]
+TOP.Top.slave.rx_buf[2][7:0]
+@28
+TOP.Top.slave.bufCnt[1:0]
+[pattern_trace] 1
+[pattern_trace] 0

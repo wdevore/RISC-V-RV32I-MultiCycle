@@ -1,0 +1,7 @@
+0 Boot
+1 Reset
+2 Idle
+3 Begin
+4 Send
+5 Next
+6 Complete
