@@ -64,10 +64,6 @@ SPISlave slave (
     .miso(miso)
 );
 
-// This would be the data the Pico sends as the second byte
-localparam [7:0] io_con = 8'h0A;
-localparam [7:0] io_dir = 8'h00;
-
 // ------------------------------------------------------------------------
 // State machine controlling simulation
 // ------------------------------------------------------------------------
@@ -121,13 +117,13 @@ always_comb begin
             // Write bytes to IO module
             case (tx_byte_cnt)
                 2'b00: begin
-                    tx_byte = 8'h41;
+                    tx_byte = 8'hA1;
                 end
                 2'b01: begin
-                    tx_byte = io_con; // or io_dir
+                    tx_byte = 8'h2A;
                 end
                 2'b10: begin
-                    tx_byte = 8'h00;
+                    tx_byte = 8'h32;
                 end
 
                 default: begin

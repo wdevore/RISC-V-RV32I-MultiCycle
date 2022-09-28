@@ -1,4 +1,0 @@
-0 Idle
-1 Begin
-2 Transmitting
-3 Complete

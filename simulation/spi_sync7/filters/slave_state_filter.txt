@@ -1,4 +1,4 @@
 0 Idle
 1 Begin
-2 Transmitting
+2 Transmit
 3 Shift

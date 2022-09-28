@@ -7,8 +7,9 @@
 - *spi_sync3* This --broken-- implements Mode 0 for single byte - full duplex
 - *spi_sync4* This...
 - *spi_sync5* This partially works but is still broken
-- **spi_sync6** This is **fully functional** Mode 0 with an IO module as well.
-- *spi_slave* This is a modified version of spi_sync6 for functioning as a slave to a pico. It is designed to test the fpga acting as a slave.
+- **spi_sync6** This is **fully functional** Mode 0 with an IO module as well **but only for simulation**. It has two improperly driven variables: *data_out* and *miso*.
+- **spi_sync7** This is modified for Synthesis using Muxes and is what sources *spi_slave*
+- *spi_slave* This is a modified version of spi_sync7 for functioning as a slave to a pico. It is designed to test the fpga acting as a slave.
 
 # Tasks
 0) Install DLA on desktop

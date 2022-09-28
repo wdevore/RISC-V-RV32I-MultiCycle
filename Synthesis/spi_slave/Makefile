@@ -1,62 +1,64 @@
-# Top module is the HDL component being tested.
-TOP = Top
+TOP_FILE = Top.sv
 
-# A cpp test-bench driver
-TEST_BENCH = \
-	SPI_tb.cpp
-
-TEMPLATE_HEADER = ../module.h
-
-# VERILATOR_PUBLICS = 
-# The vcd data for viewing
-GTKWAVE_SETTINGS = waveform
-
-# HDL modules
-MODULES_FILES =  \
+SUB_MODULES_FILES = \
 	definitions.sv \
 	Enums.sv \
-	SPIMaster.sv \
-	SPISlave_mcp23s17.sv \
-	../../modules/Memory.sv \
-	IOModule.sv \
-	Top.sv
-	
-# output build directory
-BUILD_DIR = /media/RAMDisk
+	CDCSynchron.sv \
+	SPISlave_mcp23s17.sv
 
-# Verilator is the simulator
-SIMULATION_TOOLCHAIN = /usr/local/bin/verilator
+MODULES_FILES = ${SUB_MODULES_FILES} ${TOP_FILE}
 
-# Typically you would use "lint", "compile"+"run"+"view", or just "go"
-# The other target/phonies are for reference and perhaps of some limited functionality.
+BUILD_BIN = /media/RAMDisk
+
+ICESTORM_TOOLCHAIN = /usr/local
+
+YOSYS_COMMAND = "synth_ice40 -blif ${BUILD_BIN}/chip.blif -json ${BUILD_BIN}/hardware.json -top Top"
+
+# The Blackice Nxt shows up as generally ACM0 or ACM1 depending on what other
+# devices you have connected. Be sure to run "dmesg -w" and see what
+# the device name is.
+
+# 2:1.0: ttyACM0: USB ACM device
+# new high-speed USB device number 42 using xhci_hcd
+# New USB device found, idVendor=2109, idProduct=2815, bcdDevice= 7.04
+# New USB device strings: Mfr=1, Product=2, SerialNumber=0
+# Product: USB2.0 Hub             
+# Manufacturer: VIA Labs, Inc.
+
+TARGET_PORT = /dev/ttyACM0
+
+PINS_CONSTRAINTS = ../IceLogicBus.pcf
+
 .PHONY: all
 
-lint:
-	@echo "############### Linting via Verilator ##################"
-	${SIMULATION_TOOLCHAIN} --lint-only -Wall ${MODULES_FILES} \
-	--top-module ${TOP}
+all: build route upload
 
-compile:
-	@echo "################## Compiling ##################"
-	cp ${TEST_BENCH} ${BUILD_DIR}
-	cp ${TEMPLATE_HEADER} ${BUILD_DIR}
-	${SIMULATION_TOOLCHAIN} --Mdir ${BUILD_DIR} \
-	--trace -cc \
-	--top-module ${TOP} \
-	--exe --build ${TEST_BENCH} ${MODULES_FILES} \
-	-DUSE_TX_DATA \
-	-DSIMULATE
+build: ${MODULES_FILES} ${PINS_CONSTRAINTS}
+	@echo "##### Building..."
+	${ICESTORM_TOOLCHAIN}/bin/yosys -p ${YOSYS_COMMAND} \
+	-l ${BUILD_BIN}/yo.log \
+	-q \
+	-defer \
+	${MODULES_FILES}
 
-run:
-	@echo "################## Simulating ##################"
-	${BUILD_DIR}/V${TOP}
+route: ${BUILD_BIN}/hardware.json
+	@echo "##### Routing..."
+	${ICESTORM_TOOLCHAIN}/bin/nextpnr-ice40 \
+	--hx8k \
+	-q \
+	--freq 64 \
+	--package bg121:4k \
+	--pcf ${PINS_CONSTRAINTS} \
+	-l ${BUILD_BIN}/next.log \
+	--json ${BUILD_BIN}/hardware.json \
+	--asc ${BUILD_BIN}/hardware.asc
 
-view:
-	@echo "################## Viewing ##################"
-	gtkwave ${BUILD_DIR}/waveform.vcd ${GTKWAVE_SETTINGS}.gtkw
-
-go: compile run view
-	@echo "################## Simulated via Verilator ##################"
-
-clean:
-	rm ${BUILD_DIR}/*
+time: ${BUILD_BIN}/hardware.bin
+	icetime -tmd hx8k ${BUILD_BIN}/hardware.asc
+	
+upload: ${BUILD_BIN}/hardware.asc
+	@echo "##### Packing..."
+	${ICESTORM_TOOLCHAIN}/bin/icepack ${BUILD_BIN}/hardware.asc ${BUILD_BIN}/hardware.bin
+	@echo "##### Uploading..."
+	stty -F ${TARGET_PORT} raw
+	cat ${BUILD_BIN}/hardware.bin >${TARGET_PORT}

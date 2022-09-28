@@ -97,13 +97,15 @@ Memory #(
 // ------------------------------------------------------------------------
 // SPI module
 // ------------------------------------------------------------------------
-logic [4:0] sysClkCnt;
+logic [3:0] sysClkCnt;
 
 logic mastSpiClk;
 logic p_mastSpiClk;
 
 // The SPI clock is fraction of the system clock.
-assign mastSpiClk = sysClkCnt[CLK_DIVIDER];
+// Instead of a divider I'm using a counter for a bit
+// more resolution.
+// assign mastSpiClk = sysClkCnt[CLK_DIVIDER];
 
 SPIMaster master (
     .sysClk(sysClk),
@@ -254,6 +256,10 @@ always_ff @(posedge sysClk) begin
     endcase
 
     sysClkCnt <= sysClkCnt + 4'b0001;
+    if (sysClkCnt == 4'b0101) begin
+        mastSpiClk <= ~mastSpiClk;
+        sysClkCnt <= 4'b0000;
+    end
 end
 
 endmodule

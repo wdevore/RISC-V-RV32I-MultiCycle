@@ -75,6 +75,7 @@ logic p_SS_sync;
 // A 3 bit counter to count the bits as they come in/out.
 logic [2:0] bitCnt;
 logic [7:0] data_out;
+assign data_out = state == SLIdle ? io_con_response << 1 : data_out << 1;
 
 // Detect the final falling edge of the SPI clock.
 logic final_fall;
@@ -89,7 +90,7 @@ always_ff @(posedge sysClk) begin
         case (state)
             SLTransmitting: begin
                 miso <= data_out[7];  // Output bit for next rising edge
-                data_out <= data_out << 1;
+                // data_out <= data_out << 1;
             end
 
             default: begin
@@ -99,7 +100,7 @@ always_ff @(posedge sysClk) begin
 
     if (SClk_risingedge) begin
         case (state)
-            // On the first rising edge of SPI clock transition
+            // On the first rising edge of SPI clock, transition
             // to transmission cycle.
             SLIdle: begin
                 state <= SLTransmitting;
@@ -125,65 +126,45 @@ end
 logic load_tx_byte;
 assign load_tx_byte = ss_sync_fall | final_fall;
 
-logic [1:0] delayCnt;
 logic data_loaded;
 logic [1:0] data_cnt;
+
+logic [7:0] rx_buf [2:0];
+logic [1:0] bufCnt;
+logic byte_sent;
+
+// Just some meaningless data that we can check from an actual Pico.
+localparam [7:0] io_con_response = 8'h28;
+localparam [7:0] io_dir_response = 8'hF9;
 
 always_ff @(posedge sysClk) begin
     p_SS_sync <= SS_sync;
 
-    // Note: The first bit needs to setup prior to entering
-    // SLTransmitting. Doesn't matter how you do it as long as
-    // it is done.
-    // You can either pre-shift data_out AND set
-    // miso to the MSB manually, and keep in mind this must happen at
-    // THE SAME TIME.
-    // For example:
-    //    data_out <= 8'h79 << 1;
-    //    miso <= 1'b0;
-    // OR
-    // You use an extra sysClk to setup miso and data_out.
-    // See Alt-B below
-    //
-    // If this was an actual hardware device, that device would sense
-    // the CS assertion and begin setting up the first bit *prior*
-    // to the first rising edge (i.e. the first rising edge) and
-    // hopefully early enough to let the data bit settle.
-
-    // NOTE: This is a hack to simulate an MCP23S17 IO expander.
-    if (data_cnt == 2'b00 && load_tx_byte) begin // or data_load_falling
-        data_out <= 8'h79 << 1;
-        miso <= 1'b0;
-        data_cnt <= data_cnt + 1;
-    end
-    if (data_cnt == 2'b01 && load_tx_byte) begin
-        data_out <= 8'h99 << 1;
-        miso <= 1'b1;
-        data_cnt <= data_cnt + 1;
-    end
-    if (data_cnt == 2'b10 && load_tx_byte) begin
-        data_out <= 8'hE4 << 1;
-        miso <= 1'b1;
-        // data_out <= 8'h62;
-        data_cnt <= data_cnt + 1;
+    if (final_fall) begin
+        // Capture byte
+        rx_buf[bufCnt] <= rx_byte;
+        bufCnt <= bufCnt + 2'b01;
     end
 
-    // Reset the counter at the start and end
+    // We only send a byte if we detect a certain 2 byte sequence.
+    // Sequence is: 0x41, 0x0A
+    if (bufCnt == 2'b10 & ~byte_sent) begin
+        if (rx_buf[0] == 8'h41 && rx_buf[1] == 8'h0A) begin
+            // data_out <= io_con_response << 1;
+            miso <= io_con_response[7];
+            byte_sent <= 1'b1;
+        end
+        if (rx_buf[0] == 8'h41 && rx_buf[1] == 8'h00) begin
+            // data_out <= io_dir_response << 1;
+            miso <= io_dir_response[7];
+            byte_sent <= 1'b1;
+        end
+    end
+
+
     if (load_tx_byte) begin
-        // data_loaded <= 1'b1;         // <- Alt-B
         bitCnt <= 3'b110;
     end
-
-    // ---- Alt-B ------------
-    // if (data_loaded) begin
-    //     delayCnt <= delayCnt + 1;
-    //     if (delayCnt == 2'b01) begin
-    //         delayCnt <= 0;
-    //         data_loaded <= 1'b0;
-    //         miso <= data_out[7];  // Output bit
-    //         data_out <= data_out << 1;
-    //     end
-    // end
 end
 
 endmodule
