@@ -1,7 +1,8 @@
 TOP_FILE = top.sv
 
-SUB_MODULES_FILES = Decoder.sv \
-	SevenSeg.sv \
+SUB_MODULES_FILES = \
+	../Modules/Decoder.sv \
+	../Modules/SevenSeg.sv \
 	LedBlade.sv
 
 MODULES_FILES = ${SUB_MODULES_FILES} ${TOP_FILE}

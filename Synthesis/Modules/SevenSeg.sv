@@ -2,7 +2,7 @@
 
 module SevenSeg (
 	input  logic clk,
-	input  logic [3:0] digitL, // 0x0 -> 0xf
+	input  logic [3:0] digitL, // High value 0x0 -> 0xf
 	input  logic [3:0] digitM, // 0x0 -> 0xf
 	input  logic [3:0] digitR, // 0x0 -> 0xf
 	output logic [11:0] tile1
@@ -37,15 +37,15 @@ always_ff @(posedge clk) begin
 				scan_counter[scan_rate] <= 0;
 				case (seg_scan)
 					3'b110: begin
-						bcd <= digitM;
+						bcd <= digitL;
 						seg_scan <= 3'b101;
 					end
 					3'b101: begin
-						bcd <= digitR;
+						bcd <= digitM;
 						seg_scan <= 3'b011;
 					end
 					3'b011: begin
-						bcd <= digitL;
+						bcd <= digitR;
 						seg_scan <= 3'b110;
 					end
 				endcase
@@ -63,10 +63,10 @@ assign tile1[9]  = segs[5];		// top
 assign tile1[11] = segs[6];		// top left
 
 assign tile1[8] = 1'b1;		// decimal point
-assign tile1[10] = 1'b1; // ??
+assign tile1[10] = 1'b1;    // ??
 
 assign tile1[0] = seg_scan[0];		// Left digit
-assign tile1[1] = seg_scan[1];		// Middle digit
-assign tile1[2] = seg_scan[2];		// Right digit
+assign tile1[2] = seg_scan[1];		// Middle digit
+assign tile1[1] = seg_scan[2];		// Right digit
 
 endmodule

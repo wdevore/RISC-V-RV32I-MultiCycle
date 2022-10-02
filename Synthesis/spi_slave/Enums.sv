@@ -3,10 +3,12 @@
 
 
 typedef enum logic [2:0] {
-    // SLReset,
-    SLIdle,           // Waiting to transmit
-    SLBegin,
-    SLTransmitting,   // Sending bits
-    SLComplete
+    SLIdle,       // 000
+    SLTransmit,   // 001
+    SLShift,// 010
+    SLLoad,// 011
+    SLLoad2,// 100
+    SLCSLoad,// 101
+    SLCSLoad2// 110
 } SlaveState /*verilator public*/; 
 

@@ -4,6 +4,9 @@ SUB_MODULES_FILES = \
 	definitions.sv \
 	Enums.sv \
 	CDCSynchron.sv \
+	../../modules/Mux4.sv \
+	../Modules/Decoder.sv \
+	../Modules/SevenSeg.sv \
 	SPISlave_mcp23s17.sv
 
 MODULES_FILES = ${SUB_MODULES_FILES} ${TOP_FILE}
