@@ -1,0 +1,33 @@
+[*]
+[*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
+[*] Mon Oct  3 03:01:44 2022
+[*]
+[dumpfile] "/media/RAMDisk/waveform.vcd"
+[dumpfile_mtime] "Mon Oct  3 03:01:28 2022"
+[dumpfile_size] 7103
+[savefile] "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/para_load_shift_reg/waveform.gtkw"
+[timestart] 112
+[size] 1727 723
+[pos] 304 11
+*-6.183164 131 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] TOP.
+[sst_width] 221
+[signals_width] 208
+[sst_expanded] 1
+[sst_vpaned_height] 188
+@28
+[color] 2
+TOP.ParallelLoadShiftReg.clk
+TOP.ParallelLoadShiftReg.reset
+TOP.ParallelLoadShiftReg.load
+@29
+[color] 3
+TOP.shift
+@22
+TOP.ParallelLoadShiftReg.data_in[7:0]
+TOP.ParallelLoadShiftReg.q[7:0]
+@28
+[color] 1
+TOP.ParallelLoadShiftReg.data_out
+[pattern_trace] 1
+[pattern_trace] 0

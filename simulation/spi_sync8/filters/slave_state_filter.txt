@@ -1,0 +1,7 @@
+0 SLIdle
+1 SLTransmit
+2 SLShift
+3 SLLoad
+4 SLLoad2
+5 SLCSLoad
+6 SLCSLoad2

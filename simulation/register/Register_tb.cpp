@@ -30,9 +30,10 @@ int main(int argc, char *argv[])
     VRegister___024root *top = vcore->rootp;
 
     // Allow any initial blocks to execute
+    top->ld_i = 1;
     tb->eval();
 
-    for (size_t i = 0; i < 50; i++)
+    for (size_t i = 0; i < 500; i++)
     {
         // ------------------ 0A --------------------------
         if (timeStep == 10)
@@ -41,19 +42,19 @@ int main(int argc, char *argv[])
             top->data_i = 0x000000A0;
         }
 
-        if (timeStep == 20)
+        if (timeStep == 120)
         {
             top->ld_i = 0; // enable loading
         }
 
         // ------------------ 0B --------------------------
-        if (timeStep == 30)
+        if (timeStep == 230)
         {
             top->ld_i = 1; // disable loading
             top->data_i = 0x000000B0;
         }
 
-        if (timeStep == 40)
+        if (timeStep == 320)
         {
             top->ld_i = 0; // enable loading
         }

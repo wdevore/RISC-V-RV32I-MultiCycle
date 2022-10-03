@@ -4,6 +4,7 @@ SUB_MODULES_FILES = \
 	definitions.sv \
 	Enums.sv \
 	CDCSynchron.sv \
+	../../modules/ParallelLoadShiftReg.sv \
 	../../modules/Mux4.sv \
 	../Modules/Decoder.sv \
 	../Modules/SevenSeg.sv \

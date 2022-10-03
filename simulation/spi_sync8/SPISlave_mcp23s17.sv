@@ -16,13 +16,12 @@ module SPISlave
     input  logic spiClk,         // SPI Clock input from Master
     input  logic cs,             // /CS
     input  logic mosi,           // output (1 bit at a time)
-    output logic miso,
-
-    output logic [2:0] state
+    output logic miso
 );
 
-// logic [2:0] state;
+/*verilator public_module*/
 
+SlaveState state /*verilator public*/;
 logic [7:0] rx_byte;
 
 // ----------------------------------------------------
@@ -237,7 +236,6 @@ logic pattern2;
 assign pattern1 = (rx_buf[0] == 8'h41 && rx_buf[1] == 8'h0A);
 assign pattern2 = (rx_buf[0] == 8'h41 && rx_buf[1] == 8'h0F);
 // assign pattern3 = (rx_buf[0] == 8'h41 && rx_buf[1] == 8'h00);
-
 
 endmodule
 
