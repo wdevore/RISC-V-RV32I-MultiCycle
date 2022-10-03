@@ -11,6 +11,9 @@
 - **spi_sync7** This is modified for Synthesis using Muxes and is what sources *spi_slave*
 - *spi_slave* This is a modified version of spi_sync7 for functioning as a slave to a pico. It is designed to test the fpga acting as a slave.
 
+Synthesis:
+- *spi_slave* is a working version. The simulations were simulating a digital implementation of which some of the logic is not syntheziable. So this version has tweaks that make it work correctly on an actual device.
+
 # Tasks
 0) Install DLA on desktop
 1) Code a working microcontroller SPI master to 4 digit SPI display.

@@ -18,19 +18,37 @@ module SPISlave
     input  logic mosi,           // output (1 bit at a time)
     output logic miso,
 
-    output logic [2:0] state
+    output logic [7:0] rx_byte,
+    output logic [1:0] bufCnt,
+    output logic [7:0] rx_bufI,
+    output logic byte_sent,
+    output logic final_fall,
+    output logic SClk_fallingedge,
+    output logic SClk_risingedge,
+    output logic SClk_sync,
+    output logic MOSI_sync,
+    output logic reset_cnt,
+    output logic [2:0] state,
+    output logic [1:0] data_select,
+    output logic bitFlag,
+    output logic [1:0] current_data_select,
+    output logic cds_loaded,
+    output logic pattern1,
+    output logic [7:0] data_out
+    
 );
 
-//logic [2:0] state;
+/*verilator public_module*/
 
-logic [7:0] rx_byte;
+SlaveState state /*verilator public*/;
+// logic [7:0] rx_byte;
 
 // ----------------------------------------------------
 // CDC Sync-ed signal for SClk (from master)
 // ----------------------------------------------------
-logic SClk_risingedge;
-logic SClk_fallingedge;
-logic SClk_sync;            // Not used
+// logic SClk_risingedge;
+// logic SClk_fallingedge;
+// logic SClk_sync;            // Not used
 
 CDCSynchron SPI_SClk_Sync (
     .sysClk_i(sysClk),
@@ -45,7 +63,7 @@ CDCSynchron SPI_SClk_Sync (
 // ----------------------------------------------------
 logic MOSI_risingedge;
 logic MOSI_fallingedge;
-logic MOSI_sync;
+// logic MOSI_sync;
 
 CDCSynchron SPI_MOSI_Sync (
     .sysClk_i(sysClk),
@@ -72,11 +90,10 @@ CDCSynchron SPI_SS_Sync (
 
 // A 3 bit counter to count the bits as they come in/out.
 logic [2:0] bitCnt;
-logic [7:0] data_out;
-logic [1:0] bufCnt;
+// logic [7:0] data_out;
 
 // Detect the final falling edge of the SPI clock.
-logic final_fall;
+// logic final_fall;
 assign final_fall = state == SLIdle && SClk_fallingedge;
 
 always_ff @(posedge sysClk) begin
@@ -84,7 +101,7 @@ always_ff @(posedge sysClk) begin
         bufCnt <= 0;
         rx_buf[0] <= 8'hFF;
         rx_buf[1] <= 8'hFF;
-        state <= SLCSLoad;
+        state <= SLCSLoad;//SLIdle;
     end
 
     if (state == SLCSLoad) begin
@@ -151,10 +168,10 @@ always_ff @(posedge sysClk) begin
         data_select <= 1;
     end
 
-    // if (pattern3 && state == SLIdle) begin
-    //     state <= SLLoad;
-    //     data_select <= 2;
-    // end
+    if (pattern3 && state == SLIdle) begin
+        state <= SLLoad;
+        data_select <= 2;
+    end
 
     // Setup response
     if (state == SLLoad) begin
@@ -183,8 +200,6 @@ always_ff @(posedge sysClk) begin
 end
 
 logic [7:0] data_out_val;
-logic [1:0] data_select;
-
 Mux4 #(.DATA_WIDTH(8)) data_out_mux
 (
     .select_i(data_select),
@@ -223,6 +238,10 @@ logic pattern3;
 assign pattern1 = (rx_buf[0] == 8'h41 && rx_buf[1] == 8'h0A);
 assign pattern2 = (rx_buf[0] == 8'h41 && rx_buf[1] == 8'h0F);
 assign pattern3 = (rx_buf[0] == 8'h41 && rx_buf[1] == 8'h00);
+
+logic cds_loaded;
+
+assign rx_bufI = rx_buf[0];
 
 endmodule
 
