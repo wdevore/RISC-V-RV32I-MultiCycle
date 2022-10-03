@@ -21,7 +21,14 @@ module SPISlave
 
 /*verilator public_module*/
 
-SlaveState state /*verilator public*/;
+// There seems to be a bug in Verilator because I can't expose
+// the signal AND supply an initializer, for example this won't work:
+// SlaveState state = SLIdle /*verilator public*/;
+// But it does without the initializer:
+// SlaveState state /*verilator public*/;
+// Not sure how to get around this
+// SlaveState state = SLIdle /*verilator public*/;
+SlaveState state = SLIdle;
 logic [7:0] rx_byte;
 
 // ----------------------------------------------------
