@@ -175,10 +175,11 @@ always_ff @(posedge sysClk) begin
     end
 
     // Optional 3rd pattern
-    // if (pattern3 && state == SLIdle) begin
-    //     state <= SLLoad;
-    //     data_select <= 2;
-    // end
+    if (pattern3 && state == SLIdle) begin
+        state <= SLLoad;
+        data_select <= 2;
+        load_data <= 1'b0; // Enable load
+    end
 
     // Setup response
     if (state == SLLoad) begin
@@ -239,10 +240,10 @@ localparam [7:0] io_ipo_response = 8'hE4;
 
 logic pattern1;
 logic pattern2;
-// logic pattern3;
+logic pattern3;
 assign pattern1 = (rx_buf[0] == 8'h41 && rx_buf[1] == 8'h0A);
 assign pattern2 = (rx_buf[0] == 8'h41 && rx_buf[1] == 8'h0F);
-// assign pattern3 = (rx_buf[0] == 8'h41 && rx_buf[1] == 8'h00);
+assign pattern3 = (rx_buf[0] == 8'h41 && rx_buf[1] == 8'h00);
 
 endmodule
 
