@@ -16,9 +16,7 @@ module SPISlave
     input  logic spiClk,         // SPI Clock input from Master
     input  logic cs,             // /CS
     input  logic mosi,           // output (1 bit at a time)
-    output logic miso,
-
-    // output logic [2:0] state
+    output logic miso
 );
 
 // The initializer is required as per this bug:
