@@ -18,10 +18,14 @@ module SPISlave
     input  logic mosi,           // output (1 bit at a time)
     output logic miso,
 
-    output logic [2:0] state
+    // output logic [2:0] state
 );
 
-// logic [2:0] state;
+// The initializer is required as per this bug:
+// https://github.com/YosysHQ/yosys/issues/188
+// Without it you need to hack it by routing "state" to
+// a port OR use a reset sequence on boot up.
+logic [2:0] state = 0;
 
 logic [7:0] rx_byte;
 

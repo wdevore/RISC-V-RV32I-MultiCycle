@@ -77,7 +77,7 @@ SPISlave slave (
     .cs(pm6a[2]),
     .miso(pm6b[0]),
 
-    .state(state)
+    // .state(state)
 
 );
 
