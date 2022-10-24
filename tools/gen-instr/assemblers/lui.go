@@ -15,10 +15,10 @@ func Lui(json map[string]interface{}) (macCode string, err error) {
 
 	fields := rxpr.FindStringSubmatch(ass)
 	rd := fields[2]
-	fmt.Println("Destination register: ", rd)
+	// fmt.Println("Destination register: ", rd)
 
 	imm := fields[3]
-	fmt.Println("Immediate: ", imm)
+	// fmt.Println("Immediate: ", imm)
 
 	immInt, err := utils.StringHexToInt(imm)
 	if err != nil {
@@ -83,10 +83,10 @@ func Lui(json map[string]interface{}) (macCode string, err error) {
 
 	instr := utils.BinaryArrayToString(instruction, true)
 
-	fmt.Println("------ imm --------------------- rd --- opcode")
-	fmt.Printf("    %v       %v    %v\n", instr[0:20], instr[20:25], instr[25:32])
+	// fmt.Println("------ imm --------------------- rd --- opcode")
+	// fmt.Printf("    %v       %v    %v\n", instr[0:20], instr[20:25], instr[25:32])
 	// fmt.Println("Instruction Bin: ", instr)
-	fmt.Printf("Nibbles: %v %v %v %v %v %v %v %v\n", instr[0:4], instr[4:8], instr[8:12], instr[12:16], instr[16:20], instr[20:24], instr[24:28], instr[28:32])
+	// fmt.Printf("Nibbles: %v %v %v %v %v %v %v %v\n", instr[0:4], instr[4:8], instr[8:12], instr[12:16], instr[16:20], instr[20:24], instr[24:28], instr[28:32])
 
 	return utils.BinaryStringToHexString(instr, false), nil
 }

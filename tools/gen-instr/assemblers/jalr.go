@@ -21,18 +21,19 @@ func GetJalrFields(ass string) []string {
 
 // Example: jalr x0, jumpto(x1)
 func Jalr(json map[string]interface{}) (macCode string, err error) {
+	fmt.Println("### jalr ###")
 	ass := fmt.Sprintf("%s", json["Assembly"])
 
 	fields := GetJalrFields(ass)
 
 	rd := fields[2]
-	fmt.Println("Destination register: ", rd)
+	// fmt.Println("Destination register: ", rd)
 
 	rs1 := fields[4]
-	fmt.Println("Rs1 register: ", rs1)
+	// fmt.Println("Rs1 register: ", rs1)
 
 	label := fields[3]
-	fmt.Println("Offset label: ", label)
+	// fmt.Println("Offset label: ", label)
 
 	offset := ""
 	if strings.Contains(label, "0x") {
@@ -45,7 +46,7 @@ func Jalr(json map[string]interface{}) (macCode string, err error) {
 			return "", err
 		}
 	}
-	fmt.Println("Offset: ", offset)
+	// fmt.Println("Offset: ", offset)
 
 	offsetInt, err := utils.StringHexToInt(offset)
 	if err != nil {
@@ -129,10 +130,10 @@ func Jalr(json map[string]interface{}) (macCode string, err error) {
 
 	instr := utils.BinaryArrayToString(instruction, true)
 
-	fmt.Println("------ imm -------- rs1 ----- funct3 ----- rd --- opcode")
-	fmt.Printf("    %v   %v       %v       %v    %v\n", instr[0:12], instr[12:17], instr[17:20], instr[20:25], instr[25:32])
+	// fmt.Println("------ imm -------- rs1 ----- funct3 ----- rd --- opcode")
+	// fmt.Printf("    %v   %v       %v       %v    %v\n", instr[0:12], instr[12:17], instr[17:20], instr[20:25], instr[25:32])
 	// fmt.Println("Instruction Bin: ", instr)
-	fmt.Printf("Nibbles: %v %v %v %v %v %v %v %v\n", instr[0:4], instr[4:8], instr[8:12], instr[12:16], instr[16:20], instr[20:24], instr[24:28], instr[28:32])
+	// fmt.Printf("Nibbles: %v %v %v %v %v %v %v %v\n", instr[0:4], instr[4:8], instr[8:12], instr[12:16], instr[16:20], instr[20:24], instr[24:28], instr[28:32])
 
 	return utils.BinaryStringToHexString(instr, false), nil
 }

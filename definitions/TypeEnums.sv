@@ -26,7 +26,7 @@ typedef enum logic [4:0] {
     Fetch,
     Decode,
     Execute,
-    Halt        // Not technically a RISC-V state
+    Halt        // Not technically a RISC-V state,
 } MatrixState /*verilator public*/; 
 
 typedef enum logic [`IRStateSize-1:0] {

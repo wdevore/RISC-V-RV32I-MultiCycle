@@ -10,7 +10,6 @@ Data1: @
     d: 0000000C
     d: 0000000B
     d: 0000000A
-
 Boot: @040
     lw x1, @Data+8(x0)        // Disable Global interrupts
     csrrc x0, mstatus, x1

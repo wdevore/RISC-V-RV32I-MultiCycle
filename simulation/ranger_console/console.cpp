@@ -259,7 +259,7 @@ Command Console::handleInput()
         {
             cmd = Command::EnableFree;
             std::vector<std::string> fields = split_string(keyBuffer);
-            arg1 = fields.size() > 1 ? fields[1] : "off";
+            arg1 = fields.size() > 1 ? fields[1] : "on";
         }
         else if (keyBuffer.rfind("stp", 0) == 0)
         {
@@ -551,6 +551,9 @@ void Console::showCPUState(int row, int col, std::string label, int value)
     case 3:
         printw("Execute");
         break;
+    case 4:
+        printw("Halt");
+        break;
     default:
         break;
     }
@@ -666,9 +669,30 @@ void Console::showIRState(int row, int col, std::string label, int value)
         printw("ITECall");
         break;
     case 25:
-        printw("PreFetch");
+        printw("ITCSR");
         break;
     case 26:
+        printw("ITCSRLd");
+        break;
+    case 27:
+        printw("IRQ0");
+        break;
+    case 28:
+        printw("IRQ1");
+        break;
+    case 29:
+        printw("IRQ2");
+        break;
+    case 30:
+        printw("ITMret");
+        break;
+    case 31:
+        printw("ITMretClr");
+        break;
+    case 32:
+        printw("PreFetch");
+        break;
+    case 33:
         printw("IRUnknown");
         break;
     default:

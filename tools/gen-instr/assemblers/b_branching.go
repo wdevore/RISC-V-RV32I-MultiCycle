@@ -26,18 +26,19 @@ func BtypeBranch(json map[string]interface{}) (macCode string, err error) {
 	fields := GetBranchFields(ass)
 
 	instru := fields[1]
+	fmt.Println("### ", instru, " ###")
 
 	rs1 := fields[2]
-	fmt.Println("Rs1 register: ", rs1)
+	// fmt.Println("Rs1 register: ", rs1)
 
 	rs2 := fields[3]
-	fmt.Println("Rs2 register: ", rs2)
+	// fmt.Println("Rs2 register: ", rs2)
 
 	label := fields[4]
-	fmt.Println("Offset label: ", label)
+	// fmt.Println("Offset label: ", label)
 
 	pc := fmt.Sprintf("%s", json["PC"])
-	fmt.Println("PC: ", pc)
+	// fmt.Println("PC: ", pc)
 
 	pcInt, err := utils.StringHexToInt(pc)
 	if err != nil {
@@ -59,14 +60,14 @@ func BtypeBranch(json map[string]interface{}) (macCode string, err error) {
 
 	delta := targetInt - pcInt
 
-	bs := utils.IntToBinaryString(delta)
-	binArr := utils.BinaryStringToArray(bs)
+	// bs := utils.IntToBinaryString(delta)
+	// binArr := utils.BinaryStringToArray(bs)
 
 	deltaStr := ""
 	deltaStr = utils.IntToBinaryString(delta)
 
-	out := fmt.Sprintf("Delta d(%d) : %s : b%s", delta, utils.BinaryArrayToHexString(binArr, true), deltaStr)
-	fmt.Println(out)
+	// out := fmt.Sprintf("Delta d(%d) : %s : b%s", delta, utils.BinaryArrayToHexString(binArr, true), deltaStr)
+	// fmt.Println(out)
 
 	produced := utils.BinaryStringToArray(deltaStr)
 
@@ -161,10 +162,10 @@ func BtypeBranch(json map[string]interface{}) (macCode string, err error) {
 
 	instr := utils.BinaryArrayToString(instruction, true)
 
-	fmt.Println("  imm 12|10:5 | rs2  |  rs1  | funct3 | imm 4:1|11 | opcode")
-	fmt.Printf("   %v     %v    %v   %v       %v      %v\n", instr[0:7], instr[7:12], instr[12:17], instr[17:20], instr[20:25], instr[25:32])
+	// fmt.Println("  imm 12|10:5 | rs2  |  rs1  | funct3 | imm 4:1|11 | opcode")
+	// fmt.Printf("   %v     %v    %v   %v       %v      %v\n", instr[0:7], instr[7:12], instr[12:17], instr[17:20], instr[20:25], instr[25:32])
 	// fmt.Println("Instruction Bin: ", instr)
-	fmt.Printf("Nibbles: %v %v %v %v %v %v %v %v\n", instr[0:4], instr[4:8], instr[8:12], instr[12:16], instr[16:20], instr[20:24], instr[24:28], instr[28:32])
+	// fmt.Printf("Nibbles: %v %v %v %v %v %v %v %v\n", instr[0:4], instr[4:8], instr[8:12], instr[12:16], instr[16:20], instr[20:24], instr[24:28], instr[28:32])
 
 	return utils.BinaryStringToHexString(instr, false), nil
 }

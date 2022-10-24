@@ -165,8 +165,10 @@ logic [DATA_WIDTH-1:0] rd_data;     // RegFile data
 localparam IMM_SIZE = 5;
 logic [4:0] immediate = ir_i[19:15];  // Immediate
 
-logic irqDetected;
-logic irqSustain;
+logic irq_pending = 0;
+logic interrupt_in_progress = 0;
+logic interrupt_triggered = 0;
+
 logic writeCSR;
 logic [11:0] funct12 = ir_i[31:20];  // Immediate
 
@@ -181,7 +183,7 @@ initial begin
     ir_state = ITLoad;
 
     mstatus = 32'b0000_0000_0000_0000_0000_0000_0000_0000;
-    // mie = 32'b0000_0000_0000_0101_0000_1000_0101_0101; // 32'h0005_0055
+    // mie = 32'b0000_0000_0000_0101_0000_0000_0101_0101; // 32'h0005_0055
     mie = 32'b0000_0000_0000_0000_0000_0000_0000_0000;
 end
 
@@ -240,7 +242,7 @@ always_comb begin
     // -------------------------------------------------
     rsa_ld = RgLdEnabled;
 
-    irqDetected = 1'b0;
+    irq_pending = 1'b0;
     isCSRInstr = 1'b0;
     rdIsX0 = 1'b0;
     rs1IsX0 = 1'b0;
@@ -396,7 +398,7 @@ always_comb begin
 
         Decode: begin
             // IR is now loaded with an instruction.
-
+            // PC Prior is loaded with PC.
             next_state = Execute;
 
             // Take advantage of Decode to increment PC (PC+4). This is the
@@ -786,7 +788,7 @@ always_comb begin
                     // ------ Optimization ------
                     // If the destination register is x0 then
                     // we don't need a writeback cycle so just
-                    // transition to prefetch and not fetch because
+                    // transition to prefetch because
                     // we need the extra cycle.
                     if (dstRg == 5'b00000) begin
                         next_ir_state = PreFetch;
@@ -942,11 +944,15 @@ always_comb begin
                     // 1) PC <== Mepc. Mask bits [1:0]=0 for alignment
                     
                     rd_data = {mepc[31:2], 2'b00};  // IALIGN = 1 = 32bits
+                    // rd_data = mepc[31:0];
                     pc_src = PCSrcRDCSR;
                     pc_ld = RgLdEnabled;
 
-                    // 2) Restore: mstatus.MIE <== mstatus.MPIE
+                    next_ir_state = ITMretClr;
+                end
 
+                ITMretClr: begin
+                    // 2) Restore: mstatus.MIE <== mstatus.MPIE
                     // Modify a copy of CSR
                     csr_data = mstatus;
                     writeCSR = 1'b1;    // Enable writing to CSR
@@ -956,30 +962,18 @@ always_comb begin
                     // Clear copy
                     csr_data[`CSR_Mstatus_MPIE] = 1'b0;
                     csr_addr = Mstatus;
-
-                    next_ir_state = ITMretClr;
-                end
-
-                ITMretClr: begin
-                    // Clear IRQ pending bit
-
-                    csr_data = mip;
-                    csr_data[`CSR_Mip_MEIE] = 1'b0;
-                    writeCSR = 1'b1;    // Enable writing to CSR
-                    csr_addr = Mip;
-
                     next_ir_state = PreFetch;
                 end
 
+                // PreFetch is checked even in a Trap handler.
                 PreFetch: begin
-                    // Check if an interrupt occurred and that we can honor it.
-                    //            Global enable                 M-mode enable                Pending interrupts
-                    irqDetected = mstatus[`CSR_Mstatus_MIE] && mie[`CSR_Mie_MEIE] && mip[`CSR_Mip_MEIE];
+                    // Check if an interrupt occurred and if we can honor it.
+                    //                Global enable            M-mode enable       Pending interrupts
+                    irq_pending = mstatus[`CSR_Mstatus_MIE] & mie[`CSR_Mie_MEIE] & mip[`CSR_Mip_MEIE];
 
-                    if (irqDetected) begin
+                    if (irq_pending & ~interrupt_in_progress) begin
                         // Okay, there is an interrupt pending
                         // $display("<<**Interrupt detected**>>");
-                        irqSustain = 1'b1;  // Holding signal across states
                         writeCSR = 1'b1;    // Enable writing to CSR
 
                         // Modify a copy of CSR
@@ -994,30 +988,18 @@ always_comb begin
                         next_ir_state = IRQ0;
                     end
                     else begin
-                        // Because we disabled IRQs above we won't detect
-                        // them any longer. irqSustain tracks that an IRQ occurred
-                        // such that we can sustain the signal for setup/hold times.
-                        if (irqSustain) begin
-                            writeCSR = 1'b1;
-                            next_ir_state = IRQ0;
-                        end
-                        else begin
-                            // Because an interrupt did not occur we can go
-                            // straight into Fetch.
-                            mem_rd = 1'b0;
-                            next_state = Fetch;
-                        end
+                        mem_rd = 1'b0;
+                        next_state = Fetch;
                     end
                 end
 
                 IRQ0: begin
                     // Mepc <== PC
-                    csr_data = pc_i;
+                    csr_data = pc_i; // PC_prior is not needed
+
                     // Select CSR address
                     csr_addr = Mepc;
                     writeCSR = 1'b1;    // Enable writing to CSR
-
-                    irqSustain = 1'b0;
 
                     next_ir_state = IRQ1;
                 end
@@ -1056,7 +1038,11 @@ end
 // Sequence control (sync). Move to the next state on the
 // rising edge of the next clock.
 // -------------------------------------------------------------
-always_ff @(posedge clk_i) begin
+// always_ff @(negedge clk_i, negedge irq_i) begin      // NOTE! This is mixing domains **BAD IDEA**
+always_ff @(negedge clk_i) begin
+    // ----------------------------------------------------
+    // The core state control logic
+    // ----------------------------------------------------
     if (!reset_i) begin
         state <= Reset;
         vector_state <= Sync0;
@@ -1071,9 +1057,10 @@ always_ff @(posedge clk_i) begin
             vector_state <= next_vector_state;
         end
     end
-end
 
-always_ff @(negedge clk_i, negedge irq_i) begin
+    // ----------------------------------------------------
+    // CSRs
+    // ----------------------------------------------------
     if (writeCSR) begin
         // Write with side-effects
         case (csr_addr)
@@ -1087,18 +1074,70 @@ always_ff @(negedge clk_i, negedge irq_i) begin
         endcase
     end
 
+    // ----------------------------------------------------
+    // Interrupts
+    // ----------------------------------------------------
     // Mip is a "hardware" based register. It has a bit (MEIP)
-    // directly connected to hardware IRQ IO.
+    // directly associated to hardware IRQ IO.
     //                          |``````MEIP
     //                          v
     // 0000_0000_0000_0000_0000_1000_0000_0000
-    if (~irq_i && ready) begin
-        // Set pending bit in Mip register
-        // Note: You can clear the bit using CSRRC with 0x000000800
+    // We don't recognize the interrupt if an interrupt is pending or in progress.
+    if (irq_hold_pending) begin
         mip[`CSR_Mip_MEIE] <= 1'b1;
+        // Causing a falling-edge sends a signal to the IRQ domain to reset the
+        // holding signal.
+        irq_pending_reset <= 1'b0;
+    end
 
-        // Indicate what the cause is: Machine external interrupt
-        // csrs[`CSR_Mcause][`CSR_Mcause_MEI] = 1'b1;
+    case (state)
+        Reset: begin
+            interrupt_in_progress <= 1'b0;  // Default to allowing an interrupt to start.
+            // Enable M-mode interrupts ---------v
+            mie <= 32'b0000_0000_0000_0000_0000_0100_0000_0000;
+            irq_pending_reset <= 1'b1;
+        end
+    
+        Execute: begin
+            case (ir_state)
+                PreFetch: begin
+                    if (irq_pending & ~interrupt_in_progress) begin
+                        // Signal for the interrupt flow has stopped.
+                        interrupt_in_progress <= 1'b1;
+                    end
+                end
+
+                ITMretClr: begin
+                    // Allow the interrupt flow to start.
+                    interrupt_in_progress <= 1'b0;
+                    mip[`CSR_Mip_MEIE] <= 1'b0;
+                    irq_pending_reset <= 1'b1;
+                end
+
+                default:
+                    begin end
+            endcase
+        end
+
+        default:
+            begin end
+    endcase
+end
+
+// This variable allows the main "clk" domain to signal
+// The IRQ domain.
+logic irq_pending_reset = 1;
+logic irq_hold_pending = 0; // The signal watched by the "clk" domain.
+
+// A seperate domain from the Interrupt signal.
+always_ff @(negedge irq_i, negedge irq_pending_reset) begin
+    if (~irq_i & ready & ~irq_hold_pending) begin
+        // An interrupt is now pending as being serviced.
+        irq_hold_pending <= 1'b1;
+    end
+
+    if (~irq_pending_reset) begin
+        irq_hold_pending <= 1'b0;
     end
 end
 
@@ -1126,8 +1165,6 @@ assign rsa_ld_o = rsa_ld;
 assign rd_data_o = rd_data;
 
 `ifdef DEBUG_MODE
-// assign out_ld_o = out_ld;
-// assign out_sel_o = out_sel;
 assign ready_o = ready;
 assign halt_o = halt;
 `endif

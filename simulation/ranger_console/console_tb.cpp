@@ -290,7 +290,7 @@ int main(int argc, char *argv[])
             }
 
             con->showMemory(2, 70, mdl.fromAddr, 1024, mdl.bram->mem);
-            con->showCSRs(2, 100, mdl.cm);
+            con->showCSRs(2, 110, mdl.cm);
         }
         break;
         case Command::EnableDelay:
@@ -358,10 +358,14 @@ int main(int argc, char *argv[])
                 {
                     if (mdl.irqCnt > mdl.irqDuration)
                     {
+                        mvaddstr(0, 100, "                ");
                         mdl.irqTriggered = false;
+                        mdl.irqCnt = 0;
                     }
                     else
                     {
+                        std::string msg = "TRIGGERED: " + mdl.irqCnt;
+                        mvaddstr(0, 100, msg.c_str());
                         mdl.top->irq_i = 0;
                         mdl.irqCnt++;
                     }

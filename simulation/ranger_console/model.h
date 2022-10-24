@@ -61,7 +61,7 @@ struct Model
     // ------------------------------------------------------
     // Interrupts
     // ------------------------------------------------------
-    bool irqEnabled = false;
+    bool irqEnabled = true;
     int irq_prev = 1;
     bool irqTriggered = false;
     int irqTriggerPoint = 0;
@@ -71,7 +71,7 @@ struct Model
     int irqCnt = 0;
 
     vluint64_t timeStep_ns = 0;
-    int timeStepDelayms = 10; // Default 10ms = 100Hz
+    int timeStepDelayms = 5; // Default 10ms = 100Hz
     bool resetActive = false;
 
     //

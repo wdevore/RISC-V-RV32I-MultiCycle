@@ -8,6 +8,7 @@ import (
 
 // Example: mret
 func MRet(json map[string]interface{}) (macCode string, err error) {
+	fmt.Println("### mret ###")
 
 	instruction := make([]byte, 32)
 
@@ -59,8 +60,8 @@ func MRet(json map[string]interface{}) (macCode string, err error) {
 
 	instr := utils.BinaryArrayToString(instruction, true)
 
-	fmt.Println("------ funct12 -------- rs1 ---- funct3 --- rd ---- opcode")
-	fmt.Printf("    %v       %v      %v      %v   %v\n", instr[0:12], instr[12:17], instr[17:20], instr[20:25], instr[25:32])
+	// fmt.Println("------ funct12 -------- rs1 ---- funct3 --- rd ---- opcode")
+	// fmt.Printf("    %v       %v      %v      %v   %v\n", instr[0:12], instr[12:17], instr[17:20], instr[20:25], instr[25:32])
 
 	return utils.BinaryStringToHexString(instr, false), nil
 }

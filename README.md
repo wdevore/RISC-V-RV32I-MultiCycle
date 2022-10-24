@@ -260,6 +260,10 @@ Tasks:
 - mscratch, Machine Scratch, holds one word of data for temporary storage.
 - mstatus, Machine Status, holds the global interrupt enable, along with a plethora of other state, as Figure 10.4 shows.
 
+### Interrupts
+We service a single interrupt to completion, this means a Trap handler must complete first before another interrupt is recognized.
+
+Once we recognize an interrupt, on a falling edge, we don't recognize another edge until the interrupt pending bit (Mip) is cleared. This happens as the last step of the MRET instruction.
 
 Interrupt can be taken if mstatus.MIE=1, mie[N]=1, and mip[N]=1
 
@@ -271,6 +275,23 @@ Interrupt can be taken if mstatus.MIE=1, mie[N]=1, and mip[N]=1
 Interrupts pending bits are checked at the end of an instruction (retired).
 - Prolog stores state
 - Epilog restores state
+
+#### Control gates
+- MRET path:
+**MRET** finishes the interrupt trap cycle. The last thing it does is clear the Mip bit. This allows another interrupt to be recognized.
+
+- Prefetch path: 
+The "PreFetch" state starts an interrupt trap cycle. It only starts when 2 enable bits are set and the Mip bit is set. Once the Prefetch path starts it can't re-enter until **MRET** completes by clearing the Mip bit.
+
+#### MEPC
+**MEPC** holds the address of the next instruction to execute. Loading the ME**PC is not as simple as using PC+4. Two instruction types can change what PC holds: 1) Branch instructions and 2) Jump instructions.
+
+- Branch instructions
+  - When a branch instruction has completed the PC is either loaded with a branch address or the PC remains as is.
+- Jump instructions always modify the PC.
+
+This means that **MEPC** is loaded with either *PC* or *PC_prior* during IRQ0. So for branching it is either PC (if a branch is taken) or *PC_prior* if not branch is taken. For Jumps it is *PC*.
+
 
 ### Communication
 Only one byte is transmitted at a time. Before each Trx the Ownership bits are checked.
