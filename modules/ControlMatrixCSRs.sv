@@ -1094,7 +1094,7 @@ always_ff @(negedge clk_i) begin
         Reset: begin
             interrupt_in_progress <= 1'b0;  // Default to allowing an interrupt to start.
             // Enable M-mode interrupts ---------v
-            mie <= 32'b0000_0000_0000_0000_0000_0100_0000_0000;
+            //mie <= 32'b0000_0000_0000_0000_0000_1000_0000_0000;
             irq_pending_reset <= 1'b1;
         end
     
@@ -1124,8 +1124,7 @@ always_ff @(negedge clk_i) begin
     endcase
 end
 
-// This variable allows the main "clk" domain to signal
-// The IRQ domain.
+// This variable allows the main "clk" domain to signal the IRQ domain.
 logic irq_pending_reset = 1;
 logic irq_hold_pending = 0; // The signal watched by the "clk" domain.
 
