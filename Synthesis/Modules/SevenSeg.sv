@@ -8,7 +8,7 @@ module SevenSeg (
 	output logic [11:0] tile1
 );
 
-localparam scan_rate = 18;
+localparam scan_rate = 19;
 logic [24:0] scan_counter = 0;
 
 logic state = 0;

@@ -12,7 +12,7 @@ module Top (
     input  logic clk,       // 25MHz of fpga
 
     output logic led,       // Operation indicator
-    output logic [5:0] blade1,
+    output logic [5:0] blade1,      // Replaced with LA
 
     // SPI from Pico via Pmod6(a,b) on the BlackiceNxt.
     // "a" is on the "top" row (i.e. farthest from the IceLogicBus plane)

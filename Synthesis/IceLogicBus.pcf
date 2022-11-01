@@ -207,6 +207,7 @@ set_io -nowarn  pm5b[0] E9
 set_io -nowarn  pm5b[1] E8
 set_io -nowarn  pm5b[2] H10
 set_io -nowarn  pm5b[3] G8
+
 #     BirdsEye Board view from the top looking down
 #
 #            Pmod1,2                   Pmod3 

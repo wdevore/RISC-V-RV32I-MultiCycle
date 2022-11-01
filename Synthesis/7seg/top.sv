@@ -6,7 +6,7 @@ module top (
   output logic [11:0] tile1
 );
 
-localparam count_rate = 21;
+localparam count_rate = 23;
 
 LedBlade blade(
   .clk(clk),
@@ -33,9 +33,9 @@ end
 
 SevenSeg segs(
   .clk(clk),
-  .digitL(digitL),
+  .digitL(digitR),
   .digitM(digitM),
-  .digitR(digitR),
+  .digitR(digitL),
   .tile1(tile1)
 );
 
