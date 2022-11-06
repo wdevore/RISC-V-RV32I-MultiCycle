@@ -1,0 +1,7 @@
+0 TxReset
+1 TxIdle
+2 TxStartBit
+3 TxSending
+4 TxStopBit
+5 TxDelayReset
+

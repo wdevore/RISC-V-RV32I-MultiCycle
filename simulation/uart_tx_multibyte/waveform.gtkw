@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
-[*] Sun Nov  6 18:52:11 2022
+[*] Sun Nov  6 19:37:23 2022
 [*]
 [dumpfile] "/media/RAMDisk/waveform.vcd"
-[dumpfile_mtime] "Sun Nov  6 18:51:44 2022"
-[dumpfile_size] 723659
-[savefile] "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/uart/waveform.gtkw"
-[timestart] 0
+[dumpfile_mtime] "Sun Nov  6 19:36:20 2022"
+[dumpfile_size] 3215885
+[savefile] "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/uart_tx_multibyte/waveform.gtkw"
+[timestart] 51270
 [size] 2886 786
-[pos] 56 151
-*-12.000000 960 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[pos] 495 60
+*-14.000000 125330 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
 [treeopen] TOP.Top.
 [sst_width] 221
@@ -27,17 +27,18 @@ TOP.Top.uart_tx.COUNT_INC[31:0]
 [color] 1
 TOP.Top.reset
 TOP.Top.reset_complete
-TOP.Top.tx_en
 TOP.Top.state[2:0]
 @29
-[color] 2
+TOP.Top.tx_en
+@28
 TOP.Top.tx_complete
 @200
 -UART
 @2024
-^1 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/uart/filters/tx_state_filter.txt
+^1 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/uart_tx_multibyte/filters/tx_state_filter.txt
 TOP.Top.uart_tx.state[2:0]
 @28
+TOP.Top.uart_tx.tx_en
 [color] 7
 TOP.Top.uart_tx.baud_tick
 TOP.Top.uart_tx.baud_half_tick
@@ -46,6 +47,5 @@ TOP.Top.uart_tx.tx_byte[7:0]
 @28
 [color] 3
 TOP.Top.uart_tx.tx_out
-TOP.Top.uart_tx.bitCnt[2:0]
 [pattern_trace] 1
 [pattern_trace] 0
