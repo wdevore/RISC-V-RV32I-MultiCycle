@@ -1,0 +1,7 @@
+0 RxReset
+1 RxIdle
+2 RxHalfBit
+3 RxStartBit
+4 RxReceiving
+5 RxStopBit
+
