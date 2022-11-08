@@ -13,6 +13,7 @@ GTKWAVE_SETTINGS = waveform
 
 # HDL modules
 MODULES_FILES =  \
+	Definitions.sv \
 	Enums.sv \
 	CDCSynchron.sv \
 	UARTTx.sv \

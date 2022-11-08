@@ -7,19 +7,12 @@
 // Sends a byte using 8N1 format
 
 module UARTTx
-#(
-    parameter BAUD = 115200,            // 115200 bits per second = 8.68us
-    parameter SOURCE_FREQ = 25000000,   // 25MHz = 40ns period
-    parameter ACCUMULATOR_WIDTH = 16    // Bit size of accumulator
-)
 (
     input  logic sourceClk,         // Source clock
-    /* verilator lint_off UNUSED */
     input  logic reset,             // Reset
     input  logic tx_en,             // Enable transmission of bits (active low)
     input  logic [7:0] tx_byte,     // Byte to send
     output logic tx_out,            // output (1 bit at a time)
-    /* verilator lint_on UNUSED */
     output logic tx_complete        // Signal current byte was sent (active high) for 1 cycle.
 );
 
@@ -33,11 +26,16 @@ TxState state = 0;  // Default to TxReset.
 // This truncates, for example 301
 // localparam COUNT_INC = $rtoi($itor(1 << ACCUMULATOR_WIDTH) / SOURCE_FREQ * BAUD);
 // This correctly rounds up to 302. See: https://www.fpga4fun.com/SerialInterface2.html
-localparam COUNT_INC = ((BAUD<<(ACCUMULATOR_WIDTH-4))+(SOURCE_FREQ>>5))/(SOURCE_FREQ>>4);
+localparam COUNT_INC = ((`BAUD<<(`ACCUMULATOR_WIDTH-4))+(`SOURCE_FREQ>>5))/(`SOURCE_FREQ>>4);
+
+`ifdef ONE_STOP_BIT
 localparam STOP_BITS = 1;
+`elsif TWO_STOP_BITS
+localparam STOP_BITS = 2;
+`endif
 
 // We want an extra bit for rollover therefore no "-1"
-logic [ACCUMULATOR_WIDTH:0] baud_counter;
+logic [`ACCUMULATOR_WIDTH:0] baud_counter;
 logic baud_tick;
 logic baud_half_tick;
 
@@ -47,7 +45,7 @@ logic [7:0] tx_bits;
 
 logic [1:0] stop_bits;
 
-assign baud_tick = baud_counter[ACCUMULATOR_WIDTH];
+assign baud_tick = baud_counter[`ACCUMULATOR_WIDTH];
 
 always_ff @(posedge sourceClk) begin
     baud_counter <= baud_counter + COUNT_INC[16:0];
@@ -63,7 +61,7 @@ always_ff @(posedge sourceClk) begin
         TxIdle: begin
             tx_complete <= 0;
 
-            // UART line idle high
+            // UART line idles high
             tx_out <= 1;
 
             if (~tx_en) begin
@@ -76,7 +74,7 @@ always_ff @(posedge sourceClk) begin
         end
 
         TxStartBit: begin
-            // and hold for 1 bit period
+            // hold for 1 bit period
             if (baud_tick == 1'b1) begin
                 state <= TxSending;
                 // Begin sending LSb bit
@@ -89,7 +87,7 @@ always_ff @(posedge sourceClk) begin
         TxSending: begin
             tx_out <= tx_bits[0];
 
-            // and hold for 1 bit period
+            // hold for 1 bit period
             if (baud_tick == 1'b1) begin
                 if (bitCnt == 0) begin
                     state <= TxStopBit;
@@ -105,7 +103,7 @@ always_ff @(posedge sourceClk) begin
 
         TxStopBit: begin
             if (stop_bits > 0) begin
-                // and hold for 1 bit period
+                // hold for 1 bit period
                 if (baud_tick == 1'b1) begin
                     baud_counter <= 0;
                     bitCnt <= 0;

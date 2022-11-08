@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
-[*] Mon Nov  7 03:57:13 2022
+[*] Tue Nov  8 02:22:22 2022
 [*]
 [dumpfile] "/media/RAMDisk/waveform.vcd"
-[dumpfile_mtime] "Mon Nov  7 03:54:49 2022"
-[dumpfile_size] 3419046
+[dumpfile_mtime] "Tue Nov  8 02:21:34 2022"
+[dumpfile_size] 3419859
 [savefile] "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/uart_tx_rx_multibyte/waveform.gtkw"
-[timestart] 49430
+[timestart] 0
 [size] 2886 786
 [pos] 127 90
-*-13.000000 67290 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-15.000000 166600 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
 [treeopen] TOP.Top.
 [sst_width] 221
