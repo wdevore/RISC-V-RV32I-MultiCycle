@@ -4,4 +4,5 @@
 3 RxStartBit
 4 RxReceiving
 5 RxStopBit
+6 RxComplete
 
