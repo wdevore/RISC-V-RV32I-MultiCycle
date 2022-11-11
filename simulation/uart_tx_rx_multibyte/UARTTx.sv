@@ -37,7 +37,6 @@ localparam STOP_BITS = 2;
 // We want an extra bit for rollover therefore no "-1"
 logic [`ACCUMULATOR_WIDTH:0] baud_counter;
 logic baud_tick;
-logic baud_half_tick;
 
 // A 3 bit counter to count the bits.
 logic [2:0] bitCnt = 0;
@@ -59,8 +58,6 @@ always_ff @(posedge sourceClk) begin
         end
 
         TxIdle: begin
-            tx_complete <= 0;
-
             // UART line idles high
             tx_out <= 1;
 
@@ -111,10 +108,16 @@ always_ff @(posedge sourceClk) begin
                 end
             end
             else begin
-                state <= TxIdle;
+                state <= TxComplete;
+                // hold "complete" signal for 1 cycle
                 tx_complete <= 1;
             end
 
+        end
+
+        TxComplete: begin
+            state <= TxIdle;
+            tx_complete <= 0;
         end
 
         default: begin

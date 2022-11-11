@@ -63,8 +63,9 @@ always_ff @(posedge sourceClk) begin
         RxReset: begin
             rx_bits <= 0;
             rx_complete <= 0;
-            state <= RxIdle;
             baud_counter <= 0;
+            rx_byte <= 0;
+            state <= RxIdle;
         end
 
         RxIdle: begin
@@ -72,6 +73,8 @@ always_ff @(posedge sourceClk) begin
             // Detect Start bit falling edge
             if (Rx_fallingedge) begin
                 state <= RxStartBit;
+                rx_byte <= 0;
+                rx_bits <= 0;
                 baud_counter <= 0;
             end
         end
@@ -123,11 +126,17 @@ always_ff @(posedge sourceClk) begin
             if (baud_tick == 1'b1 & Rx_sync == 1)
             `endif
             begin
-                state <= RxIdle;
+                state <= RxComplete;
                 baud_counter <= 0;
                 bitCnt <= 0;
+                // hold "complete" signal for 1 cycle
                 rx_complete <= 1;
             end
+        end
+
+        RxComplete: begin
+            rx_complete <= 0;
+            state <= RxIdle;
         end
 
         default: begin

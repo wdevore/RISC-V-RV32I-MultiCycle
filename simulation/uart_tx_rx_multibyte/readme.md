@@ -2,8 +2,8 @@
 This is a UART simulation of both a transmitter and receiver.
 
 # Summary
-- protocol: 8N1
-- baud: 115200
+- protocol: **8N1**
+- baud: **115200**
 - Crystal clock: 1843200
 
 We use clock-enables instead of clock-dividers. The clock idles high.

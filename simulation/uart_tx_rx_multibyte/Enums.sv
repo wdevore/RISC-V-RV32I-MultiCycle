@@ -4,7 +4,8 @@ typedef enum logic [2:0] {
     TxIdle,         // Waiting to transmit
     TxStartBit,
     TxSending,      // Transmitting
-    TxStopBit
+    TxStopBit,
+    TxComplete
 } TxState; 
 
 typedef enum logic [2:0] {
@@ -13,7 +14,8 @@ typedef enum logic [2:0] {
     RxHalfBit,
     RxStartBit,
     RxReceiving,
-    RxStopBit
+    RxStopBit,
+    RxComplete
 } RxState; 
 
 // ----------- Simulation only ----------------------

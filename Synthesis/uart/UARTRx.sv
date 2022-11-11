@@ -115,6 +115,7 @@ always_ff @(posedge sourceClk) begin
         end
 
         RxStopBit: begin
+            // Copy received byte into buffer
             rx_byte <= rx_bits;
 
             // Check for Idle state.
