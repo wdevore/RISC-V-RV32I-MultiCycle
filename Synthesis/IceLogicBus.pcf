@@ -233,10 +233,10 @@ set_io -nowarn  pm5b[3] G8
 #    -----------          ----------- ----- -----------
 
 #PMOD6A
-set_io -nowarn  pm6a[0] H11
-set_io -nowarn  pm6a[1] D9
-set_io -nowarn  pm6a[2] G9
-set_io -nowarn  pm6a[3] F10
+#set_io -nowarn  pm6a[0] H11
+#set_io -nowarn  pm6a[1] D9
+#set_io -nowarn  pm6a[2] G9
+#set_io -nowarn  pm6a[3] F10
 
 #PMOD6B
 set_io -nowarn  pm6b[0] G10
@@ -244,3 +244,5 @@ set_io -nowarn  pm6b[1] E11
 set_io -nowarn  pm6b[2] G11
 set_io -nowarn  pm6b[3] F9
 
+set_io -nowarn  pm6a0 H11
+set_io -nowarn  pm6a1 D9

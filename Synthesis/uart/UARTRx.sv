@@ -17,7 +17,7 @@ module UARTRx
 
 /*verilator public_module*/
 
-RxState state = 0;  // Default to RxReset.
+RxState state = RxIdle;  // Default to 
 
 // ----------------------------------------------------
 // CDC Sync-ed signal for Rx
@@ -65,19 +65,22 @@ always_ff @(posedge sourceClk) begin
             rx_complete <= 0;
             state <= RxIdle;
             baud_counter <= 0;
+            rx_byte <= 0;
         end
 
         RxIdle: begin
-            rx_complete <= 0;
             // Detect Start bit falling edge
             if (Rx_fallingedge) begin
                 state <= RxStartBit;
+                rx_byte <= 0;
+                rx_bits <= 0;
                 baud_counter <= 0;
             end
         end
 
         RxStartBit: begin
             // hold for 1/2 bit period to shift to sample point position
+            // which is half of a baud tick.
             if (baud_half_tick == 1'b1) begin
                 state <= RxHalfBit;
                 baud_counter <= 0;
@@ -85,8 +88,7 @@ always_ff @(posedge sourceClk) begin
         end
 
         RxHalfBit: begin
-            // hold for 1 bit period to align with bit's approximate
-            // half way sample point.
+            // hold for 1 bit period.
             if (baud_tick == 1'b1) begin
                 state <= RxReceiving;
                 baud_counter <= 0;
@@ -123,16 +125,26 @@ always_ff @(posedge sourceClk) begin
             if (baud_tick == 1'b1 & Rx_sync == 1)
             `endif
             begin
-                state <= RxIdle;
+                state <= RxComplete;
                 baud_counter <= 0;
                 bitCnt <= 0;
+                // hold "complete" signal for 1 cycle
                 rx_complete <= 1;
             end
+        end
+
+        RxComplete: begin
+            rx_complete <= 0;
+            state <= RxIdle;
         end
 
         default: begin
         end
     endcase
+
+    if (~reset)
+        state <= RxReset;
+
 end
 
 endmodule
