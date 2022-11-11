@@ -37,7 +37,6 @@ localparam STOP_BITS = 2;
 // We want an extra bit for rollover therefore no "-1"
 logic [`ACCUMULATOR_WIDTH:0] baud_counter;
 logic baud_tick;
-logic baud_half_tick;
 
 // A 3 bit counter to count the bits.
 logic [2:0] bitCnt = 0;
