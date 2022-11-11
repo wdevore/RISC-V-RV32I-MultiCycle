@@ -25,7 +25,6 @@ UARTTx uart_tx (
 );
 
 logic rx_complete;
-logic p_rx_complete;
 logic [7:0] rx_byte;
 
 UARTRx uart_rx (
@@ -79,7 +78,6 @@ always_ff @(posedge clk) begin
             reset <= 1'b1;
             cnt_byte <= 0;
             tx_en <= 1;         // Disable transmission
-            p_rx_complete <= 0;
             next_state <= CSReset1;
         end
 
@@ -95,7 +93,7 @@ always_ff @(posedge clk) begin
 
         CSIdle: begin
             // Wait for a byte to arrive then store it.
-            if (~p_rx_complete & rx_complete) begin
+            if (rx_complete) begin
                 // An ASCII byte has arrived. Convert and display it
                 // 0x30->0x39 and 0x61->0x66
                 //   0 -> 9          a -> b 
@@ -106,7 +104,6 @@ always_ff @(posedge clk) begin
                 
                 next_state <= CSSend;
             end
-            p_rx_complete <= rx_complete;
         end
 
         CSSend: begin
