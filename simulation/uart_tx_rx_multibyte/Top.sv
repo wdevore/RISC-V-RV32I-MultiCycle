@@ -37,11 +37,13 @@ logic [7:0] tx_byte;
 logic tx_out;
 logic tx_complete;
 
+/* verilator lint_off UNUSED */
 logic rx_complete;
 logic [7:0] rx_byte;
 
 logic reset;
 logic reset_complete;
+/* verilator lint_on UNUSED */
 logic [1:0] cnt_byte;
 
 always_ff @(posedge clock) begin

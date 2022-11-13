@@ -9,7 +9,9 @@
 module UARTTx
 (
     input  logic sourceClk,         // Source clock
+/* verilator lint_off UNUSED */
     input  logic reset,             // Reset
+/* verilator lint_on UNUSED */
     input  logic tx_en,             // Enable transmission of bits (active low)
     input  logic [7:0] tx_byte,     // Byte to send
     output logic tx_out,            // output (1 bit at a time)
@@ -47,7 +49,7 @@ logic [1:0] stop_bits;
 assign baud_tick = baud_counter[`ACCUMULATOR_WIDTH];
 
 always_ff @(posedge sourceClk) begin
-    baud_counter <= baud_counter + COUNT_INC[16:0];
+    baud_counter <= baud_counter + COUNT_INC[`ACCUMULATOR_WIDTH:0];
 
     case (state)
         TxReset: begin

@@ -9,7 +9,9 @@
 module UARTRx
 (
     input  logic sourceClk,         // Source clock
+/* verilator lint_off UNUSED */
     input  logic reset,             // Reset
+/* verilator lint_on UNUSED */
     input  logic rx_in,             // Incoming bits
     output logic [7:0] rx_byte,     // Byte received
     output logic rx_complete        // Signal a byte was received (active high) for 1 cycle.
@@ -22,7 +24,9 @@ RxState state = 0;  // Default to RxReset.
 // ----------------------------------------------------
 // CDC Sync-ed signal for Rx
 // ----------------------------------------------------
+/* verilator lint_off UNUSED */
 logic Rx_risingedge;
+/* verilator lint_on UNUSED */
 logic Rx_fallingedge;
 logic Rx_sync;
 
@@ -57,7 +61,7 @@ assign baud_half_tick = baud_counter[`ACCUMULATOR_WIDTH-1];
 assign baud_quarter_tick = baud_counter[`ACCUMULATOR_WIDTH-2];
 
 always_ff @(posedge sourceClk) begin
-    baud_counter <= baud_counter + COUNT_INC[16:0];
+    baud_counter <= baud_counter + COUNT_INC[`ACCUMULATOR_WIDTH:0];
 
     case (state)
         RxReset: begin
