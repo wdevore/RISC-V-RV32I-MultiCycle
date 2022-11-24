@@ -24,23 +24,23 @@ TEMPLATE_HEADER = ../module.h
 
 # VERILATOR_PUBLICS = 
 # The vcd data for viewing
-GTKWAVE_SETTINGS = ebreak
+GTKWAVE_SETTINGS = standard
 
 # HDL modules
 MODULES_FILES =  \
 	../../definitions/definitions.sv \
-	../../definitions/TypeEnums.sv \
+	TypeEnums.sv \
 	../../modules/Mux8.sv \
 	../../modules/Mux4.sv \
 	../../modules/Mux2.sv \
-	../../modules/${MATRIX}.sv \
 	../../modules/Register.sv \
 	../../modules/Memory.sv \
 	../../modules/ALU.sv \
 	../../modules/Immediate.sv \
 	../../modules/RegisterFile.sv \
 	../../modules/Pmmu.sv \
-	../../modules/${RR_CSR}.sv
+	MicroCodeMatrix.sv \
+	RangerRisc.sv
 	
 # output build directory
 BUILD_DIR = /media/RAMDisk

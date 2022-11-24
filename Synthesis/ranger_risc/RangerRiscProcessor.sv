@@ -3,25 +3,29 @@
 `timescale 1ns/1ps
 `endif
 
-// I turn the warning off because the Makefile
-// will properly copy .sv to "RangerRisc.sv"
-/* verilator lint_off DECLFILENAME */
-module RangerRisc
+module RangerRiscProcessor
 /* verilator lint_on DECLFILENAME */
 #(
     parameter DATA_WIDTH = 32)
 (
    input logic clk_i,
-/* verilator lint_off UNDRIVEN */
-`ifdef DEBUG_MODE
-   input logic reset_i,
-   output logic halt_o
-`else
    input logic reset_i,
    input logic irq_i,
-   output logic ready_o
-`endif
-/* verilator lint_on UNDRIVEN */
+   
+   // ---------------------------------------------
+   // SPI port
+   // Includes 3 SS signals for 3 devices
+   // ---------------------------------------------
+   output logic spi_clk,
+   output logic mosi,            // bit to slave
+   input  logic miso,            // bit from slave
+   output logic [2:0] spi_addr,  // SPI device address, glu logic required
+
+   // ---------------------------------------------
+   // Uni directional 8bit parallel data
+   // ---------------------------------------------
+   output logic [7:0] data_out,
+   output logic data_wr
 );
 
 /*verilator public_module*/
@@ -140,12 +144,15 @@ ControlMatrix matrix
 // 0x000 -> 0x7ff  = BRAM
 // 0x800 -> -      = IO    = 1000_0000_0000
 // --------------------------------------------------
-// Any attempt to write BRAM at 0x800 or higher is simply
-// ignored by BRAM meaning the write signal is held inactive (high).
-// logic mem_wr;
+// Any attempt to write to BRAM in the 0x800 range 
+// causes the write signal to hold inactive high (i.e. disabled).
+// Active low
+logic mem_wr;
+assign mem_wr = cm_to_mem_wr | addr_mux_to_pmmu[11];
 
 // Active low
-// assign mem_wr = cm_to_mem_wr | addr_mux_to_pmmu[11];
+assign data_wr = ~addr_mux_to_pmmu[11];
+assign data_out = rsb_out[7:0];
 
 // Memory management
 Pmmu pmmu
@@ -154,7 +161,7 @@ Pmmu pmmu
    .funct3(rst_src_out),
    .byte_addr_i(addr_mux_to_pmmu),
    .wd_i(rsb_out),
-   .mwr_i(cm_to_mem_wr),
+   .mwr_i(mem_wr),
    .mrd_i(cm_to_mem_rd),
    .rd_o(pmmu_out),
    .mem_rdy_o(mem_rdy)

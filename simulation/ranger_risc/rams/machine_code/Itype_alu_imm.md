@@ -117,7 +117,7 @@ xori  x2, x1, 0x05
 # IType_ori
 
 Description:
-    rd = rs1 ^ imm  = 0x0A | 0x05 = 0x0F
+    rd = rs1 | imm  = 0x0A | 0x05 = 0x0F
 
 x1 = 0x0A
 

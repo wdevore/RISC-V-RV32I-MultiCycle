@@ -13,7 +13,14 @@
 `define ROM_EXTENSION ".ram"
 
 `define ROM_PATH "rams/"
-`define MEM_CONTENTS "itype_csrs/intr1"
+
+// Use this define starting the ranger_console. It's just a dummy
+// because you can simply "ld" what ever code you need via the simulation.
+// `define MEM_CONTENTS "itype_csrs/intr1"
+
+// Use this define to preload a specific ram during synthesis.
+`define MEM_CONTENTS "code"
+
 // OR
 // `define ROM_PATH "/media/RAMDisk/"
 // `define MEM_CONTENTS "code"

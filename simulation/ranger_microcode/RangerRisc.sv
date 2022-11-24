@@ -3,11 +3,7 @@
 `timescale 1ns/1ps
 `endif
 
-// I turn the warning off because the Makefile
-// will properly copy .sv to "RangerRisc.sv"
-/* verilator lint_off DECLFILENAME */
 module RangerRisc
-/* verilator lint_on DECLFILENAME */
 #(
     parameter DATA_WIDTH = 32)
 (
@@ -97,7 +93,7 @@ logic cm_to_rsa_ld;
 logic [DATA_WIDTH-1:0] cm_rd_data;
 
 // Signal sequencer
-ControlMatrix matrix
+MicroCodeMatrix matrix
 (
    .clk_i(clk_i),
    .ir_i(ir_out),

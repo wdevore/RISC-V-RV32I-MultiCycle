@@ -3,12 +3,9 @@
 `timescale 1ns/1ps
 `endif
 
-// I turn the warning off because the Makefile
-// will properly copy .sv to "ControlMatrix.sv"
+// A microcode variant of a control matrix sequencer
 
-/* verilator lint_off DECLFILENAME */
-module ControlMatrix
-/* verilator lint_on DECLFILENAME */
+module MicroCodeMatrix
 #(
     parameter DATA_WIDTH = 32
 )
@@ -79,6 +76,8 @@ logic [6:0] ir_opcode = ir_i[6:0];
 logic [2:0] funct3 = ir_i[14:12];
 // Used for Jal optimization
 logic [4:0] dstRg = ir_i[11:7];
+logic destRgX0;
+assign destRgX0 = dstRg == 5'b00000;
 
 logic is_word_size = funct3[1:0] == `WORD_SIZE;
 
@@ -138,14 +137,46 @@ logic [`WDSelectSize-1:0] wd_src;
 logic alu_ld;
 logic [`ALUOpSize-1:0] alu_op;
 
+always_comb begin
+    case (ir_state)
+        RType: begin
+            // We ignore the lower 4 bits because this is RV32I base
+            // instructions only.
+            alu_op = {funct3, funct7up};
+        end
+        ITALU: begin
+            // We only need the 3 upper bits when the I-Type is
+            // slli, (srli, srai) in order to further narrow
+            // the operation, otherwise use zero.
+            if (funct3 == ITSlli || funct3 == ITSrli)
+                alu_op = {funct3, funct7up};
+            else
+                alu_op = {funct3, 3'b000};
+        end
+        BType: begin
+            // Perform Subtract
+            alu_op = SubOp;
+        end
+        default:
+            alu_op = AddOp;    // Default add operation
+    endcase
+end
+
 logic take_branch;
 
 // ----------------------------------------------------
 // CSRs
 // ----------------------------------------------------
 logic isCSRInstr;
+// Must be a CSR instruction for our implementation.
+assign isCSRInstr = ir_opcode == `ITYPE_E && funct3 != 3'b000;
+
 logic rdIsX0;
 logic rs1IsX0;
+assign rdIsX0 = ir_i[11:7] == 5'b00000;
+assign rs1IsX0 = ir_i[19:15] == 5'b00000;
+logic noReadEffect;
+assign noReadEffect = !(rdIsX0 && funct3 == CSRRW);
 
 logic rsa_ld;
 
@@ -158,9 +189,60 @@ logic [DATA_WIDTH-1:0] mtvec /*verilator public*/;
 
 logic [`CSRAddrSize-1:0] csr_addr;
 
+always_comb begin
+    case (ir_state)
+        ITMret, PreFetch: begin
+            csr_addr = Mstatus;
+        end
+        IRQ0: begin
+            csr_addr = Mepc;
+        end
+        default:
+            csr_addr = ir_i[31:20];
+    endcase
+end
+
 logic [DATA_WIDTH-1:0] csr_data;
 logic [DATA_WIDTH-1:0] algo_data;
+
 logic [DATA_WIDTH-1:0] rd_data;     // RegFile data
+always_comb begin
+    rd_data = 0;
+
+    case (ir_state)
+        ITCSR: begin
+            case (funct3)
+                CSRRW: begin
+                    if (~rdIsX0) begin
+                        // Transfer CSR to rd
+                        rd_data = csr_data;
+                    end
+                end
+                CSRRS, CSRRC: begin
+                    if (~rs1IsX0) begin
+                        // Transfer CSR to rd
+                        rd_data = csr_data;
+                    end
+                end
+                CSRRWI, CSRRSI, CSRRCI: begin
+                    // Transfer CSR to rd
+                    rd_data = csr_data;
+                end
+                default:
+                    ;
+            endcase
+        end
+        ITMret: begin
+            rd_data = {mepc[31:2], 2'b00};  // IALIGN = 1 = 32bits
+        end
+        IRQ1: begin
+            // PC <== mtvec
+            rd_data = mtvec;
+        end
+        default:
+            ;
+    endcase
+end
 
 localparam IMM_SIZE = 5;
 logic [4:0] immediate = ir_i[19:15];  // Immediate
@@ -189,6 +271,7 @@ end
 // -------------------------------------------------------------
 // Combinational control signals
 // -------------------------------------------------------------
+
 always_comb begin
     // ======================================
     // Initial/Default conditions on a *state* or *vector_state* change
@@ -229,7 +312,6 @@ always_comb begin
     wd_src = WDSrcImm;
 
     alu_ld = RgLdDisabled;
-    alu_op = AddOp;    // Default add operation
     flags_ld = RgLdDisabled;
     
     take_branch = 1'b0;
@@ -241,29 +323,14 @@ always_comb begin
     // -------------------------------------------------
     rsa_ld = RgLdEnabled;
     csr_data = mstatus;
-    rd_data = 0;
 
     irq_pending = 1'b0;
-    isCSRInstr = 1'b0;
-    rdIsX0 = 1'b0;
-    rs1IsX0 = 1'b0;
-    algo_data = {DATA_WIDTH{1'b0}};
     writeCSR = 1'b0;
 
-    csr_addr = ir_i[31:20];
-
-    if (ir_opcode == `ITYPE_E && funct3 != 3'b000) begin
-        // Must be a CSR instruction for our implementation.
-        isCSRInstr = 1'b1;
-    end
-
     if (isCSRInstr) begin
-        rdIsX0 = ir_i[11:7] == 5'b00000;
-        rs1IsX0 = ir_i[19:15] == 5'b00000;
-
         // There is only one scenario where we don't read a CSR register
         // and that is when rd == x0 and the instruction is CSRRW.
-        if (!(rdIsX0 && funct3 == CSRRW)) begin
+        if (noReadEffect) begin
             // Read with side-effects
             case (csr_addr)
                 Mstatus:  csr_data = mstatus;
@@ -298,7 +365,7 @@ always_comb begin
                 algo_data = {{DATA_WIDTH-IMM_SIZE{1'b0}}, immediate} | csr_data;
             end
             default:
-                ;
+                algo_data = {DATA_WIDTH{1'b0}};
         endcase
     end
 
@@ -492,16 +559,12 @@ always_comb begin
                     a_src = ASrcRsa;  // Select rs1 (aka RsA) source
                     b_src = BSrcRsb;  // Select rs2 (aka RsB) source
 
-                    // We ignore the lower 4 bits because this is RV32I base
-                    // instructions only.
-                    alu_op = {funct3, funct7up};
-
                     // ------ Optimization ------
                     // If the destination register is x0 then
                     // we don't need a writeback cycle so just
                     // transition to fetch.
                     // This effectively is a NOP
-                    if (dstRg == 5'b00000) begin
+                    if (destRgX0) begin
                         next_ir_state = PreFetch;
                     end
                     else
@@ -529,20 +592,12 @@ always_comb begin
                     a_src = ASrcRsa;
                     b_src = BSrcImm;
 
-                    // We only need the 3 upper bits when the I-Type is
-                    // slli, (srli, srai) in order to further narrow
-                    // the operation, otherwise use zero.
-                    if (funct3 == ITSlli || funct3 == ITSrli)
-                        alu_op = {funct3, funct7up};
-                    else
-                        alu_op = {funct3, 3'b000};
-
                     // ------ Optimization ------
                     // If the destination register is x0 then
                     // we don't need a writeback cycle so just
                     // transition to fetch.
                     // This effectively is a NOP
-                    if (dstRg == 5'b00000) begin
+                    if (destRgX0) begin
                         next_ir_state = PreFetch;
                     end
                     else
@@ -628,7 +683,7 @@ always_comb begin
                     // If the destination register is x0 then
                     // we don't need a writeback cycle so just
                     // transition to complete.
-                    if (dstRg == 5'b00000)
+                    if (destRgX0)
                         next_ir_state = PreFetch;
                     else
                         next_ir_state = ITJalrRtr;
@@ -710,7 +765,6 @@ always_comb begin
                     flags_ld = RgLdEnabled;
 
                     // Perform Subtract
-                    alu_op = SubOp;
 
                     next_ir_state = BTBranch;
                 end
@@ -793,7 +847,7 @@ always_comb begin
                     // we don't need a writeback cycle so just
                     // transition to prefetch because
                     // we need the extra cycle.
-                    if (dstRg == 5'b00000) begin
+                    if (destRgX0) begin
                         next_ir_state = PreFetch;
                     end
                     else
@@ -848,7 +902,7 @@ always_comb begin
                 ITEbreak: begin
                     ready = 1'b0; // Signal the great unknown!
                     halt = 1'b1;
-                    next_ir_state = ITEbreak;
+                    next_state = Halt;
                 end
 
                 ITECall: begin
@@ -881,7 +935,6 @@ always_comb begin
                             end
                             else begin
                                 // Transfer CSR to rd
-                                rd_data = csr_data;
                                 wd_src = WDSrcCSR;
                                 rg_wr = RWActive;
 
@@ -899,7 +952,6 @@ always_comb begin
                             end
                             else begin
                                 // Transfer CSR to rd
-                                rd_data = csr_data;
                                 wd_src = WDSrcCSR;
                                 rg_wr = RWActive;
 
@@ -908,7 +960,6 @@ always_comb begin
                         end
                         CSRRWI, CSRRSI, CSRRCI: begin
                             // Transfer CSR to rd
-                            rd_data = csr_data;
                             wd_src = WDSrcCSR;
                             rg_wr = RWActive;
 
@@ -946,8 +997,6 @@ always_comb begin
                     // Return from Trap handler
                     // 1) PC <== Mepc. Mask bits [1:0]=0 for alignment
                     
-                    rd_data = {mepc[31:2], 2'b00};  // IALIGN = 1 = 32bits
-                    // rd_data = mepc[31:0];
                     pc_src = PCSrcRDCSR;
                     pc_ld = RgLdEnabled;
 
@@ -964,7 +1013,6 @@ always_comb begin
                     csr_data[`CSR_Mstatus_MIE] = csr_data[`CSR_Mstatus_MPIE];
                     // Clear copy
                     csr_data[`CSR_Mstatus_MPIE] = 1'b0;
-                    csr_addr = Mstatus;
                     next_ir_state = PreFetch;
                 end
 
@@ -986,7 +1034,6 @@ always_comb begin
                         // Disable Global interrupts
                         csr_data[`CSR_Mstatus_MIE] = 1'b0;
                         // Select CSR address
-                        csr_addr = Mstatus;
 
                         next_ir_state = IRQ0;
                     end
@@ -1001,7 +1048,6 @@ always_comb begin
                     csr_data = pc_i; // PC_prior is not needed
 
                     // Select CSR address
-                    csr_addr = Mepc;
                     writeCSR = 1'b1;    // Enable writing to CSR
 
                     next_ir_state = IRQ1;
@@ -1010,7 +1056,6 @@ always_comb begin
                 IRQ1: begin
                     // Jump to Trap by loading
                     // PC <== mtvec
-                    rd_data = mtvec;
                     pc_src = PCSrcRDCSR;
                     pc_ld = RgLdEnabled;
 
@@ -1030,6 +1075,10 @@ always_comb begin
                     `endif
                 end
             endcase
+        end
+
+        Halt: begin
+            next_state = Halt;
         end
 
         default:

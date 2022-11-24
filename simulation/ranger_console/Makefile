@@ -35,6 +35,7 @@ HEADERS = \
 MODULES_FILES =  \
 	../../definitions/definitions.sv \
 	../../definitions/TypeEnums.sv \
+	../../modules/CDCSynchron.sv \
 	../../modules/Mux8.sv \
 	../../modules/Mux4.sv \
 	../../modules/Mux2.sv \
@@ -66,6 +67,7 @@ lint:
 	@echo "############### Linting via Verilator ##################"
 	${SIMULATION_TOOLCHAIN} --lint-only -Wall ${MODULES_FILES} \
 	--top-module ${TOP} \
+	-DRESET_VECTOR=${RESET_BOOT_VECTOR} \
 	-DSIMULATE
 
 clean:

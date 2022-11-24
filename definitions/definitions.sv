@@ -20,7 +20,7 @@
 // Also change the Testbench size
 // 0001_1111_1111_1111 = 8191 = 0x1FFF
 // 0010_0000_0000_0000 = 8192 = 0x2000
-`define MEM_WORDS 13
+`define MEM_WORDS 10
 
 // Memory map. If bit 14 set then accessing IO
 `define MEM_LOW  0x00000000

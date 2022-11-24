@@ -13,7 +13,7 @@ import (
 func ItypeAlu(json map[string]interface{}) (macCode string, err error) {
 	ass := fmt.Sprintf("%s", json["Assembly"])
 
-	rxpr, _ := regexp.Compile(`([a-z]+)[ ]+([xa0-9]+),[ ]*([xa0-9]+),[ ]*([\w]+)`)
+	rxpr, _ := regexp.Compile(`([a-z]+)[ ]+([xa0-9]+),[ ]*([xa0-9]+),[ ]*([\w-]+)`)
 
 	fields := rxpr.FindStringSubmatch(ass)
 
@@ -27,7 +27,7 @@ func ItypeAlu(json map[string]interface{}) (macCode string, err error) {
 
 	imm := fields[4]
 	immAsWA := strings.Contains(imm, "WA:")
-	// fmt.Println("Immediate: ", imm)
+	fmt.Println("Immediate: ", imm)
 
 	immInt, err := utils.StringHexToInt(imm)
 	if err != nil {
@@ -37,9 +37,11 @@ func ItypeAlu(json map[string]interface{}) (macCode string, err error) {
 		// Convert from word-addressing to byte-addressing
 		immInt *= 4
 	}
+	fmt.Println("immInt: ", immInt)
 
 	ti := utils.IntToBinaryString(immInt)
 	produced := utils.BinaryStringToArray(ti)
+	// fmt.Println("produced: ", produced)
 
 	instruction := make([]byte, 32)
 

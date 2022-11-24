@@ -31,10 +31,6 @@ func main() {
 
 	var fileName = "assembly.json"
 
-	if len(assemblyPro) > 0 {
-		fileName = assemblyPro[0]
-	}
-
 	// Open our jsonFile
 	jsonFile, err := os.Open(fileName)
 
@@ -54,10 +50,17 @@ func main() {
 	var context map[string]interface{}
 	json.Unmarshal([]byte(byteValue), &context)
 
-	fmt.Println("Assembling: ", context["input"])
+	inputPath := context["inputPath"]
+	inputAsmFile := context["inputFile"]
+
+	if len(assemblyPro) > 0 {
+		inputAsmFile = assemblyPro[0]
+	}
+
+	fmt.Println("Assembling: ", inputAsmFile)
 
 	// Fetch assembly to compile
-	af := fmt.Sprintf("%s", context["input"])
+	af := fmt.Sprintf("%s%s", inputPath, inputAsmFile)
 	assFile, err := os.Open(af)
 
 	if err != nil {

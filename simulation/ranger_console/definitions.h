@@ -1,4 +1,4 @@
 #pragma once
 
 // Also change the definitions.sv
-#define MEM_WORDS 13
+#define MEM_WORDS 10

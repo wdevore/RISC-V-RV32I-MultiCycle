@@ -1,7 +1,8 @@
 {
-    "RamDir": "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/ranger_console/rams/",
+    "RamDir": "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/ranger_microcode/rams/",
     "RamFile": "code.ram",
     "OutFile": "/media/RAMDisk/code.out",
-    "input": "../source/interrupt_check.asm",
+    "inputPath": "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/ranger_microcode/assemblies/",
+    "inputFile": "addi_neg.asm",
     "entryAddr": "0x0"
 }
