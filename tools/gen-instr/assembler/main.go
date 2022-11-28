@@ -72,9 +72,11 @@ func main() {
 
 	labels := make(map[string]string)
 
-	labelExpr, _ := regexp.Compile(`([0-9a-zA-Z]*): @([0-9a-zA-Z]*)`)
+	// Check if address on Label is in word-address form if it has a prefix "@"
+	// "$" means byte-address form
+	labelExpr, _ := regexp.Compile(`([0-9a-zA-Z]*): [@$]([0-9a-zA-Z]*)`)
 
-	// First pass to collect labels
+	// First pass to collect labels. All address values are converted to byte-address form
 	labelNames := findLabels(scanner, labels, labelExpr)
 
 	// Second pass to collect program lines
@@ -139,6 +141,13 @@ func findLabels(scanner *bufio.Scanner, labels map[string]string, labelExpr *reg
 				// An address wasn't supplied. Use current PC instead
 				addr = utils.UintToHexString(uint64(pc), false)
 			}
+			// If addr is prefixed by "@" then we convert it to byte-address
+			// if strings.Contains(line, "@") {
+			// 	addr = utils.WordAddrToByteAddrString(addr)
+			// }
+			if strings.Contains(line, "$") {
+				addr = utils.ByteAddrToWordAddrString(addr)
+			}
 			labels[label] = addr
 			labelNames = append(labelNames, label)
 		} else {
@@ -172,17 +181,17 @@ func processSection(scanner *bufio.Scanner, labels map[string]string, startLabel
 			continue
 		}
 
-		label, _, _ := matchLabel(line, labelExpr)
-		if label != "" {
-			// Is label the starting label
-			if label == startLabel {
-				continue
-			}
+		// label, _, _ := matchLabel(line, labelExpr)
+		// if label != "" {
+		// 	// Is label the starting label
+		// 	if label == startLabel {
+		// 		continue
+		// 	}
 
-			if label == endLabel {
-				break
-			}
-		}
+		// 	if label == endLabel {
+		// 		break
+		// 	}
+		// }
 
 		v, isRaw, err := matchRaw(line, rawExpr)
 		if err != nil {
@@ -195,18 +204,36 @@ func processSection(scanner *bufio.Scanner, labels map[string]string, startLabel
 			continue
 		}
 
-		// Is 'line' an address reference
+		// Is 'line' an address reference, ex: "@: Data"
 		v, isRef, err := matchAddrRef(line, addRefExpr, labels)
 		if err != nil {
 			return sect, err
 		}
 		if isRef {
-			// "v" needs to be converted to Byte-address
+
 			v = utils.WordAddrToByteAddrString(v)
+			// vi, err := utils.StringHexToInt(v)
+			// if err != nil {
+			// 	return sect, err
+			// }
+			// utils.UintToHexString(uint64(vi), false)
+
 			mcl := machine_line{line: line, ltype: "AddrRef", addr: utils.UintToHexString(uint64(pc), false), value: v}
 			sect.lines = append(sect.lines, &mcl)
 			pc++
 			continue
+		}
+
+		label, _, _ := matchLabel(line, labelExpr)
+		if label != "" {
+			// Is label the starting label
+			if label == startLabel {
+				continue
+			}
+
+			if label == endLabel {
+				break
+			}
 		}
 
 		// An instruction
@@ -219,7 +246,7 @@ func processSection(scanner *bufio.Scanner, labels map[string]string, startLabel
 	return sect, nil
 }
 
-// Is 'line' raw data, for example: "   r 0000000C"
+// Is 'line' raw data, for example: "   d: 0000000C"
 func matchRaw(line string, expr *regexp.Regexp) (value string, isMatch bool, err error) {
 	fields := expr.FindStringSubmatch(line)
 	if len(fields) > 0 {
@@ -246,7 +273,7 @@ func matchAddrRef(line string, expr *regexp.Regexp, labels map[string]string) (v
 	return "", false, nil
 }
 
-// Is 'line' a lable, for example: Boot: @040
+// Is 'line' a lable, for example: Boot: @040  or Boot: 0x300
 func matchLabel(line string, expr *regexp.Regexp) (label string, addr string, err error) {
 	fields := expr.FindStringSubmatch(line)
 	if len(fields) > 0 {
@@ -271,9 +298,9 @@ func assemble(mc_line *machine_line, expr *regexp.Regexp, loadRefExpr *regexp.Re
 		fields := expr.FindStringSubmatch(mc_line.line)
 
 		instruction := fields[1]
-		if instruction == "blt" {
-			fmt.Println("")
-		}
+		// if instruction == "blt" {
+		// 	fmt.Println("")
+		// }
 		// Rewrite any instructions to replace references, for example, "lw"
 		mc_line.line, err = rewrite(instruction, mc_line.line, labels, loadRefExpr)
 		if err != nil {
@@ -285,10 +312,10 @@ func assemble(mc_line *machine_line, expr *regexp.Regexp, loadRefExpr *regexp.Re
 
 		// All address fields need to be converted to Byte-address form
 		// for the Context--depending on the instruction.
-		switch instruction {
-		case "beq", "bne", "blt", "bge", "bltu", "bgeu", "jal":
-			value = utils.WordAddrToByteAddrString(value)
-		}
+		// switch instruction {
+		// case "beq", "bne", "blt", "bge", "bltu", "bgeu", "jal":
+		// 	value = utils.WordAddrToByteAddrString(value)
+		// }
 
 		// PC address needs to be converted to Byte-address form
 		pcByteAddr := utils.WordAddrToByteAddrString(mc_line.addr)
@@ -326,7 +353,7 @@ func rewrite(instruction string, ass string, labels map[string]string, loadRefEx
 	newInstr = ass
 
 	switch instruction {
-	case "lb", "lh", "lw", "lbu", "lhu":
+	case "lb", "lh", "lw", "lbu", "lhu", "sb", "sh", "sw":
 		value, err := resolveCalc(instruction, ass, labels)
 
 		if err != nil {
@@ -356,54 +383,72 @@ func rewrite(instruction string, ass string, labels map[string]string, loadRefEx
 
 func resolveCalc(instruction string, ass string, labels map[string]string) (value string, err error) {
 	switch instruction {
-	case "lb", "lh", "lw", "lbu", "lhu":
-		expr, _ := regexp.Compile(`@([\w]+)([+]*)([0-9]*)`)
+	case "lb", "lh", "lw", "lbu", "lhu", "sb", "sh", "sw":
+		// Formats can be:
+		// lw x4, 0x28(x0)
+		// lw x4, 0x28+4(x0)
+		// lw x4, @Data(x0)
+		// lw x4, @Data+4(x0)
+
+		expr, _ := regexp.Compile(`([\w]+) ([x0-9]+),[ ]*([\w@]+)([+]*)([0-9]*)`)
 
 		fields := expr.FindStringSubmatch(ass)
 
 		if len(fields) > 0 {
-			if fields[2] == "+" {
-				// Ex: @Data+3
-				value = labels[fields[1]]
-				byteAddr := utils.WordAddrToByteAddrString(value)
-				bad, err := utils.StringHexToInt(byteAddr)
-				if err != nil {
-					return "", err
-				}
+			expr, _ = regexp.Compile(`([\w]+) ([x0-9]+),[ ]*([\w]+)([+]*)([0-9]*)`)
+			// Check for format: lw x4, 0x28(x0)
+			fields = expr.FindStringSubmatch(ass)
 
-				baOffset := utils.WordAddrToByteAddrString(fields[3])
-				offset, err := utils.StringHexToInt(baOffset)
-				if err != nil {
-					return "", err
+			if len(fields) > 0 {
+				if fields[4] != "" {
+					// Ex: 0x28+4
+					base, err := utils.StringHexToInt(fields[3])
+					if err != nil {
+						return "", err
+					}
+
+					offset, err := utils.StringHexToInt(fields[5])
+					if err != nil {
+						return "", err
+					}
+					v := uint64(base + offset)
+
+					value = utils.UintToHexString(v, true)
+				} else {
+					// Ex: 0x28
+					value = labels[fields[3]]
 				}
-				v := uint64(bad + offset)
-				value = utils.UintToHexString(v, true)
 			} else {
-				// Ex: @Data
-				value = labels[fields[1]]
-				byteAddr := utils.WordAddrToByteAddrString(value)
-				bad, err := utils.StringHexToInt(byteAddr)
-				if err != nil {
-					return "", err
+				expr, _ = regexp.Compile(`([\w]+) ([x0-9]+),[ ]*@([\w]+)([+]*)([0-9]*)`)
+				// Check for format: lw x4, @Data(x0)
+				fields = expr.FindStringSubmatch(ass)
+
+				if fields[4] != "" {
+					// Ex: @Data+4
+					value = labels[fields[3]]
+
+					base, err := utils.StringHexToInt(value)
+					if err != nil {
+						return "", err
+					}
+
+					offset, err := utils.StringHexToInt(fields[5])
+					if err != nil {
+						return "", err
+					}
+
+					v := uint64(base + offset)
+					value = utils.UintToHexString(v, true)
+				} else {
+					// Ex: @Data
+					value = labels[fields[3]]
 				}
 
-				value = utils.UintToHexString(uint64(bad), true)
+				value = utils.WordAddrToByteAddrString(value)
 			}
 		}
-		//  else {
-		// 	// Just a offset value, ex: xx xx, 0(x4)
-		// 	expr, _ := regexp.Compile(`([x0-9]+)\(([xa0-9]+)\)`)
-
-		// 	fields := expr.FindStringSubmatch(ass)
-		// 	bs := utils.WordAddrToByteAddrString(fields[1])
-		// 	byteOffset, err := utils.StringHexToInt(bs)
-		// 	if err != nil {
-		// 		return "", err
-		// 	}
-
-		// 	value = utils.UintToHexString(uint64(byteOffset), false)
-		// }
 	case "beq", "bne", "blt", "bge", "bltu", "bgeu":
+		// Not currently a path taken.
 		expr, _ := regexp.Compile(`@([\w]+)`)
 
 		fields := expr.FindStringSubmatch(ass)

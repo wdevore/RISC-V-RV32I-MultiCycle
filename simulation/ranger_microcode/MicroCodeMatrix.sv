@@ -74,6 +74,7 @@ module MicroCodeMatrix
 // ignore them--but we won't.
 logic [6:0] ir_opcode = ir_i[6:0];
 logic [2:0] funct3 = ir_i[14:12];
+
 // Used for Jal optimization
 logic [4:0] dstRg = ir_i[11:7];
 logic destRgX0;
@@ -190,8 +191,8 @@ logic [DATA_WIDTH-1:0] mtvec /*verilator public*/;
 logic [`CSRAddrSize-1:0] csr_addr;
 
 always_comb begin
-    case (ir_state)
-        ITMret, PreFetch: begin
+    case (state)
+        PreFetch: begin
             csr_addr = Mstatus;
         end
         IRQ0: begin
@@ -199,6 +200,14 @@ always_comb begin
         end
         default:
             csr_addr = ir_i[31:20];
+    endcase
+
+    case (ir_state)
+        ITMret: begin
+            csr_addr = Mstatus;
+        end
+        default:
+            ;
     endcase
 end
 
@@ -208,6 +217,15 @@ logic [DATA_WIDTH-1:0] algo_data;
 logic [DATA_WIDTH-1:0] rd_data;     // RegFile data
 always_comb begin
     rd_data = 0;
+
+    case (state)
+        IRQ1: begin
+            // PC <== mtvec
+            rd_data = mtvec;
+        end
+        default:
+            ;
+    endcase
 
     case (ir_state)
         ITCSR: begin
@@ -234,10 +252,6 @@ always_comb begin
         end
         ITMret: begin
             rd_data = {mepc[31:2], 2'b00};  // IALIGN = 1 = 32bits
-        end
-        IRQ1: begin
-            // PC <== mtvec
-            rd_data = mtvec;
         end
         default:
             ;
@@ -433,7 +447,7 @@ always_comb begin
 
                     mem_rd = 1'b0;      // Enable read (active low)
 
-                    next_state = Fetch;
+                    next_state = PreFetch;
                 end
 
                 default: begin
@@ -503,12 +517,12 @@ always_comb begin
                     next_ir_state = ITALU;
                 end
 
-                `ITYPE_L: begin
-                    // Default: Load type instructions
-                    // `ifdef SIMULATE
-                    //     $display("OPCODE type: ITYPE_L %x", ir_opcode);
-                    // `endif
-                end
+                // `ITYPE_L: begin
+                //     // Default: Load type instructions
+                //     // `ifdef SIMULATE
+                //     //     $display("OPCODE type: ITYPE_L %x", ir_opcode);
+                //     // `endif
+                // end
 
                 `ITYPE_J: begin
                     next_ir_state = ITJalr;
@@ -565,7 +579,7 @@ always_comb begin
                     // transition to fetch.
                     // This effectively is a NOP
                     if (destRgX0) begin
-                        next_ir_state = PreFetch;
+                        next_state = PreFetch;
                     end
                     else
                         next_ir_state = RTCmpl;
@@ -579,7 +593,7 @@ always_comb begin
                     rg_wr = RgLdEnabled;
 
                     // Setup Fetch next instruction the PC is pointing at.
-                    next_ir_state = PreFetch;
+                    next_state = PreFetch;
                 end
 
                 // ---------------------------------------------------
@@ -598,7 +612,7 @@ always_comb begin
                     // transition to fetch.
                     // This effectively is a NOP
                     if (destRgX0) begin
-                        next_ir_state = PreFetch;
+                        next_state = PreFetch;
                     end
                     else
                         next_ir_state = ITALUCmpl;
@@ -613,7 +627,7 @@ always_comb begin
 
 
                     // Setup Fetch next instruction the PC is pointing at.
-                    next_ir_state = PreFetch;
+                    next_state = PreFetch;
                 end
 
                 // ---------------------------------------------------
@@ -664,7 +678,7 @@ always_comb begin
                     wd_src = WDSrcMDR;
                     rg_wr = RgLdEnabled;   // Enable loading RegisterFile
 
-                    next_ir_state = PreFetch;
+                    next_state = PreFetch;
                 end
 
                 // ---------------------------------------------------
@@ -684,7 +698,7 @@ always_comb begin
                     // we don't need a writeback cycle so just
                     // transition to complete.
                     if (destRgX0)
-                        next_ir_state = PreFetch;
+                        next_state = PreFetch;
                     else
                         next_ir_state = ITJalrRtr;
                 end
@@ -698,7 +712,7 @@ always_comb begin
                     wd_src = WDSrcImm;
                     rg_wr = RgLdEnabled;
 
-                    next_ir_state = PreFetch;
+                    next_state = PreFetch;
                 end
 
                 // ---------------------------------------------------
@@ -748,7 +762,7 @@ always_comb begin
                     // Pmmu will merge data if needed.
                     mem_wr = 1'b0;
 
-                    next_ir_state = PreFetch;
+                    next_state = PreFetch;
                 end
 
                 // ---------------------------------------------------
@@ -827,7 +841,7 @@ always_comb begin
                     end
 
                     // Need extra state to "re"-load PC with branch
-                    next_ir_state = PreFetch;
+                    next_state = PreFetch;
                 end
 
                 // ---------------------------------------------------
@@ -848,7 +862,7 @@ always_comb begin
                     // transition to prefetch because
                     // we need the extra cycle.
                     if (destRgX0) begin
-                        next_ir_state = PreFetch;
+                        next_state = PreFetch;
                     end
                     else
                         next_ir_state = JTJalRtr;
@@ -863,7 +877,7 @@ always_comb begin
                     wd_src = WDSrcImm;
                     rg_wr = RgLdEnabled;
 
-                    next_ir_state = PreFetch;
+                    next_state = PreFetch;
                 end
 
                 // ---------------------------------------------------
@@ -878,7 +892,7 @@ always_comb begin
                     wd_src = WDSrcImm;
                     rg_wr = RgLdEnabled;
 
-                    next_ir_state = PreFetch;
+                    next_state = PreFetch;
                 end
 
                 // ---------------------------------------------------
@@ -893,7 +907,7 @@ always_comb begin
                     wd_src = WDSrcImm;
                     rg_wr = RgLdEnabled;
 
-                    next_ir_state = PreFetch;
+                    next_state = PreFetch;
                 end
 
                 // ---------------------------------------------------
@@ -931,7 +945,7 @@ always_comb begin
                                 writeCSR = 1'b1;
 
                                 // Fetch next instruction at the same time.
-                                next_ir_state = PreFetch;
+                                next_state = PreFetch;
                             end
                             else begin
                                 // Transfer CSR to rd
@@ -948,7 +962,7 @@ always_comb begin
                                 // This is the only scenario where we don't write to a CSR register.
 
                                 // Fetch next instruction at the same time.
-                                next_ir_state = PreFetch;
+                                next_state = PreFetch;
                             end
                             else begin
                                 // Transfer CSR to rd
@@ -987,7 +1001,7 @@ always_comb begin
                         default: ;
                     endcase
 
-                    next_ir_state = PreFetch;
+                    next_state = PreFetch;
                 end
 
                 // ---------------------------------------------------
@@ -1013,60 +1027,7 @@ always_comb begin
                     csr_data[`CSR_Mstatus_MIE] = csr_data[`CSR_Mstatus_MPIE];
                     // Clear copy
                     csr_data[`CSR_Mstatus_MPIE] = 1'b0;
-                    next_ir_state = PreFetch;
-                end
-
-                // PreFetch is checked even in a Trap handler.
-                PreFetch: begin
-                    // Check if an interrupt occurred and if we can honor it.
-                    //                Global enable            M-mode enable       Pending interrupts
-                    irq_pending = mstatus[`CSR_Mstatus_MIE] & mie[`CSR_Mie_MEIE] & mip[`CSR_Mip_MEIE];
-
-                    if (irq_pending & ~interrupt_in_progress) begin
-                        // Okay, there is an interrupt pending
-                        // $display("<<**Interrupt detected**>>");
-                        writeCSR = 1'b1;    // Enable writing to CSR
-
-                        // Modify a copy of CSR
-                        csr_data = mstatus;
-                        // Backup Global bit
-                        csr_data[`CSR_Mstatus_MPIE] = csr_data[`CSR_Mstatus_MIE];
-                        // Disable Global interrupts
-                        csr_data[`CSR_Mstatus_MIE] = 1'b0;
-                        // Select CSR address
-
-                        next_ir_state = IRQ0;
-                    end
-                    else begin
-                        mem_rd = 1'b0;
-                        next_state = Fetch;
-                    end
-                end
-
-                IRQ0: begin
-                    // Mepc <== PC
-                    csr_data = pc_i; // PC_prior is not needed
-
-                    // Select CSR address
-                    writeCSR = 1'b1;    // Enable writing to CSR
-
-                    next_ir_state = IRQ1;
-                end
-
-                IRQ1: begin
-                    // Jump to Trap by loading
-                    // PC <== mtvec
-                    pc_src = PCSrcRDCSR;
-                    pc_ld = RgLdEnabled;
-
-                    next_ir_state = IRQ2;
-                end
-
-                IRQ2: begin
-                    // PC is now loaded with Trap handler address and that
-                    // means we can safely transition to Fetch.
-                    mem_rd = 1'b0;
-                    next_state = Fetch;
+                    next_state = PreFetch;
                 end
 
                 default: begin
@@ -1077,7 +1038,61 @@ always_comb begin
             endcase
         end
 
+        // PreFetch is checked even in a Trap handler.
+        PreFetch: begin
+            // Check if an interrupt occurred and if we can honor it.
+            //                Global enable            M-mode enable       Pending interrupts
+            irq_pending = mstatus[`CSR_Mstatus_MIE] & mie[`CSR_Mie_MEIE] & mip[`CSR_Mip_MEIE];
+
+            if (irq_pending & ~interrupt_in_progress) begin
+                // Okay, there is an interrupt pending
+                // $display("<<**Interrupt detected**>>");
+                writeCSR = 1'b1;    // Enable writing to CSR
+
+                // Modify a copy of CSR
+                csr_data = mstatus;
+                // Backup Global bit
+                csr_data[`CSR_Mstatus_MPIE] = csr_data[`CSR_Mstatus_MIE];
+                // Disable Global interrupts
+                csr_data[`CSR_Mstatus_MIE] = 1'b0;
+                // Select CSR address
+
+                next_state = IRQ0;
+            end
+            else begin
+                mem_rd = 1'b0;
+                next_state = Fetch;
+            end
+        end
+
+        IRQ0: begin
+            // Mepc <== PC
+            csr_data = pc_i; // PC_prior is not needed
+
+            // Select CSR address
+            writeCSR = 1'b1;    // Enable writing to CSR
+
+            next_state = IRQ1;
+        end
+
+        IRQ1: begin
+            // Jump to Trap by loading
+            // PC <== mtvec
+            pc_src = PCSrcRDCSR;
+            pc_ld = RgLdEnabled;
+
+            next_state = IRQ2;
+        end
+
+        IRQ2: begin
+            // PC is now loaded with Trap handler address and that
+            // means we can safely transition to Fetch.
+            mem_rd = 1'b0;
+            next_state = Fetch;
+        end
+
         Halt: begin
+            halt = 1'b1;
             next_state = Halt;
         end
 
@@ -1135,7 +1150,7 @@ always_ff @(negedge clk_i) begin
         end
     
         Execute: begin
-            case (ir_state)
+            case (state)
                 PreFetch: begin
                     if (irq_pending & ~interrupt_in_progress) begin
                         // Signal that interrupt is now in play
@@ -1152,6 +1167,11 @@ always_ff @(negedge clk_i) begin
                     irq_reset_trigger <= 0;
                 end
 
+                default:
+                    begin end
+            endcase
+
+            case (ir_state)
                 ITMretClr: begin
                     // Allow the interrupt flow to re-start.
                     interrupt_in_progress <= 1'b0;

@@ -1,21 +1,21 @@
 [*]
 [*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
-[*] Wed Nov 23 22:20:24 2022
+[*] Sun Nov 27 17:53:56 2022
 [*]
 [dumpfile] "/media/RAMDisk/waveform.vcd"
-[dumpfile_mtime] "Wed Nov 23 22:20:01 2022"
-[dumpfile_size] 71541
+[dumpfile_mtime] "Sun Nov 27 17:48:38 2022"
+[dumpfile_size] 82282
 [savefile] "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/ranger_microcode/standard.gtkw"
 [timestart] 1
-[size] 3320 1555
-[pos] 7 209
-*-5.000000 325 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[size] 3320 1348
+[pos] 70 48
+*-5.000000 200 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
 [treeopen] TOP.RangerRisc.
 [sst_width] 221
 [signals_width] 284
 [sst_expanded] 1
-[sst_vpaned_height] 455
+[sst_vpaned_height] 388
 @28
 [color] 2
 TOP.clk_i
@@ -60,6 +60,11 @@ TOP.RangerRisc.matrix.next_vector_state[4:0]
 @22
 [color] 2
 TOP.RangerRisc.matrix.dstRg[4:0]
+@28
+TOP.RangerRisc.matrix.take_branch
+TOP.RangerRisc.matrix.destRgX0
+@29
+TOP.RangerRisc.matrix.mdr_ld
 @200
 -IR
 @2028
@@ -142,9 +147,7 @@ TOP.RangerRisc.addr_mux_to_pmmu[31:0]
 TOP.RangerRisc.cm_to_mem_rd
 [color] 1
 TOP.RangerRisc.cm_to_mem_wr
-@29
 TOP.RangerRisc.pmmu.mwr_i
-@28
 TOP.RangerRisc.pmmu.signed_op
 @22
 TOP.RangerRisc.pmmu.wd_i[31:0]
@@ -162,9 +165,13 @@ TOP.RangerRisc.pmmu.storage_data_out[31:0]
 TOP.RangerRisc.reg_file.reg_we_i
 @22
 TOP.RangerRisc.reg_file.reg_dst_i[4:0]
+TOP.RangerRisc.reg_file.reg_srcA_i[4:0]
+TOP.RangerRisc.reg_file.reg_srcB_i[4:0]
 TOP.RangerRisc.reg_file.bank[1][31:0]
 TOP.RangerRisc.reg_file.bank[2][31:0]
 TOP.RangerRisc.reg_file.bank[3][31:0]
+TOP.RangerRisc.reg_file.bank[4][31:0]
+TOP.RangerRisc.reg_file.bank[5][31:0]
 TOP.RangerRisc.reg_file.bank[9][31:0]
 @200
 -ALU
@@ -177,12 +184,22 @@ TOP.RangerRisc.alu.a_i[31:0]
 TOP.RangerRisc.alu.b_i[31:0]
 TOP.RangerRisc.alu.y_o[31:0]
 @28
-TOP.RangerRisc.alu_out_rg.ld_i
++{alu_out_rg_ld} TOP.RangerRisc.alu_out_rg.ld_i
 @22
 +{TOP.RangerRisc.alu_out_rg.ALUOut[31:0]} TOP.RangerRisc.alu_out_rg.data_o[31:0]
 @2028
 ^9 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_alu_flags.txt
-+{TOP.RangerRisc.alu_flags_rg.Flags[3:0]} TOP.RangerRisc.alu_flags_rg.data_o[3:0]
+TOP.RangerRisc.alu.flags_o[3:0]
+@c02028
+^9 /media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/filters/gtkwave_alu_flags.txt
++{FlagsReg[3:0]} TOP.RangerRisc.alu_flags_rg.data_o[3:0]
+@28
+(0)TOP.RangerRisc.alu_flags_rg.data_o[3:0]
+(1)TOP.RangerRisc.alu_flags_rg.data_o[3:0]
+(2)TOP.RangerRisc.alu_flags_rg.data_o[3:0]
+(3)TOP.RangerRisc.alu_flags_rg.data_o[3:0]
+@1401200
+-group_end
 @200
 -WD
 @2024

@@ -19,7 +19,7 @@ func GetJalrFields(ass string) []string {
 	return rxpr.FindStringSubmatch(ass)
 }
 
-// Example: jalr x0, jumpto(x1)
+// Example: jalr x0, @Jumpto(x1)
 func Jalr(json map[string]interface{}) (macCode string, err error) {
 	fmt.Println("### jalr ###")
 	ass := fmt.Sprintf("%s", json["Assembly"])

@@ -79,8 +79,8 @@ int main(int argc, char *argv[])
     // Provides access to the sub-modules either privately or publicly.
     VRangerRisc_RangerRisc *const risc = top->RangerRisc;
 
-    // VRangerRisc_Pmmu *pmmu = risc->pmmu;
-    // VRangerRisc_Memory *bram = pmmu->bram;
+    VRangerRisc_Pmmu *pmmu = risc->pmmu;
+    VRangerRisc_Memory *bram = pmmu->bram;
 
     // Not really useful for the most part.
     // VRangerRisc__Syms *vlSymsp = risc->vlSymsp;
@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
     if (assertionFailure)
         abort(tb);
 
-    duration = 5000;
+    duration = 15000;
 
     timeStep = loop(timeStep, timeStep, duration, tb, top, risc, unit);
     if (assertionFailure)

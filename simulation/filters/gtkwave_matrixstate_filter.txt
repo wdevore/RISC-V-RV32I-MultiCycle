@@ -2,4 +2,8 @@
 1 Fetch
 2 Decode
 3 Execute
-4 Halt
+4 PreFetch
+5 IRQ0
+6 IRQ1
+7 IRQ2
+8 Halt

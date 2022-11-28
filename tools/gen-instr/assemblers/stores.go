@@ -9,7 +9,7 @@ import (
 )
 
 // s(b,h,w) <src1>, <offset>(<base register>)  => sb <rs2>, <offset>(<rs1>)
-// Example: sb x14, 0x010(x0)
+// Example: sb x14, 0x010(x0)    or sb x14, @Data+1(x0)
 // Store contents of x14 to x0+0x10
 
 func Stores(json map[string]interface{}) (macCode string, err error) {

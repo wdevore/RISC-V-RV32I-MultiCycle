@@ -3,6 +3,6 @@
     "RamFile": "code.ram",
     "OutFile": "/media/RAMDisk/code.out",
     "inputPath": "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/ranger_microcode/assemblies/",
-    "inputFile": "addi_neg.asm",
+    "inputFile": "subroutine.asm",
     "entryAddr": "0x0"
 }

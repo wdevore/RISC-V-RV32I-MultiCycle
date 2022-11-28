@@ -5,7 +5,7 @@ Main: @
     addi x2, x4, -2     // x4 + 0xFE
     ebreak              // Stop
 
-Data: @00A              // Specified in word-address (WA) format
+Data: $028              // Specified in byte-address (BA) format
     d: 0000000A         // data to load
 
 RVector: @0C0           // 0x300 BA = 0xC0 WA

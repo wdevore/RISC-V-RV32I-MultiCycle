@@ -25,10 +25,6 @@
 24 ITECall
 25 ITCSR
 26 ITCSRLd
-27 IRQ0
-28 IRQ1
-29 IRQ2
-30 ITMRet
-31 ITMretClr
-32 PreFetch
-33 IRUnknown
+27 ITMRet
+28 ITMretClr
+29 IRUnknown

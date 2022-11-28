@@ -26,6 +26,10 @@ typedef enum logic [4:0] {
     Fetch,
     Decode,
     Execute,
+    PreFetch,
+    IRQ0,
+    IRQ1,
+    IRQ2,
     Halt        // Not technically a RISC-V state,
 } MatrixState /*verilator public*/; 
 
@@ -57,12 +61,8 @@ typedef enum logic [`IRStateSize-1:0] {
     ITECall,
     ITCSR,
     ITCSRLd,
-    IRQ0,
-    IRQ1,
-    IRQ2,
     ITMret,
     ITMretClr,
-    PreFetch,
     IRUnknown
 } InstructionState /*verilator public*/; 
 

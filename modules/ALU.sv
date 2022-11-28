@@ -54,6 +54,7 @@ always_comb begin
     case (func_op_i)
         AddOp: begin
             ORes = a_i + b_i;
+
             // RISC-V ignores any overflows or carries
             // Carry going "into" the upper bit
             // {carry_borrow_l, lower_bits} = a_i[DATA_WIDTH-2:0] + b_i[DATA_WIDTH-2:0];

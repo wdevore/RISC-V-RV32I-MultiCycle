@@ -53,6 +53,8 @@ func BtypeBranch(json map[string]interface{}) (macCode string, err error) {
 	}
 	fmt.Println("Target offset: ", target)
 
+	// The target needs to be converted to byte-address form
+	target = utils.WordAddrToByteAddrString(target)
 	targetInt, err := utils.StringHexToInt(target)
 	if err != nil {
 		return "", err

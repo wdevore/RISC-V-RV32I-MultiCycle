@@ -27,7 +27,7 @@
 
 module Memory
 #(
-    parameter WORDS = `MEM_WORDS,    // 2^WORDS = 8K
+    parameter WORDS = `MEM_WORDS,    // 2^WORDS
     parameter DATA_WIDTH = 32)
 (
     input  logic                  clk_i,     // pos-edge

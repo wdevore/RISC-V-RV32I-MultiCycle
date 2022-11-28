@@ -1,5 +1,5 @@
 # Microcode
-This version splits the ControlMatrixCSRs.sv into basically two parts. If moves many of the combinational statements out of the main combincational behavioural block and refactors the **Decode** and **Execute** states.
+This version splits the ControlMatrixCSRs.sv into basically two parts. If moves many of the combinational statements out of the main combinational behavioural block and refactors the **Decode** and **Execute** states.
 
 ## Reset
 This state sequence stays the same. All of the signals it changes are ORed with the respective ROM signals.
@@ -14,6 +14,13 @@ This state calculates the ROM address for the **Execute** state.
 This state is a Microcode ROM bank with a counter that is set by the **Decode** state.
 
 ## Assembly
+
+### Notes:
+The instructions themselves need to have the offset specified in byte-address form, however, the memory addresses can be defined as byte-address using "$" or word-address using "@".
+
+If an instruction references an address that is defined in word-address form then it is converted to byte-address form even if it refers to a word-address. This is per the RISC-V ISA specs.
+
+### Compiling
 You need to run the assembler to produce a rams/code.ram file.
 
 ```cd /media/path/to/risc/RISC-V-RV32I-MultiCycle/tools/gen-instr/assembler```.

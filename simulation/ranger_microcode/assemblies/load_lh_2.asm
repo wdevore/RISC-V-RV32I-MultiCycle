@@ -1,7 +1,13 @@
+// Load highest half word as signed
+// from word-address **0x0000000A**. Only **0xDEAD** is loaded.
+
+// rd = M[rs1+imm][0:7]
+
 // Load x1 with DEADBEEF
+// 0x28 + 0x02 = 0x2A
 
 Main: @
-    lw x1, 0x28(x0)     // 0x28 BA = 0x0A WA
+    lh x1, 0x2A(x0)     // Load x1 = 0xDEAD
     ebreak              // Stop
 
 Data: @00A
@@ -9,4 +15,3 @@ Data: @00A
 
 RVector: @0C0           // 0x300 BA = 0xC0 WA
     @: Main             // Reset vector
-
