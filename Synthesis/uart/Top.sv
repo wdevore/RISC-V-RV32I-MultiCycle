@@ -96,7 +96,7 @@ always_ff @(posedge clk) begin
             if (rx_complete) begin
                 // An ASCII byte has arrived. Convert and display it
                 // 0x30->0x39 and 0x61->0x66
-                //   0 -> 9          a -> b 
+                //   0 -> 9          a -> f
                 if (rx_byte > 8'h39)
                     display_byte <= rx_byte - 8'h57;
                 else

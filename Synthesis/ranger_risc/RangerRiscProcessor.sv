@@ -11,7 +11,7 @@ module RangerRiscProcessor
    input logic clk_i,
    input logic reset_i,
    input logic irq_i,
-   
+
    // ---------------------------------------------
    // SPI port
    // Includes 3 SS signals for 3 devices
@@ -25,7 +25,16 @@ module RangerRiscProcessor
    // Uni directional 8bit parallel data
    // ---------------------------------------------
    output logic [7:0] data_out,
-   output logic data_wr
+   output logic io_wr,
+
+`ifdef DEBUG_MODE
+   output logic ready_o,              // Active high
+   output logic halt_o,               // Active high
+   output MatrixState state_o,
+   output ResetState vector_state_o,
+   output InstructionState ir_state_o
+`endif
+
 );
 
 /*verilator public_module*/
@@ -101,7 +110,7 @@ logic cm_to_rsa_ld;
 logic [DATA_WIDTH-1:0] cm_rd_data;
 
 // Signal sequencer
-ControlMatrix matrix
+MicroCodeMatrix matrix
 (
    .clk_i(clk_i),
    .ir_i(ir_out),
@@ -132,7 +141,11 @@ ControlMatrix matrix
 `ifdef DEBUG_MODE
    .mdr_ld_o(cm_to_mdr_ld),
    .ready_o(ready_o),
-   .halt_o(halt_o)
+   .halt_o(halt_o),
+   .state_o(state_o),
+   .vector_state_o(vector_state_o),
+   .ir_state_o(ir_state_o)
+
 `else
    .mdr_ld_o(cm_to_mdr_ld)
 `endif
@@ -146,12 +159,14 @@ ControlMatrix matrix
 // --------------------------------------------------
 // Any attempt to write to BRAM in the 0x800 range 
 // causes the write signal to hold inactive high (i.e. disabled).
-// Active low
-logic mem_wr;
-assign mem_wr = cm_to_mem_wr | addr_mux_to_pmmu[11];
 
-// Active low
-assign data_wr = ~addr_mux_to_pmmu[11];
+logic mem_wr;  // Active low
+// If either signal is high then writing to memory is disabled.
+// Which means we are either not writing or we are writing to IO.
+logic mem_wr = cm_to_mem_wr | addr_mux_to_pmmu[11];
+
+// Using "sb" instruction at 0x800 or above means writing to IO.
+assign io_wr = ~addr_mux_to_pmmu[11]; // Active low
 assign data_out = rsb_out[7:0];
 
 // Memory management
@@ -174,7 +189,7 @@ Mux8 #(.DATA_WIDTH(DATA_WIDTH)) pc_mux
     .data0_i(alu_imm_out),
     .data1_i(alu_out),
     .data2_i(ResetVector),
-    .data3_i(cm_rd_data),
+    .data3_i(`SrcZero), // cm_rd_data
     .data4_i(pmmu_out),
     .data5_i(`SrcZero),
     .data6_i(`SrcZero),
@@ -331,7 +346,7 @@ Mux4 #(.DATA_WIDTH(DATA_WIDTH)) wd_mux
    .data0_i(alu_imm_out),
    .data1_i(alu_out),
    .data2_i(mdr_out),
-   .data3_i(cm_rd_data),
+   .data3_i(`SrcZero), // cm_rd_data
    .data_o(wd_src_out)
 );
 

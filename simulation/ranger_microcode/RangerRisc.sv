@@ -8,6 +8,13 @@ module RangerRisc
     parameter DATA_WIDTH = 32)
 (
    input logic clk_i,
+
+   // ---------------------------------------------
+   // Uni directional 8bit parallel data
+   // ---------------------------------------------
+   output logic [7:0] data_out,
+   output logic io_wr,
+
 /* verilator lint_off UNDRIVEN */
 `ifdef DEBUG_MODE
    input logic reset_i,
@@ -109,7 +116,7 @@ MicroCodeMatrix matrix
    .pcp_ld_o(cm_to_pcp_ld),
    .flags_ld_o(cm_to_alu_flags_ld),
    .pc_src_o(cm_to_pc_src),
-   .mem_wr_o(cm_to_mem_wr),
+   .mem_wr_o(cm_to_mem_wr),      // Active Low
    .mem_rd_o(cm_to_mem_rd),
    .addr_src_o(cm_to_addr_src),
    .rst_src_o(cm_to_rst_src),
@@ -138,10 +145,16 @@ MicroCodeMatrix matrix
 // --------------------------------------------------
 // Any attempt to write BRAM at 0x800 or higher is simply
 // ignored by BRAM meaning the write signal is held inactive (high).
-// logic mem_wr;
+logic mem_wr;
 
 // Active low
-// assign mem_wr = cm_to_mem_wr | addr_mux_to_pmmu[11];
+// If either signal is high then writing to memory is disabled.
+// Which means we are either not writing or we are writing to IO.
+assign mem_wr = cm_to_mem_wr | addr_mux_to_pmmu[11];
+
+// Using "sb" instruction at 0x800 or above means writing to IO.
+assign io_wr = ~(~cm_to_mem_wr & addr_mux_to_pmmu[11]); // Active low
+assign data_out = rsb_out[7:0];
 
 // Memory management
 Pmmu pmmu
@@ -150,7 +163,7 @@ Pmmu pmmu
    .funct3(rst_src_out),
    .byte_addr_i(addr_mux_to_pmmu),
    .wd_i(rsb_out),
-   .mwr_i(cm_to_mem_wr),
+   .mwr_i(mem_wr),
    .mrd_i(cm_to_mem_rd),
    .rd_o(pmmu_out),
    .mem_rdy_o(mem_rdy)

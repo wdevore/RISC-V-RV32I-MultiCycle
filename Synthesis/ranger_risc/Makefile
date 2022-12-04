@@ -4,19 +4,24 @@ TOP_FILE = Top.sv
 
 SUB_MODULES_FILES = \
 	../../definitions/definitions.sv \
-	../../definitions/TypeEnums.sv \
+	TypeEnums.sv \
 	../../modules/CDCSynchron.sv \
 	../../modules/Mux8.sv \
 	../../modules/Mux4.sv \
 	../../modules/Mux2.sv \
-	../../modules/${MATRIX}.sv \
 	../../modules/Register.sv \
 	../../modules/Memory.sv \
 	../../modules/ALU.sv \
 	../../modules/Immediate.sv \
 	../../modules/RegisterFile.sv \
 	../../modules/Pmmu.sv \
+	../Modules/Decoder.sv \
+	../Modules/SevenSeg.sv \
 	Enums.sv \
+	UARTDefinitions.sv \
+	UARTTx.sv \
+	UARTRx.sv \
+	MicroCodeMatrix.sv \
 	RangerRiscProcessor.sv
 
 MODULES_FILES = ${SUB_MODULES_FILES} ${TOP_FILE}
@@ -50,9 +55,15 @@ PINS_CONSTRAINTS = ../IceLogicBus.pcf
 RESET_BOOT_VECTOR = "32'h00000300" # @0C0
 # RESET_BOOT_VECTOR = "32'h0000006C"
 
+# Note: 20MHz is used as the clock constraint instead of 64MHz. This design
+# struggles to reach 22MHz as it is.
+CORE_FREQUENCY = 18
+
 .PHONY: all
 
 all: build route upload
+
+compile: build route
 
 build: ${MODULES_FILES} ${PINS_CONSTRAINTS}
 	@echo "##### Building..."
@@ -62,6 +73,7 @@ build: ${MODULES_FILES} ${PINS_CONSTRAINTS}
 	-defer \
 	-DRESET_VECTOR=${RESET_BOOT_VECTOR} \
 	-DUSE_ROM \
+	-DDEBUG_MODE \
 	${MODULES_FILES}
 
 route: ${BUILD_BIN}/hardware.json
@@ -69,7 +81,7 @@ route: ${BUILD_BIN}/hardware.json
 	${ICESTORM_TOOLCHAIN}/bin/nextpnr-ice40 \
 	--hx8k \
 	-q \
-	--freq 64 \
+	--freq ${CORE_FREQUENCY} \
 	--package bg121:4k \
 	--pcf ${PINS_CONSTRAINTS} \
 	-l ${BUILD_BIN}/next.log \

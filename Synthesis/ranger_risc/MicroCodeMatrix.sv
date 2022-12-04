@@ -57,15 +57,16 @@ module MicroCodeMatrix
     // **--**--**--**--**--**--**--**--**--**--**--**--**--
     // DEBUGGING Outputs
     // **--**--**--**--**--**--**--**--**--**--**--**--**--
-    `ifdef DEBUG_MODE
-    // output logic out_ld_o,
-    // output logic out_sel_o,
+`ifdef DEBUG_MODE
     output logic mdr_ld_o,
     output logic ready_o,              // Active high
-    output logic halt_o                // Active high
-    `else
+    output logic halt_o,               // Active high
+    output MatrixState state_o,
+    output ResetState vector_state_o,
+    output InstructionState ir_state_o
+`else
     output logic mdr_ld_o
-    `endif
+`endif
 );
 
 /*verilator public_module*/     // <-- redudant
@@ -92,8 +93,8 @@ logic [2:0] funct7up = ir_i[31:29];
 MatrixState state /*verilator public*/ = 0;       // Current state
 MatrixState next_state /*verilator public*/ = 0;  // Next state
 
-MatrixState vector_state /*verilator public*/ = 0;
-MatrixState next_vector_state /*verilator public*/ = 0;
+ResetState vector_state /*verilator public*/ = 0;
+ResetState next_vector_state /*verilator public*/ = 0;
 
 InstructionState ir_state /*verilator public*/;
 InstructionState next_ir_state/*verilator public*/ = 0;
@@ -800,7 +801,7 @@ end
 // Sequence control (sync). Move to the next state on the
 // rising edge of the next clock.
 // -------------------------------------------------------------
-// always_ff @(negedge clk_i, negedge irq_i) begin      // NOTE! This is mixing domains **can be tricky**
+// always_ff @(posedge clk_i, negedge irq_i) begin      // NOTE! This is mixing domains **can be tricky**
 always_ff @(posedge clk_i) begin
     // ----------------------------------------------------
     // The core state control logic
@@ -847,6 +848,9 @@ assign rd_data_o = rd_data;
 `ifdef DEBUG_MODE
 assign ready_o = ready;
 assign halt_o = halt;
+assign state_o = state;
+assign vector_state_o = vector_state;
+assign ir_state_o = ir_state;
 `endif
 
 endmodule

@@ -1,5 +1,7 @@
 {
-    "RamDir": "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/ranger_microcode/rams/",
+    "SimRamDir": "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/ranger_microcode/rams/",
+    "SynRamDir": "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/Synthesis/ranger_risc/rams/",
+    "Type": "Syn",
     "RamFile": "code.ram",
     "OutFile": "/media/RAMDisk/code.out",
     "inputPath": "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/simulation/ranger_microcode/assemblies/",

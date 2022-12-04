@@ -1,7 +1,7 @@
 // Count via subroutine
 
 Main: @
-    lw x4, @Data+3(x0)  // set base of data
+    lw x4, @Data+1(x0)  // set base of data
     lbu x1, 0(x4)     // Count up to N
     lbu x2, 1(x4)     // Inc by M
     lbu x3, 2(x4)     // Starting count value

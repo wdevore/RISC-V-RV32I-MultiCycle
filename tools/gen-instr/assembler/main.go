@@ -484,7 +484,15 @@ func writeRamFile(context map[string]interface{}, sections []section) {
 	file := context["RamFile"]
 	fmt.Println("Writing: ", file)
 
-	ramDir := fmt.Sprint(context["RamDir"])
+	typeSim := fmt.Sprint(context["Type"])
+	var ramDir = ""
+	if typeSim == "Syn" {
+		ramDir = fmt.Sprint(context["SynRamDir"])
+		fmt.Println("Writing ram file to: ", ramDir)
+	} else {
+		ramDir = fmt.Sprint(context["SimRamDir"])
+	}
+
 	_ = os.Mkdir(ramDir, os.ModePerm)
 
 	outfile := fmt.Sprint(file)

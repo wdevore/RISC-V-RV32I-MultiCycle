@@ -3,7 +3,7 @@
 `timescale 1ns/1ps
 `endif
 
-// A microcode variant of a control matrix sequencer...eventually
+// A microcode variant of a control matrix sequencer
 
 module MicroCodeMatrix
 #(
@@ -137,6 +137,7 @@ logic [`WDSelectSize-1:0] wd_src;
 
 logic alu_ld;
 logic [`ALUOpSize-1:0] alu_op;
+
 always_comb begin
     case (ir_state)
         RType: begin
@@ -163,64 +164,107 @@ always_comb begin
 end
 
 logic take_branch;
-always_comb begin
-    // Depending on which branch directive, we interpret the
-    // flags differently.
-    case (funct3)
-        BTBeq: begin
-            // Branch if Z=1
-            take_branch = flags_i[`FLAG_ZERO];
-        end
-
-        BTBne: begin
-            // Branch if Z=0
-            take_branch = ~flags_i[`FLAG_ZERO];
-        end
-
-        BTBlt: begin
-            // If the two operands are considered signed
-            // then N!=V is interpreted as "rs1 is less than rs2"
-            take_branch = flags_i[`FLAG_NEGATIVE] ^ flags_i[`FLAG_OVERFLOW];
-        end
-
-        BTBge: begin
-            // If the two operands are considered signed
-            // then N==V is interpreted as "rs1 >= rs2"
-            take_branch = flags_i[`FLAG_NEGATIVE] == flags_i[`FLAG_OVERFLOW];
-        end
-
-        BTBltu: begin
-            // The two operands are considered unsigned, 
-            // We interpret C=1, for example, "3 < FFFFFFFE".
-            take_branch = flags_i[`FLAG_CARRY];
-        end
-
-        BTBgeu: begin
-            // The two operands are considered unsigned, 
-            // We interpret C=0, for example, "FFFFFFFE >= 5".
-            take_branch = ~flags_i[`FLAG_CARRY];
-        end
-
-        default: begin
-            take_branch = 1'b0;
-            // `ifdef SIMULATE
-            //     $display("IR: BRANCH DIRECTIVE UNKNOWN");
-            // `endif
-        end
-    endcase
-end
 
 // ----------------------------------------------------
 // CSRs
 // ----------------------------------------------------
+logic isCSRInstr;
+// Must be a CSR instruction for our implementation.
+assign isCSRInstr = ir_opcode == `ITYPE_E && funct3 != 3'b000;
+
+logic rdIsX0;
+logic rs1IsX0;
+assign rdIsX0 = ir_i[11:7] == 5'b00000;
+assign rs1IsX0 = ir_i[19:15] == 5'b00000;
+logic noReadEffect;
+assign noReadEffect = !(rdIsX0 && funct3 == CSRRW);
+
 logic rsa_ld;
 
+// Standard flip-flop style registers
+logic [DATA_WIDTH-1:0] mstatus /*verilator public*/;
+logic [DATA_WIDTH-1:0] mie /*verilator public*/;
+logic [DATA_WIDTH-1:0] mip /*verilator public*/;
+logic [DATA_WIDTH-1:0] mepc /*verilator public*/;
+logic [DATA_WIDTH-1:0] mtvec /*verilator public*/;
+
+logic [`CSRAddrSize-1:0] csr_addr;
+
+always_comb begin
+    case (state)
+        PreFetch: begin
+            csr_addr = Mstatus;
+        end
+        IRQ0: begin
+            csr_addr = Mepc;
+        end
+        default:
+            csr_addr = ir_i[31:20];
+    endcase
+
+    case (ir_state)
+        ITMret: begin
+            csr_addr = Mstatus;
+        end
+        default:
+            ;
+    endcase
+end
+
+logic [DATA_WIDTH-1:0] csr_data;
+logic [DATA_WIDTH-1:0] algo_data;
+
 logic [DATA_WIDTH-1:0] rd_data;     // RegFile data
+always_comb begin
+    rd_data = 0;
+
+    case (state)
+        IRQ1: begin
+            // PC <== mtvec
+            rd_data = mtvec;
+        end
+        default:
+            ;
+    endcase
+
+    case (ir_state)
+        ITCSR: begin
+            case (funct3)
+                CSRRW: begin
+                    if (~rdIsX0) begin
+                        // Transfer CSR to rd
+                        rd_data = csr_data;
+                    end
+                end
+                CSRRS, CSRRC: begin
+                    if (~rs1IsX0) begin
+                        // Transfer CSR to rd
+                        rd_data = csr_data;
+                    end
+                end
+                CSRRWI, CSRRSI, CSRRCI: begin
+                    // Transfer CSR to rd
+                    rd_data = csr_data;
+                end
+                default:
+                    ;
+            endcase
+        end
+        ITMret: begin
+            rd_data = {mepc[31:2], 2'b00};  // IALIGN = 1 = 32bits
+        end
+        default:
+            ;
+    endcase
+end
 
 localparam IMM_SIZE = 5;
 logic [4:0] immediate = ir_i[19:15];  // Immediate
 
-// Tracking System instruction type
+logic irq_pending = 0;
+logic interrupt_in_progress = 0;
+
+logic writeCSR;
 logic [11:0] funct12 = ir_i[31:20];  // Immediate
 
 // ---------------------------------------------------
@@ -232,6 +276,10 @@ initial begin
     // Also configure the reset sequence start state.
     vector_state = Sync0;
     ir_state = ITLoad;
+
+    mstatus = 32'b0000_0000_0000_0000_0000_0000_0000_0000;
+    // mie = 32'b0000_0000_0000_0101_0000_0000_0101_0101; // 32'h0005_0055
+    mie = 32'b0000_0000_0000_0000_0000_0000_0000_0000;
 end
 
 // -------------------------------------------------------------
@@ -280,9 +328,60 @@ always_comb begin
     alu_ld = RgLdDisabled;
     flags_ld = RgLdDisabled;
     
+    take_branch = 1'b0;
+
     rst_src = 1'b0;     // Default to IR funct3 source
 
+    // -------------------------------------------------
+    // CSRs related signals
+    // -------------------------------------------------
     rsa_ld = RgLdEnabled;
+    csr_data = mstatus;
+
+    irq_pending = 1'b0;
+    writeCSR = 1'b0;
+
+    if (isCSRInstr) begin
+        // There is only one scenario where we don't read a CSR register
+        // and that is when rd == x0 and the instruction is CSRRW.
+        if (noReadEffect) begin
+            // Read with side-effects
+            case (csr_addr)
+                Mstatus:  csr_data = mstatus;
+                Mie:      csr_data = mie;
+                Mtvec:    csr_data = mtvec;     // Mode = Direct
+                Mepc:     csr_data = mepc;      // MRET return address
+                Mip:      csr_data = mip;
+                // Mcause:   csr_data = csrs[`CSR_Mcause];
+                default:  csr_data = {DATA_WIDTH{1'b0}};    // Blank/Void
+            endcase
+        end
+        else begin
+            // rd == x0
+            // RsA goes straight to CSR
+            csr_data = rsa_i;
+        end
+
+        case (funct3)
+            CSRRWI: begin
+                algo_data = {{DATA_WIDTH-IMM_SIZE{1'b0}}, immediate}; // Zero extend
+            end
+            CSRRC: begin
+                algo_data = ~rsa_i & csr_data;
+            end
+            CSRRCI: begin
+                algo_data = ~{{DATA_WIDTH-IMM_SIZE{1'b0}}, immediate} & csr_data;
+            end
+            CSRRS: begin
+                algo_data = rsa_i | csr_data;
+            end
+            CSRRSI: begin
+                algo_data = {{DATA_WIDTH-IMM_SIZE{1'b0}}, immediate} | csr_data;
+            end
+            default:
+                algo_data = {DATA_WIDTH{1'b0}};
+        endcase
+    end
 
     // ======================================
     // Main state machine
@@ -395,11 +494,19 @@ always_comb begin
             // Set next Insrtuction state
             case (ir_opcode)
                 `ITYPE_E: begin
-                    // What type of System instruction is it?
-                    if (funct12 == 12'b000000000001)
-                        next_ir_state = ITEbreak;
-                    else if (funct12 == 12'b000000000000)
-                        next_ir_state = ITECall;
+                    // For CSRs funct3 indicates the next IR state
+                    if (~isCSRInstr) begin
+                        // What type of System instruction is it?
+                        if (funct12 == 12'b000000000001)
+                            next_ir_state = ITEbreak;
+                        else if (funct12 == 12'b000000000000)
+                            next_ir_state = ITECall;
+                        else if (funct12 == 12'b001100000010)
+                            next_ir_state = ITMret;
+                    end
+                    else begin
+                        next_ir_state = ITCSR;
+                    end
                 end
 
                 `RTYPE: begin
@@ -684,6 +791,50 @@ always_comb begin
                     a_src = ASrcPrior;  // Select PC Prior source
                     b_src = BSrcImm;    // Select immediate source
 
+                    // Depending on which branch directive, we interpret the
+                    // flags differently.
+                    case (funct3)
+                        BTBeq: begin
+                            // Branch if Z=1
+                            take_branch = flags_i[`FLAG_ZERO];
+                        end
+
+                        BTBne: begin
+                            // Branch if Z=0
+                            take_branch = ~flags_i[`FLAG_ZERO];
+                        end
+
+                        BTBlt: begin
+                            // If the two operands are considered signed
+                            // then N!=V is interpreted as "rs1 is less than rs2"
+                            take_branch = flags_i[`FLAG_NEGATIVE] ^ flags_i[`FLAG_OVERFLOW];
+                        end
+
+                        BTBge: begin
+                            // If the two operands are considered signed
+                            // then N==V is interpreted as "rs1 >= rs2"
+                            take_branch = flags_i[`FLAG_NEGATIVE] == flags_i[`FLAG_OVERFLOW];
+                        end
+
+                        BTBltu: begin
+                            // The two operands are considered unsigned, 
+                            // We interpret C=1, for example, "3 < FFFFFFFE".
+                            take_branch = flags_i[`FLAG_CARRY];
+                        end
+
+                        BTBgeu: begin
+                            // The two operands are considered unsigned, 
+                            // We interpret C=0, for example, "FFFFFFFE >= 5".
+                            take_branch = ~flags_i[`FLAG_CARRY];
+                        end
+
+                        default: begin
+                            `ifdef SIMULATE
+                                $display("IR: BRANCH DIRECTIVE UNKNOWN");
+                            `endif
+                        end
+                    endcase
+
                     if (take_branch) begin
                         pc_src = PCSrcAluImm;
                         pc_ld = RgLdEnabled;
@@ -772,6 +923,113 @@ always_comb begin
                     next_ir_state = ITECall;
                 end
 
+                // ---------------------------------------------------
+                // I-Type CSRs
+                // ---------------------------------------------------
+                ITCSR: begin
+                    // RsA was loaded while transitioning from
+                    // Decode to Execute
+                    rsa_ld = RgLdDisabled;
+
+                    case (funct3)
+                        CSRRW: begin
+                            if (rdIsX0) begin
+                                // For this instruction configuration
+                                // the specs say we bypass read side effects.
+                                // But we do Write rs1 (aka x0) to CSR for potential
+                                // write side-effects.
+                                
+                                // Write RsA to CSR
+                                // Causes Write side-effects on csr.
+                                // csr_data was set above
+                                writeCSR = 1'b1;
+
+                                // Fetch next instruction at the same time.
+                                next_state = PreFetch;
+                            end
+                            else begin
+                                // Transfer CSR to rd
+                                wd_src = WDSrcCSR;
+                                rg_wr = RWActive;
+
+                                next_ir_state = ITCSRLd;
+                            end
+                        end
+                        CSRRS, CSRRC: begin
+                            if (rs1IsX0) begin
+                                // We only read from CSR and throw it into the void
+                                // The read occurred way above so we can just transition to Fetch
+                                // This is the only scenario where we don't write to a CSR register.
+
+                                // Fetch next instruction at the same time.
+                                next_state = PreFetch;
+                            end
+                            else begin
+                                // Transfer CSR to rd
+                                wd_src = WDSrcCSR;
+                                rg_wr = RWActive;
+
+                                next_ir_state = ITCSRLd;
+                            end
+                        end
+                        CSRRWI, CSRRSI, CSRRCI: begin
+                            // Transfer CSR to rd
+                            wd_src = WDSrcCSR;
+                            rg_wr = RWActive;
+
+                            next_ir_state = ITCSRLd;
+                        end
+                        default:
+                            // Should really treat this as an illegal instruction.
+                            next_state = Fetch;
+                    endcase
+                end
+
+                ITCSRLd: begin
+                    rsa_ld = RgLdDisabled;  // Sustain signal
+                    writeCSR = 1'b1;
+
+                    case (funct3)
+                        CSRRW: begin
+                            // Write RsA to CSR
+                            csr_data = rsa_i;
+                        end
+                        CSRRS, CSRRC, CSRRWI, CSRRSI, CSRRCI: begin
+                            // Write modified data to CSR
+                            csr_data = algo_data;
+                        end
+                        default: ;
+                    endcase
+
+                    next_state = PreFetch;
+                end
+
+                // ---------------------------------------------------
+                // I-Type M-mode return
+                // ---------------------------------------------------
+                ITMret: begin
+                    // Return from Trap handler
+                    // 1) PC <== Mepc. Mask bits [1:0]=0 for alignment
+                    
+                    pc_src = PCSrcRDCSR;
+                    pc_ld = RgLdEnabled;
+
+                    next_ir_state = ITMretClr;
+                end
+
+                ITMretClr: begin
+                    // 2) Restore: mstatus.MIE <== mstatus.MPIE
+                    // Modify a copy of CSR
+                    csr_data = mstatus;
+                    writeCSR = 1'b1;    // Enable writing to CSR
+
+                    // Restore Global interrupts.
+                    csr_data[`CSR_Mstatus_MIE] = csr_data[`CSR_Mstatus_MPIE];
+                    // Clear copy
+                    csr_data[`CSR_Mstatus_MPIE] = 1'b0;
+                    next_state = PreFetch;
+                end
+
                 default: begin
                     `ifdef SIMULATE
                         $display("IR: UNKNOWN");
@@ -780,7 +1038,55 @@ always_comb begin
             endcase
         end
 
+        // PreFetch is checked even in a Trap handler.
         PreFetch: begin
+            // Check if an interrupt occurred and if we can honor it.
+            //                Global enable            M-mode enable       Pending interrupts
+            irq_pending = mstatus[`CSR_Mstatus_MIE] & mie[`CSR_Mie_MEIE] & mip[`CSR_Mip_MEIE];
+
+            if (irq_pending & ~interrupt_in_progress) begin
+                // Okay, there is an interrupt pending
+                // $display("<<**Interrupt detected**>>");
+                writeCSR = 1'b1;    // Enable writing to CSR
+
+                // Modify a copy of CSR
+                csr_data = mstatus;
+                // Backup Global bit
+                csr_data[`CSR_Mstatus_MPIE] = csr_data[`CSR_Mstatus_MIE];
+                // Disable Global interrupts
+                csr_data[`CSR_Mstatus_MIE] = 1'b0;
+                // Select CSR address
+
+                next_state = IRQ0;
+            end
+            else begin
+                mem_rd = 1'b0;
+                next_state = Fetch;
+            end
+        end
+
+        IRQ0: begin
+            // Mepc <== PC
+            csr_data = pc_i; // PC_prior is not needed
+
+            // Select CSR address
+            writeCSR = 1'b1;    // Enable writing to CSR
+
+            next_state = IRQ1;
+        end
+
+        IRQ1: begin
+            // Jump to Trap by loading
+            // PC <== mtvec
+            pc_src = PCSrcRDCSR;
+            pc_ld = RgLdEnabled;
+
+            next_state = IRQ2;
+        end
+
+        IRQ2: begin
+            // PC is now loaded with Trap handler address and that
+            // means we can safely transition to Fetch.
             mem_rd = 1'b0;
             next_state = Fetch;
         end
@@ -801,7 +1107,7 @@ end
 // rising edge of the next clock.
 // -------------------------------------------------------------
 // always_ff @(negedge clk_i, negedge irq_i) begin      // NOTE! This is mixing domains **can be tricky**
-always_ff @(posedge clk_i) begin
+always_ff @(negedge clk_i) begin
     // ----------------------------------------------------
     // The core state control logic
     // ----------------------------------------------------
@@ -818,6 +1124,96 @@ always_ff @(posedge clk_i) begin
             state <= Reset;
             vector_state <= next_vector_state;
         end
+    end
+
+    // ----------------------------------------------------
+    // CSRs
+    // ----------------------------------------------------
+    if (writeCSR) begin
+        // Write with side-effects
+        case (csr_addr)
+            Mstatus:  mstatus <= csr_data;
+            Mie:      mie <= csr_data;
+            Mtvec:    mtvec <= csr_data;
+            Mip:      mip <= csr_data;
+            Mepc:     mepc <= csr_data;
+            // Mcause:   csrs[`CSR_Mcause] <= csr_data;
+            default:;  // Blank/Void
+        endcase
+    end
+
+    case (state)
+        Reset: begin
+            interrupt_in_progress <= 1'b0;  // Default to allowing an interrupt to start.
+            // Enable M-mode interrupts ---------v
+            //mie <= 32'b0000_0000_0000_0000_0000_1000_0000_0000;
+        end
+    
+        Execute: begin
+            case (state)
+                PreFetch: begin
+                    if (irq_pending & ~interrupt_in_progress) begin
+                        // Signal that interrupt is now in play
+                        interrupt_in_progress <= 1'b1;
+                    end
+                end
+
+                IRQ0: begin
+                    // Reset the trigger flag
+                    irq_reset_trigger <= 1;
+                end
+
+                IRQ1: begin
+                    irq_reset_trigger <= 0;
+                end
+
+                default:
+                    begin end
+            endcase
+
+            case (ir_state)
+                ITMretClr: begin
+                    // Allow the interrupt flow to re-start.
+                    interrupt_in_progress <= 1'b0;
+                    mip[`CSR_Mip_MEIE] <= 1'b0;
+                end
+
+                default:
+                    begin end
+            endcase
+        end
+
+        default:
+            begin end
+    endcase
+
+    if (irq_triggered & ~interrupt_in_progress) begin
+        // ----------------------------------------------------
+        // Interrupts
+        // ----------------------------------------------------
+        // Mip is a "hardware" based register. It has a bit (MEIP)
+        // directly associated to hardware IRQ IO.
+        //                          |``````MEIP
+        //                          v
+        // 0000_0000_0000_0000_0000_1000_0000_0000
+        // We don't recognize the interrupt if an interrupt is pending or in progress.
+        mip[`CSR_Mip_MEIE] <= 1'b1;  // Causes irq_pending to Set
+    end
+
+end
+
+// These variables allows the domains to signal each other
+logic irq_triggered = 0;
+logic irq_reset_trigger = 0;
+
+// A seperate domain from the Interrupt signal.
+always_ff @(negedge irq_i, posedge irq_reset_trigger) begin
+    if (irq_reset_trigger) begin
+        irq_triggered <= 0;
+    end
+    else begin
+        // We don't want to capture another irq until MRET has completed
+        irq_triggered <= 1;
     end
 end
 
