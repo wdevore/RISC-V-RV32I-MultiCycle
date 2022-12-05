@@ -788,6 +788,7 @@ always_comb begin
 
         Halt: begin
             halt = 1'b1;
+            ready = 1'b0; // Signal the great unknown!
             next_state = Halt;
         end
 

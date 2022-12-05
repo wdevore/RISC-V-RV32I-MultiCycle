@@ -32,7 +32,23 @@ module RangerRiscProcessor
    output logic halt_o,               // Active high
    output MatrixState state_o,
    output ResetState vector_state_o,
-   output InstructionState ir_state_o
+   output InstructionState ir_state_o,
+   output logic [DATA_WIDTH-1:0] pc_out_o,
+   output logic [DATA_WIDTH-1:0] pc_prior_out_o,
+   output logic [DATA_WIDTH-1:0] ir_out_o,
+   output logic [DATA_WIDTH-1:0] a_mux_out_o,
+   output logic [DATA_WIDTH-1:0] b_mux_out_o,
+   output logic [DATA_WIDTH-1:0] imm_ext_out_o,
+   output logic [DATA_WIDTH-1:0] addr_mux_to_pmmu_o,
+   output logic cm_to_ir_ld_o,
+   output logic cm_to_pc_ld_o,
+   output logic cm_to_pcp_ld_o,
+   output logic cm_to_mem_rd_o,
+   output logic cm_to_alu_ld_o,
+   output logic cm_to_mdr_ld_o,
+   output logic cm_to_rg_wr_o,
+   output logic cm_to_mem_wr_o,
+   output logic cm_to_alu_flags_ld_o
 `endif
 
 );
@@ -349,5 +365,22 @@ Mux4 #(.DATA_WIDTH(DATA_WIDTH)) wd_mux
    .data3_i(`SrcZero), // cm_rd_data
    .data_o(wd_src_out)
 );
+
+assign pc_out_o = pc_out;
+assign ir_out_o = ir_out;
+assign pc_prior_out_o = pc_prior_out;
+assign a_mux_out_o = a_mux_out;
+assign b_mux_out_o = b_mux_out;
+assign imm_ext_out_o = imm_ext_out;
+assign addr_mux_to_pmmu_o = addr_mux_to_pmmu;
+assign cm_to_ir_ld_o = cm_to_ir_ld;
+assign cm_to_pc_ld_o = cm_to_pc_ld;
+assign cm_to_pcp_ld_o = cm_to_pcp_ld;
+assign cm_to_mem_rd_o = cm_to_mem_rd;
+assign cm_to_alu_ld_o = cm_to_alu_ld;
+assign cm_to_mdr_ld_o = cm_to_mdr_ld;
+assign cm_to_rg_wr_o = cm_to_rg_wr;
+assign cm_to_mem_wr_o = cm_to_mem_wr;
+assign cm_to_alu_flags_ld_o = cm_to_alu_flags_ld;
 
 endmodule

@@ -15,6 +15,9 @@ module Top (
     output logic [11:0] tile1
 );
 
+localparam DATA_WIDTH = 32;
+localparam PCSelectSize = 3;
+
 // ------------------------------------------------------------------------
 // UART
 // ------------------------------------------------------------------------
@@ -70,12 +73,13 @@ Register #(.DATA_WIDTH(8)) par_port
    .data_o(reg_out)
 );
 
-// 1'b0 = LED is on
+// 1'b0 = LED is on. So for Active high signals we invert signal to turn on.
+
 // Red LEDs
-assign blade1[0] = ready;
-assign blade1[1] = halt;
+assign blade1[0] = ~ready;
+assign blade1[1] = ~halt;
 // Yellow LEDs
-assign blade1[2] = data_out[2];
+assign blade1[2] = reset;
 assign blade1[3] = ~cpu_clock;
 // Green LEDs
 assign blade1[4] = io_wr; //reg_out[4];
@@ -111,19 +115,53 @@ RangerRiscProcessor cpu(
     .irq_i(pm6b3),
     .data_out(data_out),
     .io_wr(io_wr),
+    // ------------- debug outputs ----------------
     .ready_o(ready),
     .halt_o(halt),
     .state_o(mat_state),
     .vector_state_o(vector_state),
-    .ir_state_o(ir_state)
+    .ir_state_o(ir_state),
+    .pc_out_o(pc_out),
+    .pc_prior_out_o(pc_prior_out),
+    .ir_out_o(ir_out),
+    .a_mux_out_o(a_mux_out),
+    .b_mux_out_o(b_mux_out),
+    .imm_ext_out_o(imm_ext_out),
+    .addr_mux_to_pmmu_o(addr_mux_to_pmmu),
+    .cm_to_ir_ld_o(cm_to_ir_ld),
+    .cm_to_pc_ld_o(cm_to_pc_ld),
+    .cm_to_pcp_ld_o(cm_to_pcp_ld),
+    .cm_to_mem_rd_o(cm_to_mem_rd),
+    .cm_to_alu_ld_o(cm_to_alu_ld),
+    .cm_to_mdr_ld_o(cm_to_mdr_ld),
+    .cm_to_rg_wr_o(cm_to_rg_wr),
+    .cm_to_mem_wr_o(cm_to_mem_wr),
+    .cm_to_alu_flags_ld_o(cm_to_alu_flags_ld)
 );
 
 `ifdef DEBUG_MODE
-logic ready;              // Active high
-logic halt;               // Active high
+logic ready;                // Active high
+logic halt;                 // Active high
 MatrixState mat_state;      // 5 bits
 ResetState vector_state;    // 5 bits
 InstructionState ir_state;  // 6 bits
+logic [DATA_WIDTH-1:0] pc_out;
+logic [DATA_WIDTH-1:0] pc_prior_out;
+logic [DATA_WIDTH-1:0] ir_out;
+logic [DATA_WIDTH-1:0] a_mux_out;
+logic [DATA_WIDTH-1:0] b_mux_out;
+logic [DATA_WIDTH-1:0] imm_ext_out;
+logic [DATA_WIDTH-1:0] addr_mux_to_pmmu;
+logic cm_to_ir_ld;
+logic cm_to_pc_ld;
+logic cm_to_pcp_ld;
+logic cm_to_mem_rd;
+logic cm_to_alu_ld;
+logic cm_to_mdr_ld;
+logic cm_to_rg_wr;
+logic cm_to_mem_wr;
+logic cm_to_alu_flags_ld;
+
 `endif
 
 // ------------------------------------------------------------------------
@@ -135,39 +173,47 @@ ControlState next_state = CSReset;
 logic [1:0] cnt_byte;
 logic [3:0] cnt_reset_hold;
 
-logic [2:0] cnt_status_req_byte;
+logic [4:0] cnt_status_req_byte;
 // N bytes of status (5:5:6)
 logic [7:0] status_bytes [1:0];
 
 always_ff @(posedge clk) begin
     case (state)
         CSReset: begin
+            // Hold CPU in reset while Top module starts up.
             reset <= 1'b0;
+
             cnt_byte <= 0;
             cnt_reset_hold <= 0;
             tx_en <= 1;         // Disable transmission
             cpu_clock <= 0;
+            
             next_state <= CSReset1;
         end
 
         CSReset1: begin
-            reset <= 1'b0;      // Trigger reset
+            reset <= 1'b0;
+            cpu_clock <= ~cpu_clock;
+            
             next_state <= CSResetComplete;
         end
 
         CSResetComplete: begin
             reset <= 1'b1;
+            // cpu_clock <= ~cpu_clock;
+            
             next_state <= CSIdle;
         end
 
         // -------------------------------
         // CPU reset sequence
         // -------------------------------
+        // Asserts "reset" for 2^4 clock cycles
         CSCPUResetAssert: begin
             reset <= 1'b0;
             cnt_reset_hold <= 0;
             tx_en <= 1;         // Disable transmission
-            cpu_clock <= 0;
+            cpu_clock <= ~cpu_clock;
             next_state <= CSCPUResetDeassert;
         end
 
@@ -179,8 +225,10 @@ always_ff @(posedge clk) begin
             else begin
                 cnt_reset_hold <= cnt_reset_hold + 1;
             end
+            cpu_clock <= ~cpu_clock;
         end
 
+        // For manually controlling Reset with clocks
         CSResetAssertToggle: begin
             reset <= ~reset;
             next_state <= CSSend;
@@ -217,23 +265,119 @@ always_ff @(posedge clk) begin
             next_state <= CSStatusSending;
 
             case (cnt_status_req_byte)
-                3'b000: begin
+                5'b00000: begin
                     // Concat portions into 1 byte
                     // status(5) + 3 bits of vector_state(5)
                     // 4321 0 432
                     // 0000_0|000
                     tx_byte <= {mat_state, vector_state[4:2]};
                 end
-                3'b001: begin
+                5'b00001: begin
                     // Concat portions into 1 byte
                     // vector_state(5) + ir_state
                     // 10 54 3210
                     // 00|00_0000
                     tx_byte <= {vector_state[1:0], ir_state[5:0]};
                 end
-                3'b010: begin
-                    tx_byte <= {{6{1'b0}}, ready, halt};
-                    // tx_byte <= 8'hA3;
+                5'b00010: begin
+                    tx_byte <= {cpu_clock, ready, halt, cm_to_ir_ld, cm_to_pc_ld, cm_to_pcp_ld, cm_to_mem_rd, cm_to_alu_ld};
+                end
+                // ----- PC reg --------------------
+                // 3      2 2      1 1      
+                // 0      4 3      6 5      8 7      0
+                // 00000000_00000000_00000000_00000000
+                5'b00011: begin
+                    tx_byte <= pc_out[0:7];
+                end
+                5'b00100: begin
+                    tx_byte <= pc_out[8:15];
+                end
+                5'b00101: begin
+                    tx_byte <= pc_out[16:23];
+                end
+                5'b00110: begin
+                    tx_byte <= pc_out[24:30];
+                end
+                // ----- IR reg --------------------
+                5'b00111: begin
+                    tx_byte <= ir_out[0:7];
+                end
+                5'b01000: begin
+                    tx_byte <= ir_out[8:15];
+                end
+                5'b01001: begin
+                    tx_byte <= ir_out[16:23];
+                end
+                5'b01010: begin
+                    tx_byte <= ir_out[24:30];
+                end
+                // ----- PC Prior reg --------------------
+                5'b01011: begin
+                    tx_byte <= pc_prior_out[0:7];
+                end
+                5'b01100: begin
+                    tx_byte <= pc_prior_out[8:15];
+                end
+                5'b01101: begin
+                    tx_byte <= pc_prior_out[16:23];
+                end
+                5'b01110: begin
+                    tx_byte <= pc_prior_out[24:30];
+                end
+                // ----- a_mux_out reg --------------------
+                5'b01111: begin
+                    tx_byte <= a_mux_out[0:7];
+                end
+                5'b10000: begin
+                    tx_byte <= a_mux_out[8:15];
+                end
+                5'b10001: begin
+                    tx_byte <= a_mux_out[16:23];
+                end
+                5'b10010: begin
+                    tx_byte <= a_mux_out[24:30];
+                end
+                // ----- b_mux_out reg --------------------
+                5'b10011: begin
+                    tx_byte <= b_mux_out[0:7];
+                end
+                5'b10100: begin
+                    tx_byte <= b_mux_out[8:15];
+                end
+                5'b10101: begin
+                    tx_byte <= b_mux_out[16:23];
+                end
+                5'b10110: begin
+                    tx_byte <= b_mux_out[24:30];
+                end
+                // ----- imm_ext_out reg --------------------
+                5'b10111: begin
+                    tx_byte <= imm_ext_out[0:7];
+                end
+                5'b11000: begin
+                    tx_byte <= imm_ext_out[8:15];
+                end
+                5'b11001: begin
+                    tx_byte <= imm_ext_out[16:23];
+                end
+                5'b11010: begin
+                    tx_byte <= imm_ext_out[24:30];
+                end
+                // ----- addr_mux_to_pmmu reg --------------------
+                5'b11011: begin
+                    tx_byte <= addr_mux_to_pmmu[0:7];
+                end
+                5'b11100: begin
+                    tx_byte <= addr_mux_to_pmmu[8:15];
+                end
+                5'b11101: begin
+                    tx_byte <= addr_mux_to_pmmu[16:23];
+                end
+                5'b11110: begin
+                    tx_byte <= addr_mux_to_pmmu[24:30];
+                end
+                5'b11111: begin
+                    tx_byte <= {cm_to_mdr_ld, cm_to_rg_wr, cm_to_mem_wr, cm_to_alu_flags_ld, {4{1'b0}}};
                 end
             endcase
         end
@@ -243,7 +387,7 @@ always_ff @(posedge clk) begin
             
             // Wait for the byte to finish transmitting.
             if (tx_complete) begin
-                if (cnt_status_req_byte == 3'b010) begin
+                if (cnt_status_req_byte == 5'b11111) begin
                     next_state <= CSIdle;
                     cnt_status_req_byte <= 0;
                 end
