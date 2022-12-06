@@ -48,7 +48,13 @@ module RangerRiscProcessor
    output logic cm_to_mdr_ld_o,
    output logic cm_to_rg_wr_o,
    output logic cm_to_mem_wr_o,
-   output logic cm_to_alu_flags_ld_o
+   output logic cm_to_alu_flags_ld_o,
+   output logic [DATA_WIDTH-1:0] wd_src_out_o,
+   output PCSrc cm_to_pc_src_o,
+   output WDMuxSrc cm_to_wd_src_o,
+   output logic [`FlagSize-1:0] alu_flags_cm_o,
+   output logic cm_to_addr_src_o,
+   output logic cm_to_rsa_ld_o
 `endif
 
 );
@@ -66,7 +72,7 @@ localparam ResetVector = `RESET_VECTOR; // See Makefile for values
 logic cm_to_ir_ld /*verilator public*/;   // CM to IR
 
 logic cm_to_pc_ld;
-logic [`PCSelectSize-1:0] cm_to_pc_src;
+PCSrc cm_to_pc_src;
 logic [DATA_WIDTH-1:0] pc_out;
 logic cm_to_pcp_ld;
 logic [DATA_WIDTH-1:0] pc_prior_out;
@@ -86,7 +92,7 @@ logic [2:0] rst_src_out;
 logic [`AMuxSelectSize-1:0] cm_to_a_src;
 logic [`BMuxSelectSize-1:0] cm_to_b_src;
 
-logic [`WDSelectSize-1:0] cm_to_wd_src;
+WDMuxSrc cm_to_wd_src;
 logic [DATA_WIDTH-1:0] ir_out /*verilator public*/;
 
 // verilator lint_off UNUSED
@@ -382,5 +388,11 @@ assign cm_to_mdr_ld_o = cm_to_mdr_ld;
 assign cm_to_rg_wr_o = cm_to_rg_wr;
 assign cm_to_mem_wr_o = cm_to_mem_wr;
 assign cm_to_alu_flags_ld_o = cm_to_alu_flags_ld;
+assign wd_src_out_o = wd_src_out;
+assign cm_to_pc_src_o = cm_to_pc_src;
+assign cm_to_wd_src_o = cm_to_wd_src;
+assign alu_flags_cm_o = alu_flags_cm;
+assign cm_to_addr_src_o = cm_to_addr_src;
+assign cm_to_rsa_ld_o = cm_to_rsa_ld;
 
 endmodule

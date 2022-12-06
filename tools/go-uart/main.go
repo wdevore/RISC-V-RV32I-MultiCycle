@@ -43,7 +43,6 @@ func main() {
 		// Uncomment this block to actually read from stdin
 		reader := bufio.NewReader(os.Stdin)
 		for {
-			// fmt.Printf("Enter command: ")
 			s, err := reader.ReadString('\n')
 			// fbytes, err := reader.Peek(1)
 			// bbyte, err := reader.ReadByte()
@@ -63,6 +62,7 @@ func main() {
 
 stdinloop:
 	for {
+		fmt.Printf("Command: ")
 		select {
 		case stdin, ok := <-ch:
 			if !ok {
@@ -72,64 +72,21 @@ stdinloop:
 				if stdin[0:1] == "\n" {
 					command = previousCommand
 				}
-				fmt.Println("Command:", command)
-
-				// n, err := port.Write([]byte{0x0a})
-				_, err := port.Write([]byte(command))
-				if err != nil {
-					fmt.Println("Write error")
-					log.Fatal(err)
-				}
-				// fmt.Printf("Sent %v bytes\n", n)
-				var rxBuf []byte
+				// fmt.Println("Command:", command)
 
 				if command == "`" {
 					return
 				}
 
-				switch command {
-				case "s":
-					rxBuf = make([]byte, 32)
-				default:
-					rxBuf = make([]byte, 4)
-				}
-
-				for i := 0; i < len(rxBuf); i++ {
-					n, err := port.Read(rdBuf)
-					if err != nil {
-						fmt.Println("Read error")
-						log.Fatal(err)
-						// break
-					}
-					if n == 0 {
-						fmt.Println("\nEOF")
-						break
-					}
-					rxBuf[i] = rdBuf[0]
-				}
-
-				switch command {
-				case "s":
-					// Break bytes down into blocks
-					// 0000_0000:1100_0100
-					// 0000_0|000:11|00_0100 => 00000 00011 000100
-					// 0123_4|567:01|23_4567
-					fmt.Println("=============================================")
-					fmt.Println("  MatxState:", matrixState(rxBuf))
-					fmt.Println("VectorState:", vectorState(rxBuf))
-					fmt.Println("    IRState:", irState(rxBuf))
-					bits(rxBuf)
-					fmt.Println()
-					showPC(rxBuf)
-					showPCPrior(rxBuf)
-					showWord("     IR", 7, rxBuf)
-					showWord("AMuxOut", 15, rxBuf)
-					showWord("BMuxOut", 19, rxBuf)
-					showWord(" ImmExt", 23, rxBuf)
-					showWord("AddrMux", 27, rxBuf)
-				default:
+				if command != "s" {
+					sendCommand(command, port)
+					rxBuf := readPort(rdBuf, 4, port)
 					fmt.Printf("Response: %s", string(rxBuf))
 				}
+
+				sendCommand("s", port)
+				rxBuf := readPort(rdBuf, 40, port)
+				showData(rxBuf)
 
 				previousCommand = command
 			}
@@ -141,8 +98,64 @@ stdinloop:
 
 }
 
-func matrixState(rxBuf []byte) string {
-	b := fmt.Sprintf("%08b", rxBuf[0])
+func readPort(rdBuf []byte, size int, port serial.Port) (data []byte) {
+	rxBuf := make([]byte, size)
+
+	for i := 0; i < len(rxBuf); i++ {
+		n, err := port.Read(rdBuf)
+		if err != nil {
+			fmt.Println("Read error")
+			log.Fatal(err)
+			// break
+		}
+		if n == 0 {
+			fmt.Println("\nEOF")
+			break
+		}
+		rxBuf[i] = rdBuf[0]
+	}
+
+	return rxBuf
+}
+
+func sendCommand(command string, port serial.Port) {
+	// n, err := port.Write([]byte{0x0a})
+	_, err := port.Write([]byte(command))
+	if err != nil {
+		fmt.Println("Write error")
+		log.Fatal(err)
+	}
+}
+
+func showData(rxBuf []byte) {
+	// Break bytes down into blocks
+	// 0000_0000:1100_0100
+	// 0000_0|000:11|00_0100 => 00000 00011 000100
+	// 0123_4|567:01|23_4567
+	fmt.Println("=============================================================================")
+	fmt.Println("MatrixState:", matrixState(0, rxBuf))
+	fmt.Println("VectorState:", vectorState(0, rxBuf))
+	fmt.Println("    IRState:", irState(1, rxBuf))
+	fmt.Println("      PCSrc:", PCSrc(36, rxBuf))
+	fmt.Println("   WDSrcMux:", WDSrcMux(37, rxBuf))
+	fmt.Println("  ALU flags:", ALUFlags(38, rxBuf))
+	bits(2, 31, rxBuf)
+	fmt.Println()
+	fmt.Println("          <------------- Binary ------------>  <Byte Addr>  <Word Addr>")
+	showPC(3, rxBuf)
+	showPCPrior(11, rxBuf)
+	showWord("      IR", 7, rxBuf)
+	showWord(" AMuxOut", 15, rxBuf)
+	showWord(" BMuxOut", 19, rxBuf)
+	showWord("  ImmExt", 23, rxBuf)
+	showWord(" AddrMux", 27, rxBuf)
+	showWord("WdSrcOut", 32, rxBuf)
+	showByte(" DataOut", 39, rxBuf)
+	fmt.Println("=============================================================================")
+}
+
+func matrixState(idx int, rxBuf []byte) string {
+	b := fmt.Sprintf("%08b", rxBuf[idx])
 	switch b[0:5] {
 	case "00000":
 		return "Reset"
@@ -166,9 +179,9 @@ func matrixState(rxBuf []byte) string {
 	return "---"
 }
 
-func vectorState(rxBuf []byte) string {
-	b1 := fmt.Sprintf("%08b", rxBuf[0])
-	b2 := fmt.Sprintf("%08b", rxBuf[1])
+func vectorState(idx int, rxBuf []byte) string {
+	b1 := fmt.Sprintf("%08b", rxBuf[idx])
+	b2 := fmt.Sprintf("%08b", rxBuf[idx+1])
 	b := b1[5:8] + b2[0:2]
 	switch b[0:5] {
 	case "00000":
@@ -185,8 +198,8 @@ func vectorState(rxBuf []byte) string {
 	return "---"
 }
 
-func irState(rxBuf []byte) string {
-	b := fmt.Sprintf("%08b", rxBuf[1])
+func irState(idx int, rxBuf []byte) string {
+	b := fmt.Sprintf("%08b", rxBuf[idx])
 	switch b[2:8] {
 	case "000000":
 		return "STStore"
@@ -248,49 +261,125 @@ func irState(rxBuf []byte) string {
 	return "---"
 }
 
-func bits(rxBuf []byte) {
-	b := fmt.Sprintf("%08b", rxBuf[2])
-	fmt.Println("-----------------------")
-	fmt.Println("                      A")
-	fmt.Println("                      L")
-	fmt.Println("                      U")
-	fmt.Println("                      F")
-	fmt.Println("C R       P M A M R M l")
-	fmt.Println("l e H I P C e L d g e g")
-	fmt.Println("o a a R C P m U r | m s")
-	fmt.Println("c d l l l l r l l w w l")
-	fmt.Println("k y t d d d d d d r r d")
-	fmt.Println("-----------------------")
-	b2 := fmt.Sprintf("%08b", rxBuf[31])
-	fmt.Printf("%s %s %s %s %s %s %s %s %s %s %s %s\n", string(b[0]), string(b[1]), string(b[2]), string(b[3]), string(b[4]), string(b[5]), string(b[6]), string(b[7]), string(b2[0]), string(b2[1]), string(b2[2]), string(b2[3]))
+func PCSrc(idx int, rxBuf []byte) string {
+	b := fmt.Sprintf("%03b", rxBuf[idx])
+	switch b[0:3] {
+	case "000":
+		return "PCSrcAluImm"
+	case "001":
+		return "PCSrcAluOut"
+	case "010":
+		return "PCSrcResetVec"
+	case "011":
+		return "PCSrcRDCSR"
+	case "100":
+		return "PCSrcResetAdr"
+	}
+	return "---"
 }
 
-func showPC(rxBuf []byte) {
-	b0_7 := fmt.Sprintf("%08b", rxBuf[3])
-	b8_14 := fmt.Sprintf("%08b", rxBuf[4])
-	b15_22 := fmt.Sprintf("%08b", rxBuf[5])
-	b23_30 := fmt.Sprintf("%08b", rxBuf[6])
+func WDSrcMux(idx int, rxBuf []byte) string {
+	b := fmt.Sprintf("%02b", rxBuf[idx])
+	switch b[0:2] {
+	case "00":
+		return "WDSrcImm"
+	case "01":
+		return "WDSrcALUOut"
+	case "10":
+		return "WDSrcMDR"
+	case "11":
+		return "WDSrcCSR"
+	}
+	return "---"
+}
+
+func ALUFlags(idx int, rxBuf []byte) string {
+	b := fmt.Sprintf("%04b", rxBuf[idx])
+	switch b[0:4] {
+	case "0000":
+		return "----"
+	case "0001":
+		return "---Z"
+	case "0010":
+		return "--C-"
+	case "0011":
+		return "--CZ"
+	case "0100":
+		return "-N--"
+	case "0101":
+		return "-N-Z"
+	case "0110":
+		return "-NC-"
+	case "0111":
+		return "-NCZ"
+	case "1000":
+		return "V---"
+	case "1001":
+		return "V--Z"
+	case "1010":
+		return "V-C-"
+	case "1011":
+		return "V-CZ"
+	case "1100":
+		return "VN--"
+	case "1101":
+		return "VN-Z"
+	case "1110":
+		return "VNC-"
+	case "1111":
+		return "VNCZ"
+	}
+	return "---"
+}
+
+func bits(idx int, idx2 int, rxBuf []byte) {
+	b := fmt.Sprintf("%08b", rxBuf[idx])
+	fmt.Println("-----------------------------")
+	fmt.Println("                      A      ")
+	fmt.Println("                      L A    ")
+	fmt.Println("                      U d    ")
+	fmt.Println("          P M A M   M F d R  ")
+	fmt.Println("C R   I P C e L d R e l r s I")
+	fmt.Println("l e H R C P m U r g m g   a O")
+	fmt.Println("o a a                 s s    ")
+	fmt.Println("c d l l l l r l l w w l r l w")
+	fmt.Println("k y t d d d d d d r r d c d r")
+	fmt.Println("-----------------------------")
+	b2 := fmt.Sprintf("%08b", rxBuf[idx2])
+	fmt.Printf("%s %s %s %s %s %s %s %s %s %s %s %s %s %s %s\n", string(b[0]), string(b[1]), string(b[2]), string(b[3]), string(b[4]), string(b[5]), string(b[6]), string(b[7]), string(b2[0]), string(b2[1]), string(b2[2]), string(b2[3]), string(b2[4]), string(b2[5]), string(b2[6]))
+}
+
+func showPC(idx int, rxBuf []byte) {
+	b0_7 := fmt.Sprintf("%08b", rxBuf[idx])
+	b8_14 := fmt.Sprintf("%08b", rxBuf[idx+1])
+	b15_22 := fmt.Sprintf("%08b", rxBuf[idx+2])
+	b23_30 := fmt.Sprintf("%08b", rxBuf[idx+3])
 	bs := fmt.Sprintf("%s%s%s%s", b23_30, b15_22, b8_14, b0_7)
 	ui64, err := StringToUint(bs)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("     PC: %s_%s_%s_%s (%s) WA:(%s)\n", b23_30, b15_22, b8_14, b0_7, BinaryStringToHexString(bs, true), UintToHexString(ui64/4, true))
+	fmt.Printf("      PC: %s_%s_%s_%s (%s) (%s)\n", b23_30, b15_22, b8_14, b0_7, BinaryStringToHexString(bs, true), UintToHexString(ui64/4, true))
 }
 
-func showPCPrior(rxBuf []byte) {
-	b0_7 := fmt.Sprintf("%08b", rxBuf[11])
-	b8_14 := fmt.Sprintf("%08b", rxBuf[12])
-	b15_22 := fmt.Sprintf("%08b", rxBuf[13])
-	b23_30 := fmt.Sprintf("%08b", rxBuf[14])
+func showPCPrior(idx int, rxBuf []byte) {
+	b0_7 := fmt.Sprintf("%08b", rxBuf[idx])
+	b8_14 := fmt.Sprintf("%08b", rxBuf[idx+1])
+	b15_22 := fmt.Sprintf("%08b", rxBuf[idx+2])
+	b23_30 := fmt.Sprintf("%08b", rxBuf[idx+3])
 	bs := fmt.Sprintf("%s%s%s%s", b23_30, b15_22, b8_14, b0_7)
 	ui64, err := StringToUint(bs)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("PCPrior: %s_%s_%s_%s (%s) WA:(%s)\n", b23_30, b15_22, b8_14, b0_7, BinaryStringToHexString(bs, true), UintToHexString(ui64/4, true))
+	fmt.Printf(" PCPrior: %s_%s_%s_%s (%s) (%s)\n", b23_30, b15_22, b8_14, b0_7, BinaryStringToHexString(bs, true), UintToHexString(ui64/4, true))
+}
+
+func showByte(label string, idx int, rxBuf []byte) {
+	b0_7 := fmt.Sprintf("%08b", rxBuf[idx])
+	fmt.Printf("%s: %s (%s)\n", label, b0_7, BinaryStringToHexString(b0_7, true))
 }
 
 func showWord(label string, idx int, rxBuf []byte) {

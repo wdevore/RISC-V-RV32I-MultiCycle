@@ -17,6 +17,7 @@ module Top (
 
 localparam DATA_WIDTH = 32;
 localparam PCSelectSize = 3;
+localparam FlagSize = 4;
 
 // ------------------------------------------------------------------------
 // UART
@@ -76,14 +77,14 @@ Register #(.DATA_WIDTH(8)) par_port
 // 1'b0 = LED is on. So for Active high signals we invert signal to turn on.
 
 // Red LEDs
-assign blade1[0] = ~ready;
-assign blade1[1] = ~halt;
+assign blade1[0] = ~data_out[0];
+assign blade1[1] = ~data_out[1];
 // Yellow LEDs
-assign blade1[2] = reset;
-assign blade1[3] = ~cpu_clock;
+assign blade1[2] = ~data_out[2];
+assign blade1[3] = ~data_out[3];
 // Green LEDs
-assign blade1[4] = io_wr; //reg_out[4];
-assign blade1[5] = reset;//reg_out[5];
+assign blade1[4] = ~data_out[4];
+assign blade1[5] = ~data_out[5];
 
 // ------------------------------------------------------------------------
 // 7Seg
@@ -136,7 +137,13 @@ RangerRiscProcessor cpu(
     .cm_to_mdr_ld_o(cm_to_mdr_ld),
     .cm_to_rg_wr_o(cm_to_rg_wr),
     .cm_to_mem_wr_o(cm_to_mem_wr),
-    .cm_to_alu_flags_ld_o(cm_to_alu_flags_ld)
+    .cm_to_alu_flags_ld_o(cm_to_alu_flags_ld),
+    .wd_src_out_o(wd_src_out),
+    .cm_to_pc_src_o(cm_to_pc_src),
+    .cm_to_wd_src_o(cm_to_wd_src),
+    .alu_flags_cm_o(alu_flags_cm),
+    .cm_to_addr_src_o(cm_to_addr_src),
+    .cm_to_rsa_ld_o(cm_to_rsa_ld)
 );
 
 `ifdef DEBUG_MODE
@@ -161,7 +168,12 @@ logic cm_to_mdr_ld;
 logic cm_to_rg_wr;
 logic cm_to_mem_wr;
 logic cm_to_alu_flags_ld;
-
+logic [DATA_WIDTH-1:0] wd_src_out;
+PCSrc cm_to_pc_src;
+WDMuxSrc cm_to_wd_src;
+logic [FlagSize-1:0] alu_flags_cm;
+logic cm_to_addr_src;
+logic cm_to_rsa_ld;
 `endif
 
 // ------------------------------------------------------------------------
@@ -173,7 +185,7 @@ ControlState next_state = CSReset;
 logic [1:0] cnt_byte;
 logic [3:0] cnt_reset_hold;
 
-logic [4:0] cnt_status_req_byte;
+logic [5:0] cnt_status_req_byte;
 // N bytes of status (5:5:6)
 logic [7:0] status_bytes [1:0];
 
@@ -265,120 +277,151 @@ always_ff @(posedge clk) begin
             next_state <= CSStatusSending;
 
             case (cnt_status_req_byte)
-                5'b00000: begin
+                6'b000000: begin    // byte 0
                     // Concat portions into 1 byte
                     // status(5) + 3 bits of vector_state(5)
                     // 4321 0 432
                     // 0000_0|000
                     tx_byte <= {mat_state, vector_state[4:2]};
                 end
-                5'b00001: begin
+                6'b000001: begin    // byte 1
                     // Concat portions into 1 byte
                     // vector_state(5) + ir_state
                     // 10 54 3210
                     // 00|00_0000
                     tx_byte <= {vector_state[1:0], ir_state[5:0]};
                 end
-                5'b00010: begin
+                6'b000010: begin    // byte 2
                     tx_byte <= {cpu_clock, ready, halt, cm_to_ir_ld, cm_to_pc_ld, cm_to_pcp_ld, cm_to_mem_rd, cm_to_alu_ld};
                 end
                 // ----- PC reg --------------------
                 // 3      2 2      1 1      
                 // 0      4 3      6 5      8 7      0
                 // 00000000_00000000_00000000_00000000
-                5'b00011: begin
+                6'b000011: begin    // byte 3
                     tx_byte <= pc_out[0:7];
                 end
-                5'b00100: begin
+                6'b000100: begin    // byte 4
                     tx_byte <= pc_out[8:15];
                 end
-                5'b00101: begin
+                6'b000101: begin    // byte 5
                     tx_byte <= pc_out[16:23];
                 end
-                5'b00110: begin
+                6'b000110: begin    // byte 6
                     tx_byte <= pc_out[24:30];
                 end
                 // ----- IR reg --------------------
-                5'b00111: begin
+                6'b000111: begin    // byte 7
                     tx_byte <= ir_out[0:7];
                 end
-                5'b01000: begin
+                6'b001000: begin    // byte 8
                     tx_byte <= ir_out[8:15];
                 end
-                5'b01001: begin
+                6'b001001: begin    // byte 9
                     tx_byte <= ir_out[16:23];
                 end
-                5'b01010: begin
+                6'b001010: begin    // byte 10
                     tx_byte <= ir_out[24:30];
                 end
                 // ----- PC Prior reg --------------------
-                5'b01011: begin
+                6'b001011: begin    // byte 11
                     tx_byte <= pc_prior_out[0:7];
                 end
-                5'b01100: begin
+                6'b001100: begin    // byte 12
                     tx_byte <= pc_prior_out[8:15];
                 end
-                5'b01101: begin
+                6'b001101: begin    // byte 13
                     tx_byte <= pc_prior_out[16:23];
                 end
-                5'b01110: begin
+                6'b001110: begin    // byte 14
                     tx_byte <= pc_prior_out[24:30];
                 end
                 // ----- a_mux_out reg --------------------
-                5'b01111: begin
+                6'b001111: begin    // byte 15
                     tx_byte <= a_mux_out[0:7];
                 end
-                5'b10000: begin
+                6'b010000: begin    // byte 16
                     tx_byte <= a_mux_out[8:15];
                 end
-                5'b10001: begin
+                6'b010001: begin    // byte 17
                     tx_byte <= a_mux_out[16:23];
                 end
-                5'b10010: begin
+                6'b010010: begin    // byte 18
                     tx_byte <= a_mux_out[24:30];
                 end
                 // ----- b_mux_out reg --------------------
-                5'b10011: begin
+                6'b010011: begin    // byte 19
                     tx_byte <= b_mux_out[0:7];
                 end
-                5'b10100: begin
+                6'b010100: begin    // byte 20
                     tx_byte <= b_mux_out[8:15];
                 end
-                5'b10101: begin
+                6'b010101: begin    // byte 21
                     tx_byte <= b_mux_out[16:23];
                 end
-                5'b10110: begin
+                6'b010110: begin    // byte 22
                     tx_byte <= b_mux_out[24:30];
                 end
                 // ----- imm_ext_out reg --------------------
-                5'b10111: begin
+                6'b010111: begin    // byte 23
                     tx_byte <= imm_ext_out[0:7];
                 end
-                5'b11000: begin
+                6'b011000: begin    // byte 24
                     tx_byte <= imm_ext_out[8:15];
                 end
-                5'b11001: begin
+                6'b011001: begin    // byte 25
                     tx_byte <= imm_ext_out[16:23];
                 end
-                5'b11010: begin
+                6'b011010: begin    // byte 26
                     tx_byte <= imm_ext_out[24:30];
                 end
                 // ----- addr_mux_to_pmmu reg --------------------
-                5'b11011: begin
+                6'b011011: begin    // byte 27
                     tx_byte <= addr_mux_to_pmmu[0:7];
                 end
-                5'b11100: begin
+                6'b011100: begin    // byte 28
                     tx_byte <= addr_mux_to_pmmu[8:15];
                 end
-                5'b11101: begin
+                6'b011101: begin    // byte 29
                     tx_byte <= addr_mux_to_pmmu[16:23];
                 end
-                5'b11110: begin
+                6'b011110: begin    // byte 30
                     tx_byte <= addr_mux_to_pmmu[24:30];
                 end
-                5'b11111: begin
-                    tx_byte <= {cm_to_mdr_ld, cm_to_rg_wr, cm_to_mem_wr, cm_to_alu_flags_ld, {4{1'b0}}};
+                // ----- bits 2 --------------------
+                6'b011111: begin    // byte 31
+                    tx_byte <= {cm_to_mdr_ld, cm_to_rg_wr, cm_to_mem_wr, cm_to_alu_flags_ld, cm_to_addr_src, cm_to_rsa_ld, io_wr, {1{1'b0}}};
                 end
+                // ----- wd_src_out reg --------------------
+                6'b100000: begin    // byte 32
+                    tx_byte <= wd_src_out[0:7];
+                end
+                6'b100001: begin    // byte 33
+                    tx_byte <= wd_src_out[8:15];
+                end
+                6'b100010: begin    // byte 34
+                    tx_byte <= wd_src_out[16:23];
+                end
+                6'b100011: begin    // byte 35
+                    tx_byte <= wd_src_out[24:30];
+                end
+                // ----- pc_src --------------------
+                6'b100100: begin    // byte 36
+                    tx_byte <= cm_to_pc_src;
+                end
+                // ----- wd_src mux --------------------
+                6'b100101: begin    // byte 37
+                    tx_byte <= cm_to_wd_src;
+                end
+                // ----- alu flags --------------------
+                6'b100110: begin    // byte 38
+                    tx_byte <= alu_flags_cm;
+                end
+                // ----- data_out --------------------
+                6'b100111: begin    // byte 39
+                    tx_byte <= data_out;
+                end
+                
             endcase
         end
 
@@ -387,7 +430,7 @@ always_ff @(posedge clk) begin
             
             // Wait for the byte to finish transmitting.
             if (tx_complete) begin
-                if (cnt_status_req_byte == 5'b11111) begin
+                if (cnt_status_req_byte == 6'b100111) begin
                     next_state <= CSIdle;
                     cnt_status_req_byte <= 0;
                 end

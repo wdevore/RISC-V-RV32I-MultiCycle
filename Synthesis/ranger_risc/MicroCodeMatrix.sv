@@ -37,7 +37,7 @@ module MicroCodeMatrix
     output logic pc_ld_o,                           // PC load (active low)
     output logic pcp_ld_o,                          // PC Prior load (active low)
     output logic flags_ld_o,                        // ALU flags load (active low)
-    output logic [`PCSelectSize-1:0] pc_src_o,      // PC source select
+    output PCSrc pc_src_o,                          // PC source select
     output logic mem_wr_o,                          // Memory write (active low)
     output logic mem_rd_o,                          // Memory read (active low)
     output logic addr_src_o,                        // Memory address source select
@@ -47,7 +47,7 @@ module MicroCodeMatrix
     output logic [`BMuxSelectSize-1:0] b_src_o,     // B_Mux source select
     output logic alu_ld_o,                          // ALU output register load
     output logic [`ALUOpSize-1:0] alu_op_o,         // ALU operation
-    output logic [`WDSelectSize-1:0] wd_src_o,      // Write-Data source select
+    output WDMuxSrc wd_src_o,                       // Write-Data source select
     // -----------------------
     // CSR controls
     // -----------------------
@@ -119,7 +119,7 @@ logic resetComplete /*verilator public*/;
 logic pc_ld /*verilator public*/;
 logic pcp_ld;
 logic flags_ld;
-logic [`PCSelectSize-1:0] pc_src /*verilator public*/;
+PCSrc pc_src /*verilator public*/ = PCSrcAluImm;
 
 logic ir_ld;
 logic mdr_ld;
@@ -134,7 +134,7 @@ logic rg_wr;
 
 logic [`AMuxSelectSize-1:0] a_src;
 logic [`BMuxSelectSize-1:0] b_src;
-logic [`WDSelectSize-1:0] wd_src;
+WDMuxSrc wd_src;
 
 logic alu_ld;
 logic [`ALUOpSize-1:0] alu_op;
