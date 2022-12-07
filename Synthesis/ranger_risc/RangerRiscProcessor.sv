@@ -54,7 +54,8 @@ module RangerRiscProcessor
    output WDMuxSrc cm_to_wd_src_o,
    output logic [`FlagSize-1:0] alu_flags_cm_o,
    output logic cm_to_addr_src_o,
-   output logic cm_to_rsa_ld_o
+   output logic cm_to_rsa_ld_o,
+   output logic take_branch_o
 `endif
 
 );
@@ -132,7 +133,7 @@ logic cm_to_rsa_ld;
 logic [DATA_WIDTH-1:0] cm_rd_data;
 
 // Signal sequencer
-MicroCodeMatrix matrix
+ControlMatrix matrix
 (
    .clk_i(clk_i),
    .ir_i(ir_out),
@@ -166,8 +167,8 @@ MicroCodeMatrix matrix
    .halt_o(halt_o),
    .state_o(state_o),
    .vector_state_o(vector_state_o),
-   .ir_state_o(ir_state_o)
-
+   .ir_state_o(ir_state_o),
+   .take_branch_o(take_branch_o)
 `else
    .mdr_ld_o(cm_to_mdr_ld)
 `endif

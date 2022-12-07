@@ -21,7 +21,7 @@ SUB_MODULES_FILES = \
 	UARTDefinitions.sv \
 	UARTTx.sv \
 	UARTRx.sv \
-	MicroCodeMatrix.sv \
+	ControlMatrix.sv \
 	RangerRiscProcessor.sv
 
 MODULES_FILES = ${SUB_MODULES_FILES} ${TOP_FILE}

@@ -28,6 +28,9 @@ typedef enum logic [4:0] {
     CSCPUClockFall,
     CSCPUClockToggle,
 
+    CSClockControlMan,
+    CSClockControlRun,
+
     // -------------------------------
     // UART Tx sequence
     // -------------------------------

@@ -5,7 +5,7 @@
 
 // A microcode variant of a control matrix sequencer...eventually
 
-module MicroCodeMatrix
+module ControlMatrix
 #(
     parameter DATA_WIDTH = 32
 )
@@ -63,7 +63,8 @@ module MicroCodeMatrix
     output logic halt_o,               // Active high
     output MatrixState state_o,
     output ResetState vector_state_o,
-    output InstructionState ir_state_o
+    output InstructionState ir_state_o,
+    output logic take_branch_o
 `else
     output logic mdr_ld_o
 `endif
@@ -852,6 +853,7 @@ assign halt_o = halt;
 assign state_o = state;
 assign vector_state_o = vector_state;
 assign ir_state_o = ir_state;
+assign take_branch_o = take_branch;
 `endif
 
 endmodule

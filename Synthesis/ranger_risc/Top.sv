@@ -50,14 +50,24 @@ UARTRx uart_rx (
 // ------------------------------------------------------------------------
 // Slow cpu clock domain: CoreClk/(2^(N+1))
 // N = 14 = 762Hz
+// N = 18 = 48Hz
 // ------------------------------------------------------------------------
-`define N 22
+`define N 18
 logic [24:0] counter;
+
+// Manaully controlled clock via UART commands
+logic man_clock;
+
 logic cpu_clock;
+assign cpu_clock = clock_select == 1'b1 ? run_clock : man_clock;
 
-// assign cpu_clock = counter[`N];
+// Init to the Manual clock
+logic clock_select;
 
-assign led = counter[`N];
+logic run_clock;
+assign run_clock = counter[`N];
+
+assign led = cpu_clock;
 
 // ------------------------------------------------------------------------
 // LED Blade driven by cpu parallel out port
@@ -77,14 +87,14 @@ Register #(.DATA_WIDTH(8)) par_port
 // 1'b0 = LED is on. So for Active high signals we invert signal to turn on.
 
 // Red LEDs
-assign blade1[0] = ~data_out[0];
-assign blade1[1] = ~data_out[1];
+assign blade1[0] = ~reg_out[0];
+assign blade1[1] = ~reg_out[1];
 // Yellow LEDs
-assign blade1[2] = ~data_out[2];
-assign blade1[3] = ~data_out[3];
+assign blade1[2] = ~reg_out[2];
+assign blade1[3] = ~reg_out[3];
 // Green LEDs
-assign blade1[4] = ~data_out[4];
-assign blade1[5] = ~data_out[5];
+assign blade1[4] = ~reg_out[4];
+assign blade1[5] = ~reg_out[5];
 
 // ------------------------------------------------------------------------
 // 7Seg
@@ -143,7 +153,8 @@ RangerRiscProcessor cpu(
     .cm_to_wd_src_o(cm_to_wd_src),
     .alu_flags_cm_o(alu_flags_cm),
     .cm_to_addr_src_o(cm_to_addr_src),
-    .cm_to_rsa_ld_o(cm_to_rsa_ld)
+    .cm_to_rsa_ld_o(cm_to_rsa_ld),
+    .take_branch_o(take_branch)
 );
 
 `ifdef DEBUG_MODE
@@ -174,6 +185,7 @@ WDMuxSrc cm_to_wd_src;
 logic [FlagSize-1:0] alu_flags_cm;
 logic cm_to_addr_src;
 logic cm_to_rsa_ld;
+logic take_branch;
 `endif
 
 // ------------------------------------------------------------------------
@@ -190,6 +202,8 @@ logic [5:0] cnt_status_req_byte;
 logic [7:0] status_bytes [1:0];
 
 always_ff @(posedge clk) begin
+    counter <= counter + 1;
+
     case (state)
         CSReset: begin
             // Hold CPU in reset while Top module starts up.
@@ -198,21 +212,20 @@ always_ff @(posedge clk) begin
             cnt_byte <= 0;
             cnt_reset_hold <= 0;
             tx_en <= 1;         // Disable transmission
-            cpu_clock <= 0;
-            
+            man_clock <= 0;
+            clock_select <= 0;
             next_state <= CSReset1;
         end
 
         CSReset1: begin
             reset <= 1'b0;
-            cpu_clock <= ~cpu_clock;
+            man_clock <= ~man_clock;
             
             next_state <= CSResetComplete;
         end
 
         CSResetComplete: begin
             reset <= 1'b1;
-            // cpu_clock <= ~cpu_clock;
             
             next_state <= CSIdle;
         end
@@ -225,7 +238,7 @@ always_ff @(posedge clk) begin
             reset <= 1'b0;
             cnt_reset_hold <= 0;
             tx_en <= 1;         // Disable transmission
-            cpu_clock <= ~cpu_clock;
+            man_clock <= ~man_clock;
             next_state <= CSCPUResetDeassert;
         end
 
@@ -237,7 +250,7 @@ always_ff @(posedge clk) begin
             else begin
                 cnt_reset_hold <= cnt_reset_hold + 1;
             end
-            cpu_clock <= ~cpu_clock;
+            man_clock <= ~man_clock;
         end
 
         // For manually controlling Reset with clocks
@@ -250,18 +263,28 @@ always_ff @(posedge clk) begin
         // CPU rising/falling sequence
         // -------------------------------
         CSCPUClockRise: begin
-            cpu_clock <= 1;
+            man_clock <= 1;
             next_state <= CSSend;
         end
 
         CSCPUClockFall: begin
-            cpu_clock <= 0;
+            man_clock <= 0;
             next_state <= CSSend;
         end
 
         CSCPUClockToggle: begin
-            cpu_clock <= 1;
+            man_clock <= 1;
             next_state <= CSCPUClockFall;
+        end
+
+        CSClockControlMan: begin
+            clock_select <= 0;
+            next_state <= CSSend;
+        end
+
+        CSClockControlRun: begin
+            clock_select <= 1;
+            next_state <= CSSend;
         end
 
         // -------------------------------
@@ -296,7 +319,7 @@ always_ff @(posedge clk) begin
                 end
                 // ----- PC reg --------------------
                 // 3      2 2      1 1      
-                // 0      4 3      6 5      8 7      0
+                // 1      4 3      6 5      8 7      0
                 // 00000000_00000000_00000000_00000000
                 6'b000011: begin    // byte 3
                     tx_byte <= pc_out[0:7];
@@ -308,7 +331,7 @@ always_ff @(posedge clk) begin
                     tx_byte <= pc_out[16:23];
                 end
                 6'b000110: begin    // byte 6
-                    tx_byte <= pc_out[24:30];
+                    tx_byte <= pc_out[24:31];
                 end
                 // ----- IR reg --------------------
                 6'b000111: begin    // byte 7
@@ -321,7 +344,7 @@ always_ff @(posedge clk) begin
                     tx_byte <= ir_out[16:23];
                 end
                 6'b001010: begin    // byte 10
-                    tx_byte <= ir_out[24:30];
+                    tx_byte <= ir_out[24:31];
                 end
                 // ----- PC Prior reg --------------------
                 6'b001011: begin    // byte 11
@@ -334,7 +357,7 @@ always_ff @(posedge clk) begin
                     tx_byte <= pc_prior_out[16:23];
                 end
                 6'b001110: begin    // byte 14
-                    tx_byte <= pc_prior_out[24:30];
+                    tx_byte <= pc_prior_out[24:31];
                 end
                 // ----- a_mux_out reg --------------------
                 6'b001111: begin    // byte 15
@@ -347,7 +370,7 @@ always_ff @(posedge clk) begin
                     tx_byte <= a_mux_out[16:23];
                 end
                 6'b010010: begin    // byte 18
-                    tx_byte <= a_mux_out[24:30];
+                    tx_byte <= a_mux_out[24:31];
                 end
                 // ----- b_mux_out reg --------------------
                 6'b010011: begin    // byte 19
@@ -360,7 +383,7 @@ always_ff @(posedge clk) begin
                     tx_byte <= b_mux_out[16:23];
                 end
                 6'b010110: begin    // byte 22
-                    tx_byte <= b_mux_out[24:30];
+                    tx_byte <= b_mux_out[24:31];
                 end
                 // ----- imm_ext_out reg --------------------
                 6'b010111: begin    // byte 23
@@ -373,7 +396,7 @@ always_ff @(posedge clk) begin
                     tx_byte <= imm_ext_out[16:23];
                 end
                 6'b011010: begin    // byte 26
-                    tx_byte <= imm_ext_out[24:30];
+                    tx_byte <= imm_ext_out[24:31];
                 end
                 // ----- addr_mux_to_pmmu reg --------------------
                 6'b011011: begin    // byte 27
@@ -386,11 +409,11 @@ always_ff @(posedge clk) begin
                     tx_byte <= addr_mux_to_pmmu[16:23];
                 end
                 6'b011110: begin    // byte 30
-                    tx_byte <= addr_mux_to_pmmu[24:30];
+                    tx_byte <= addr_mux_to_pmmu[24:31];
                 end
                 // ----- bits 2 --------------------
                 6'b011111: begin    // byte 31
-                    tx_byte <= {cm_to_mdr_ld, cm_to_rg_wr, cm_to_mem_wr, cm_to_alu_flags_ld, cm_to_addr_src, cm_to_rsa_ld, io_wr, {1{1'b0}}};
+                    tx_byte <= {cm_to_mdr_ld, cm_to_rg_wr, cm_to_mem_wr, cm_to_alu_flags_ld, cm_to_addr_src, cm_to_rsa_ld, io_wr, take_branch};
                 end
                 // ----- wd_src_out reg --------------------
                 6'b100000: begin    // byte 32
@@ -403,7 +426,7 @@ always_ff @(posedge clk) begin
                     tx_byte <= wd_src_out[16:23];
                 end
                 6'b100011: begin    // byte 35
-                    tx_byte <= wd_src_out[24:30];
+                    tx_byte <= wd_src_out[24:31];
                 end
                 // ----- pc_src --------------------
                 6'b100100: begin    // byte 36
@@ -421,6 +444,10 @@ always_ff @(posedge clk) begin
                 6'b100111: begin    // byte 39
                     tx_byte <= data_out;
                 end
+                // ----- bits 3 --------------------
+                6'b101000: begin    // byte 40
+                    tx_byte <= {clock_select, {7{1'b0}}};
+                end
                 
             endcase
         end
@@ -430,7 +457,7 @@ always_ff @(posedge clk) begin
             
             // Wait for the byte to finish transmitting.
             if (tx_complete) begin
-                if (cnt_status_req_byte == 6'b100111) begin
+                if (cnt_status_req_byte == 6'b101000) begin
                     next_state <= CSIdle;
                     cnt_status_req_byte <= 0;
                 end
@@ -472,6 +499,14 @@ always_ff @(posedge clk) begin
                         next_state <= CSStatusRequest;
                     end
 
+                    8'h6A:  begin // "j"
+                        next_state <= CSClockControlMan;
+                    end
+
+                    8'h6B:  begin // "k"
+                        next_state <= CSClockControlRun;
+                    end
+
                     default: begin
                         next_state <= CSSend;
                     end
@@ -494,6 +529,10 @@ always_ff @(posedge clk) begin
                             tx_byte <= 8'h43;  // "C"
                         end
 
+                        8'h6A, 8'h6B:  begin // "k"
+                            tx_byte <= 8'h4B;  // "K"
+                        end
+
                         default: begin
                             tx_byte <= 8'h4F;  // "O"
                         end
@@ -514,6 +553,9 @@ always_ff @(posedge clk) begin
                         end
                         8'h65:  begin // "e"
                             tx_byte <= 8'h61;  // "a"
+                        end
+                        8'h6A, 8'h6B:  begin
+                            tx_byte <= 8'h6B;  // "k"
                         end
 
                         default: begin
@@ -548,10 +590,6 @@ always_ff @(posedge clk) begin
     endcase
 
     state <= next_state;
-end
-
-always_ff @(posedge clk) begin
-    counter <= counter + 1;
 end
 
 endmodule
