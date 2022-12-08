@@ -154,7 +154,9 @@ RangerRiscProcessor cpu(
     .alu_flags_cm_o(alu_flags_cm),
     .cm_to_addr_src_o(cm_to_addr_src),
     .cm_to_rsa_ld_o(cm_to_rsa_ld),
-    .take_branch_o(take_branch)
+    .take_branch_o(take_branch),
+    .mdr_out_o(mdr_out),
+    .alu_out_o(alu_out)
 );
 
 `ifdef DEBUG_MODE
@@ -186,6 +188,9 @@ logic [FlagSize-1:0] alu_flags_cm;
 logic cm_to_addr_src;
 logic cm_to_rsa_ld;
 logic take_branch;
+logic [DATA_WIDTH-1:0] mdr_out;
+logic [DATA_WIDTH-1:0] alu_out;
+
 `endif
 
 // ------------------------------------------------------------------------
@@ -448,6 +453,32 @@ always_ff @(posedge clk) begin
                 6'b101000: begin    // byte 40
                     tx_byte <= {clock_select, {7{1'b0}}};
                 end
+                // ----- mdr_out reg --------------------
+                6'b101001: begin    // byte 41
+                    tx_byte <= mdr_out[0:7];
+                end
+                6'b101010: begin    // byte 42
+                    tx_byte <= mdr_out[8:15];
+                end
+                6'b101011: begin    // byte 43
+                    tx_byte <= mdr_out[16:23];
+                end
+                6'b101100: begin    // byte 44
+                    tx_byte <= mdr_out[24:31];
+                end
+                // ----- alu_out reg --------------------
+                6'b101101: begin    // byte 45
+                    tx_byte <= alu_out[0:7];
+                end
+                6'b101110: begin    // byte 46
+                    tx_byte <= alu_out[8:15];
+                end
+                6'b101111: begin    // byte 47
+                    tx_byte <= alu_out[16:23];
+                end
+                6'b110000: begin    // byte 48
+                    tx_byte <= alu_out[24:31];
+                end
                 
             endcase
         end
@@ -457,7 +488,7 @@ always_ff @(posedge clk) begin
             
             // Wait for the byte to finish transmitting.
             if (tx_complete) begin
-                if (cnt_status_req_byte == 6'b101000) begin
+                if (cnt_status_req_byte == 6'b110000) begin
                     next_state <= CSIdle;
                     cnt_status_req_byte <= 0;
                 end

@@ -85,7 +85,7 @@ stdinloop:
 				}
 
 				sendCommand("s", port)
-				rxBuf := readPort(rdBuf, 41, port)
+				rxBuf := readPort(rdBuf, 49, port)
 				showData(rxBuf)
 
 				previousCommand = command
@@ -150,6 +150,8 @@ func showData(rxBuf []byte) {
 	showWord("  ImmExt", 23, rxBuf)
 	showWord(" AddrMux", 27, rxBuf)
 	showWord("WdSrcOut", 32, rxBuf)
+	showWord("  MDROut", 41, rxBuf)
+	showWord("  ALUOut", 45, rxBuf)
 	showByte(" DataOut", 39, rxBuf)
 	fmt.Println("=============================================================================")
 }
@@ -335,21 +337,21 @@ func ALUFlags(idx int, rxBuf []byte) string {
 func bits(idx int, idx2 int, idx3 int, rxBuf []byte) {
 	b := fmt.Sprintf("%08b", rxBuf[idx])
 	fmt.Println("            ------------------------------------")
-	fmt.Println("                                               t")
-	fmt.Println("                  c                            a")
-	fmt.Println("                  l                    A       k")
-	fmt.Println("                  k                    L A     e")
-	fmt.Println("                                       U d      ")
-	fmt.Println("                  s        P M A M   M F d R   b")
-	fmt.Println("            C R   e    I P C e L d R e l r s I r")
-	fmt.Println("            l e H l    R C P m U r g m g   a O a")
-	fmt.Println("            o a a e                    s s     n")
-	fmt.Println("            c d l c    l l l r l l w w l r l w c")
-	fmt.Println("            k y t t    d d d d d d r r d c d r h")
+	fmt.Println("                    |                 A       t ")
+	fmt.Println("                  c |                 L       a ")
+	fmt.Println("                  l |                 U       k ")
+	fmt.Println("                  k |                 F A     e ")
+	fmt.Println("                    |                 l d       ")
+	fmt.Println("                  s |     P M A M   M a d R   b ")
+	fmt.Println("            C R   e | I P C e L d R e g r s I r ")
+	fmt.Println("            l e H l | R C P m U r g m s   a O a ")
+	fmt.Println("            o a a e |                   s     n ")
+	fmt.Println("            c d l c | l l l r l l w w l r l w c ")
+	fmt.Println("            k y t t | d d d d d d r r d c d r h ")
 	fmt.Println("            ------------------------------------")
 	b2 := fmt.Sprintf("%08b", rxBuf[idx2])
 	b3 := fmt.Sprintf("%08b", rxBuf[idx3])
-	fmt.Printf("            %s %s %s %s    %s %s %s %s %s %s %s %s %s %s %s %s %s\n", string(b[0]), string(b[1]), string(b[2]), string(b3[0]), string(b[3]), string(b[4]), string(b[5]), string(b[6]), string(b[7]), string(b2[0]), string(b2[1]), string(b2[2]), string(b2[3]), string(b2[4]), string(b2[5]), string(b2[6]), string(b2[7]))
+	fmt.Printf("            %s %s %s %s | %s %s %s %s %s %s %s %s %s %s %s %s %s\n", string(b[0]), string(b[1]), string(b[2]), string(b3[0]), string(b[3]), string(b[4]), string(b[5]), string(b[6]), string(b[7]), string(b2[0]), string(b2[1]), string(b2[2]), string(b2[3]), string(b2[4]), string(b2[5]), string(b2[6]), string(b2[7]))
 }
 
 func showPC(idx int, rxBuf []byte) {

@@ -55,7 +55,9 @@ module RangerRiscProcessor
    output logic [`FlagSize-1:0] alu_flags_cm_o,
    output logic cm_to_addr_src_o,
    output logic cm_to_rsa_ld_o,
-   output logic take_branch_o
+   output logic take_branch_o,
+   output logic [DATA_WIDTH-1:0] mdr_out_o,
+   output logic [DATA_WIDTH-1:0] alu_out_o
 `endif
 
 );
@@ -395,5 +397,6 @@ assign cm_to_wd_src_o = cm_to_wd_src;
 assign alu_flags_cm_o = alu_flags_cm;
 assign cm_to_addr_src_o = cm_to_addr_src;
 assign cm_to_rsa_ld_o = cm_to_rsa_ld;
-
+assign mdr_out_o = mdr_out;
+assign alu_out_o = alu_out;
 endmodule
