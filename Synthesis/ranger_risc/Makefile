@@ -1,5 +1,3 @@
-MATRIX = ControlMatrixCSRs
-
 TOP_FILE = Top.sv
 
 SUB_MODULES_FILES = \
@@ -35,15 +33,6 @@ YOSYS_COMMAND = "synth_ice40 -blif ${BUILD_BIN}/chip.blif -json ${BUILD_BIN}/har
 # The Blackice Nxt shows up as generally ACM0 or ACM1 depending on what other
 # devices you have connected. Be sure to run "dmesg -w" and see what
 # the device name is.
-
-# 2:1.0: ttyACM0: USB ACM device
-# new high-speed USB device number 42 using xhci_hcd
-# New USB device found, idVendor=2109, idProduct=2815, bcdDevice= 7.04
-# New USB device strings: Mfr=1, Product=2, SerialNumber=0
-# Product: USB2.0 Hub             
-# Manufacturer: VIA Labs, Inc.
-#	--randomize-seed \
-
 TARGET_PORT = /dev/ttyACM0
 
 PINS_CONSTRAINTS = ../IceLogicBus.pcf

@@ -2,16 +2,13 @@
 
 Main: @
     lw x4, @Data+4(x0)    // set base of data
-    addi x0, x4, 0x0    // NOP to expose x4
     addi x3, x0, 0x0    // Init counter to 0
     lb x1, 0x0(x4)      // Count up to Max count
     lb x2, 0x4(x4)      // Inc by N
     lw x5, @Data+3(x0)  // Load IO base
-    addi x0, x5, 0x0    // NOP to expose x5
 
 Inc: @
     add x3, x3, x2      // x3 += 1
-    addi x0, x3, 0x0    // NOP to expose x3 on RegFile out-port
     sb x3, 0x0(x5)      // Write to IO port. Causes io_wr to assert
     blt x3, x1, @Inc
     ebreak

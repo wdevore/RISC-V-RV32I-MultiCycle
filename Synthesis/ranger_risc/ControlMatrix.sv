@@ -3,8 +3,6 @@
 `timescale 1ns/1ps
 `endif
 
-// A microcode variant of a control matrix sequencer...eventually
-
 module ControlMatrix
 #(
     parameter DATA_WIDTH = 32

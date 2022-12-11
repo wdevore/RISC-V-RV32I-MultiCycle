@@ -9,11 +9,16 @@ The instructions themselves need to have the offset specified in byte-address fo
 
 If an instruction references an address that is defined in word-address form then it is converted to byte-address form even if it refers to a word-address. This is per the RISC-V ISA specs.
 
-### Compiling
-You need to run the assembler to produce a rams/code.ram file.
+## Setup and running programs
+You need to do several things in order for the cpu to run code on the FPGA. Open 3 terminals: one for the assembler, another for HDL toolchain and another for the go UART client.
 
-```cd /media/path/to/risc/RISC-V-RV32I-MultiCycle/tools/gen-instr/assembler```.
+1) Create or modify your ```<file>.asm``` program and make sure you update the assembler's assembly.json file. The assemlby files are typically stored in the *assemblies* under the application root folder.
+2) Open a terminal and *cd* to *\<path to\>/tools/gen-instr/assembler* folder
+3) Run the assembler ```go run . <file>.asm``` to produce the *code.ram* file that is embedded into the fpga bit stream via the ```$readmemh``` command.
+4) Open another terminal and *cd* to *\<path to\>/Synthesis/ranger_risc* folder and run ```make```.
+5) Open another terminal and *cd* to *\<path to\>/tools/go-uart* and run ```go run .```
 
+### Assembler json
 update the *inputPath* and *inputFile* keys to the .asm file you are targeting. Also, update the *RamDir* to direct the assembled ram code to a destination.
 
 Then run ```go run .``` or ```go run . <file>.asm```
@@ -43,9 +48,3 @@ After running the assembler you get a helpful yet extra *code.out* for cross ref
 @0000000A DEADBEEF d: DEADBEEF         // data to load
 @000000C0 00000000 @: Main             // Reset vector
 ```
-
-## Simulation
-Now that you have assembled your code you can run the simulation.
-
-```cd /media/path/to/risc/RISC-V-RV32I-MultiCycle/simulation/ranger_microcode```
-```make go```
