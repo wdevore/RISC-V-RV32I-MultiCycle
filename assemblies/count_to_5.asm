@@ -1,4 +1,4 @@
-// Count up to 5 using x3 register
+// Count up on each interrupt
 
 Main: @
     lw x4, @Data+4(x0)    // set base of data

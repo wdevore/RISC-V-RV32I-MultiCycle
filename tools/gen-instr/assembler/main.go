@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"regexp"
 	"strings"
@@ -122,6 +123,9 @@ func main() {
 }
 
 func findLabels(scanner *bufio.Scanner, labels map[string]string, labelExpr *regexp.Regexp) (labelNames []string) {
+	commentLineExp, _ := regexp.Compile(`^([ ]*)[ ]*([\/\/]{2})`)
+
+	// PC counts in word-address format of type uint64 (hex value)
 	pc := 0
 
 	for scanner.Scan() {
@@ -130,24 +134,36 @@ func findLabels(scanner *bufio.Scanner, labels map[string]string, labelExpr *reg
 		if len(line) == 0 {
 			continue
 		}
-		if line[0] == '/' && line[1] == '/' {
+
+		fields := commentLineExp.FindStringSubmatch(line)
+		if len(fields) > 0 {
 			continue
 		}
 
+		// "addr" is in word-address form
 		label, addr, err := matchLabel(line, labelExpr)
 		if err == nil {
+			// Ex: "Data1: @"
 			if addr == "" {
-				// Ex: "Data1: @"
 				// An address wasn't supplied. Use current PC instead
 				addr = utils.UintToHexString(uint64(pc), false)
 			}
-			// If addr is prefixed by "@" then we convert it to byte-address
-			// if strings.Contains(line, "@") {
-			// 	addr = utils.WordAddrToByteAddrString(addr)
-			// }
+
+			// If "$" present then the address is being specified in
+			// byte-address form. We need to convert it internally
+			// back to word-address for counting.
 			if strings.Contains(line, "$") {
 				addr = utils.ByteAddrToWordAddrString(addr)
 			}
+
+			// Convert addr from string-hex to uint so we can update the PC
+			value, err := utils.StringHexToInt(addr)
+			if err != nil {
+				log.Fatalln(err)
+			}
+
+			pc = int(value)
+
 			labels[label] = addr
 			labelNames = append(labelNames, label)
 		} else {

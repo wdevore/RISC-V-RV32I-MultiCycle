@@ -10,16 +10,12 @@
 // If the TB is run from this directory then the path would be "ROM.dat"
 // `define MEM_CONTENTS "ROM.dat"
 // Otherwise it is relative to the TB.
-`define ROM_EXTENSION ".ram"
-
-`define ROM_PATH "rams/"
 
 // Use this define starting the ranger_console. It's just a dummy
 // because you can simply "ld" what ever code you need via the simulation.
 // `define MEM_CONTENTS "itype_csrs/intr1"
 
 // Use this define to preload a specific ram during synthesis.
-`define MEM_CONTENTS "code"
 
 // OR
 // `define ROM_PATH "/media/RAMDisk/"

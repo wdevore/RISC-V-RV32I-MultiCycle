@@ -248,3 +248,6 @@ set_io -nowarn  pm6a0 H11
 set_io -nowarn  pm6a1 D9
 
 set_io -nowarn  pm6b3 F9
+
+#PMOD4A
+set_io -nowarn  pm4a0 A9

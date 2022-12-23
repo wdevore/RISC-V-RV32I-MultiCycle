@@ -1,24 +1,27 @@
 TOP_FILE = Top.sv
 
 SUB_MODULES_FILES = \
-	../../definitions/definitions.sv \
+	../../../definitions/definitions.sv \
+	definitions.sv \
 	TypeEnums.sv \
-	../../modules/CDCSynchron.sv \
-	../../modules/Mux8.sv \
-	../../modules/Mux4.sv \
-	../../modules/Mux2.sv \
-	../../modules/Register.sv \
-	../../modules/Memory.sv \
-	../../modules/ALU.sv \
-	../../modules/Immediate.sv \
-	../../modules/RegisterFile.sv \
-	../../modules/Pmmu.sv \
-	../Modules/Decoder.sv \
-	../Modules/SevenSeg.sv \
+	../../../modules/CDCSynchron.sv \
+	../../../modules/Mux8.sv \
+	../../../modules/Mux4.sv \
+	../../../modules/DeMux4.sv \
+	../../../modules/Mux2.sv \
+	../../../modules/Register.sv \
+	../../../modules/Memory.sv \
+	../../../modules/ALU.sv \
+	../../../modules/Immediate.sv \
+	../../../modules/RegisterFile.sv \
+	../../../modules/Pmmu.sv \
+	../../Modules/Decoder.sv \
+	../../Modules/SevenSeg.sv \
 	Enums.sv \
-	UARTDefinitions.sv \
-	UARTTx.sv \
-	UARTRx.sv \
+	../UARTDefinitions.sv \
+	../UARTTx.sv \
+	../UARTRx.sv \
+	pll.sv \
 	ControlMatrix.sv \
 	RangerRiscProcessor.sv
 
@@ -35,7 +38,7 @@ YOSYS_COMMAND = "synth_ice40 -blif ${BUILD_BIN}/chip.blif -json ${BUILD_BIN}/har
 # the device name is.
 TARGET_PORT = /dev/ttyACM0
 
-PINS_CONSTRAINTS = ../IceLogicBus.pcf
+PINS_CONSTRAINTS = ../../IceLogicBus.pcf
 
 # Set your reset vector address here, and it should be in
 # Byte-Address form. For example, if you have a Word-address
@@ -43,6 +46,7 @@ PINS_CONSTRAINTS = ../IceLogicBus.pcf
 # RESET_BOOT_VECTOR = "32'h00000040" # @010
 RESET_BOOT_VECTOR = "32'h00000300" # @0C0
 # RESET_BOOT_VECTOR = "32'h0000006C"
+# 	-DRESET_VECTOR=${RESET_BOOT_VECTOR} \
 
 # Note: 20MHz is used as the clock constraint instead of 64MHz. This design
 # struggles to reach 22MHz as it is.
@@ -60,7 +64,6 @@ build: ${MODULES_FILES} ${PINS_CONSTRAINTS}
 	-l ${BUILD_BIN}/yo.log \
 	-q \
 	-defer \
-	-DRESET_VECTOR=${RESET_BOOT_VECTOR} \
 	-DUSE_ROM \
 	-DDEBUG_MODE \
 	${MODULES_FILES}

@@ -3,9 +3,7 @@
 `timescale 1ns/1ps
 `endif
 
-// A microcode variant of a control matrix sequencer
-
-module MicroCodeMatrix
+module ControlMatrix
 #(
     parameter DATA_WIDTH = 32
 )
@@ -25,11 +23,6 @@ module MicroCodeMatrix
     // -----------------------
     input  logic irq_i, // falling edge
 
-    // -----------------------
-    // Memory map
-    // -----------------------
-    // input  logic eff_addr_i,
-    
     // **--**--**--**--**--**--**--**--**--**--**--**--**--
     // Outputs
     // **--**--**--**--**--**--**--**--**--**--**--**--**--
@@ -37,7 +30,7 @@ module MicroCodeMatrix
     output logic pc_ld_o,                           // PC load (active low)
     output logic pcp_ld_o,                          // PC Prior load (active low)
     output logic flags_ld_o,                        // ALU flags load (active low)
-    output logic [`PCSelectSize-1:0] pc_src_o,      // PC source select
+    output PCSrc pc_src_o,                          // PC source select
     output logic mem_wr_o,                          // Memory write (active low)
     output logic mem_rd_o,                          // Memory read (active low)
     output logic addr_src_o,                        // Memory address source select
@@ -47,7 +40,7 @@ module MicroCodeMatrix
     output logic [`BMuxSelectSize-1:0] b_src_o,     // B_Mux source select
     output logic alu_ld_o,                          // ALU output register load
     output logic [`ALUOpSize-1:0] alu_op_o,         // ALU operation
-    output logic [`WDSelectSize-1:0] wd_src_o,      // Write-Data source select
+    output WDMuxSrc wd_src_o,                       // Write-Data source select
     // -----------------------
     // CSR controls
     // -----------------------
@@ -57,15 +50,28 @@ module MicroCodeMatrix
     // **--**--**--**--**--**--**--**--**--**--**--**--**--
     // DEBUGGING Outputs
     // **--**--**--**--**--**--**--**--**--**--**--**--**--
-    `ifdef DEBUG_MODE
-    // output logic out_ld_o,
-    // output logic out_sel_o,
+`ifdef DEBUG_MODE
     output logic mdr_ld_o,
     output logic ready_o,              // Active high
-    output logic halt_o                // Active high
-    `else
+    output logic halt_o,               // Active high
+    output MatrixState state_o,
+    output ResetState vector_state_o,
+    output InstructionState ir_state_o,
+    output logic take_branch_o,
+    output logic irq_triggered_o,
+    output logic interrupt_in_progress_o,
+    output logic irq_pending_o,
+    output logic write_csr_o,
+    output logic [DATA_WIDTH-1:0] mepc_o,
+    output logic [DATA_WIDTH-1:0] mip_o,
+    output logic is_csr_instr_o,
+    output logic irq_reset_trigger_o,
+    output logic [DATA_WIDTH-1:0] mstatus_o,
+    output logic [DATA_WIDTH-1:0] mie_o,
+    output logic [DATA_WIDTH-1:0] csr_data_o
+`else
     output logic mdr_ld_o
-    `endif
+`endif
 );
 
 /*verilator public_module*/     // <-- redudant
@@ -92,8 +98,8 @@ logic [2:0] funct7up = ir_i[31:29];
 MatrixState state /*verilator public*/ = 0;       // Current state
 MatrixState next_state /*verilator public*/ = 0;  // Next state
 
-MatrixState vector_state /*verilator public*/ = 0;
-MatrixState next_vector_state /*verilator public*/ = 0;
+ResetState vector_state /*verilator public*/ = 0;
+ResetState next_vector_state /*verilator public*/ = 0;
 
 InstructionState ir_state /*verilator public*/;
 InstructionState next_ir_state/*verilator public*/ = 0;
@@ -103,8 +109,6 @@ InstructionState next_ir_state/*verilator public*/ = 0;
 // ---------------------------------------------------
 // verilator lint_off UNUSED
 logic halt;     // Debug only
-logic out_ld;
-logic out_sel;
 // verilator lint_on UNUSED
 
 logic ready /*verilator public*/;    // The "ready" flag is Set when the CPU has completed its reset activities.
@@ -118,7 +122,7 @@ logic resetComplete /*verilator public*/;
 logic pc_ld /*verilator public*/;
 logic pcp_ld;
 logic flags_ld;
-logic [`PCSelectSize-1:0] pc_src /*verilator public*/;
+PCSrc pc_src /*verilator public*/ = PCSrcAluImm;
 
 logic ir_ld;
 logic mdr_ld;
@@ -133,11 +137,10 @@ logic rg_wr;
 
 logic [`AMuxSelectSize-1:0] a_src;
 logic [`BMuxSelectSize-1:0] b_src;
-logic [`WDSelectSize-1:0] wd_src;
+WDMuxSrc wd_src;
 
 logic alu_ld;
 logic [`ALUOpSize-1:0] alu_op;
-
 always_comb begin
     case (ir_state)
         RType: begin
@@ -164,22 +167,73 @@ always_comb begin
 end
 
 logic take_branch;
+always_comb begin
+    // Depending on which branch directive, we interpret the
+    // flags differently.
+    case (funct3)
+        BTBeq: begin
+            // Branch if Z=1
+            take_branch = flags_i[`FLAG_ZERO];
+        end
+
+        BTBne: begin
+            // Branch if Z=0
+            take_branch = ~flags_i[`FLAG_ZERO];
+        end
+
+        BTBlt: begin
+            // If the two operands are considered signed
+            // then N!=V is interpreted as "rs1 is less than rs2"
+            take_branch = flags_i[`FLAG_NEGATIVE] ^ flags_i[`FLAG_OVERFLOW];
+        end
+
+        BTBge: begin
+            // If the two operands are considered signed
+            // then N==V is interpreted as "rs1 >= rs2"
+            take_branch = flags_i[`FLAG_NEGATIVE] == flags_i[`FLAG_OVERFLOW];
+        end
+
+        BTBltu: begin
+            // The two operands are considered unsigned, 
+            // We interpret C=1, for example, "3 < FFFFFFFE".
+            take_branch = flags_i[`FLAG_CARRY];
+        end
+
+        BTBgeu: begin
+            // The two operands are considered unsigned, 
+            // We interpret C=0, for example, "FFFFFFFE >= 5".
+            take_branch = ~flags_i[`FLAG_CARRY];
+        end
+
+        default: begin
+            take_branch = 1'b0;
+            // `ifdef SIMULATE
+            //     $display("IR: BRANCH DIRECTIVE UNKNOWN");
+            // `endif
+        end
+    endcase
+end
 
 // ----------------------------------------------------
 // CSRs
 // ----------------------------------------------------
-logic isCSRInstr;
+logic is_csr_instr;
 // Must be a CSR instruction for our implementation.
-assign isCSRInstr = ir_opcode == `ITYPE_E && funct3 != 3'b000;
+assign is_csr_instr = ir_opcode == `ITYPE_E && funct3 != 3'b000;
 
 logic rdIsX0;
 logic rs1IsX0;
 assign rdIsX0 = ir_i[11:7] == 5'b00000;
 assign rs1IsX0 = ir_i[19:15] == 5'b00000;
+
 logic noReadEffect;
 assign noReadEffect = !(rdIsX0 && funct3 == CSRRW);
 
 logic rsa_ld;
+
+logic irq_pending = 0;
+logic interrupt_in_progress = 0;
+logic write_csr;
 
 // Standard flip-flop style registers
 logic [DATA_WIDTH-1:0] mstatus /*verilator public*/;
@@ -187,8 +241,6 @@ logic [DATA_WIDTH-1:0] mie /*verilator public*/;
 logic [DATA_WIDTH-1:0] mip /*verilator public*/;
 logic [DATA_WIDTH-1:0] mepc /*verilator public*/;
 logic [DATA_WIDTH-1:0] mtvec /*verilator public*/;
-
-logic [`CSRAddrSize-1:0] csr_addr;
 
 always_comb begin
     case (state)
@@ -215,6 +267,8 @@ logic [DATA_WIDTH-1:0] csr_data;
 logic [DATA_WIDTH-1:0] algo_data;
 
 logic [DATA_WIDTH-1:0] rd_data;     // RegFile data
+
+logic [`CSRAddrSize-1:0] csr_addr;
 always_comb begin
     rd_data = 0;
 
@@ -261,10 +315,7 @@ end
 localparam IMM_SIZE = 5;
 logic [4:0] immediate = ir_i[19:15];  // Immediate
 
-logic irq_pending = 0;
-logic interrupt_in_progress = 0;
-
-logic writeCSR;
+// Tracking System instruction type
 logic [11:0] funct12 = ir_i[31:20];  // Immediate
 
 // ---------------------------------------------------
@@ -276,10 +327,6 @@ initial begin
     // Also configure the reset sequence start state.
     vector_state = Sync0;
     ir_state = ITLoad;
-
-    mstatus = 32'b0000_0000_0000_0000_0000_0000_0000_0000;
-    // mie = 32'b0000_0000_0000_0101_0000_0000_0101_0101; // 32'h0005_0055
-    mie = 32'b0000_0000_0000_0000_0000_0000_0000_0000;
 end
 
 // -------------------------------------------------------------
@@ -308,10 +355,6 @@ always_comb begin
     ir_ld = RgLdDisabled;       // Disable IR loading
     mdr_ld = RgLdDisabled;      // Disable load
 
-    // Output 
-    out_ld = RgLdDisabled;
-    out_sel = 1'b0;        // Reg-File
-
     // Memory
     mem_wr = RWInActive;      // Disable Write (active low)
     mem_rd = RWInActive;      // Disable read (active low)
@@ -328,8 +371,6 @@ always_comb begin
     alu_ld = RgLdDisabled;
     flags_ld = RgLdDisabled;
     
-    take_branch = 1'b0;
-
     rst_src = 1'b0;     // Default to IR funct3 source
 
     // -------------------------------------------------
@@ -339,9 +380,10 @@ always_comb begin
     csr_data = mstatus;
 
     irq_pending = 1'b0;
-    writeCSR = 1'b0;
+    write_csr = 1'b0;
+    algo_data = {DATA_WIDTH{1'b0}};
 
-    if (isCSRInstr) begin
+    if (is_csr_instr) begin
         // There is only one scenario where we don't read a CSR register
         // and that is when rd == x0 and the instruction is CSRRW.
         if (noReadEffect) begin
@@ -378,8 +420,8 @@ always_comb begin
             CSRRSI: begin
                 algo_data = {{DATA_WIDTH-IMM_SIZE{1'b0}}, immediate} | csr_data;
             end
-            default:
-                algo_data = {DATA_WIDTH{1'b0}};
+            // default:
+            //     algo_data = {DATA_WIDTH{1'b0}};
         endcase
     end
 
@@ -495,7 +537,7 @@ always_comb begin
             case (ir_opcode)
                 `ITYPE_E: begin
                     // For CSRs funct3 indicates the next IR state
-                    if (~isCSRInstr) begin
+                    if (~is_csr_instr) begin
                         // What type of System instruction is it?
                         if (funct12 == 12'b000000000001)
                             next_ir_state = ITEbreak;
@@ -791,50 +833,6 @@ always_comb begin
                     a_src = ASrcPrior;  // Select PC Prior source
                     b_src = BSrcImm;    // Select immediate source
 
-                    // Depending on which branch directive, we interpret the
-                    // flags differently.
-                    case (funct3)
-                        BTBeq: begin
-                            // Branch if Z=1
-                            take_branch = flags_i[`FLAG_ZERO];
-                        end
-
-                        BTBne: begin
-                            // Branch if Z=0
-                            take_branch = ~flags_i[`FLAG_ZERO];
-                        end
-
-                        BTBlt: begin
-                            // If the two operands are considered signed
-                            // then N!=V is interpreted as "rs1 is less than rs2"
-                            take_branch = flags_i[`FLAG_NEGATIVE] ^ flags_i[`FLAG_OVERFLOW];
-                        end
-
-                        BTBge: begin
-                            // If the two operands are considered signed
-                            // then N==V is interpreted as "rs1 >= rs2"
-                            take_branch = flags_i[`FLAG_NEGATIVE] == flags_i[`FLAG_OVERFLOW];
-                        end
-
-                        BTBltu: begin
-                            // The two operands are considered unsigned, 
-                            // We interpret C=1, for example, "3 < FFFFFFFE".
-                            take_branch = flags_i[`FLAG_CARRY];
-                        end
-
-                        BTBgeu: begin
-                            // The two operands are considered unsigned, 
-                            // We interpret C=0, for example, "FFFFFFFE >= 5".
-                            take_branch = ~flags_i[`FLAG_CARRY];
-                        end
-
-                        default: begin
-                            `ifdef SIMULATE
-                                $display("IR: BRANCH DIRECTIVE UNKNOWN");
-                            `endif
-                        end
-                    endcase
-
                     if (take_branch) begin
                         pc_src = PCSrcAluImm;
                         pc_ld = RgLdEnabled;
@@ -942,7 +940,7 @@ always_comb begin
                                 // Write RsA to CSR
                                 // Causes Write side-effects on csr.
                                 // csr_data was set above
-                                writeCSR = 1'b1;
+                                write_csr = 1'b1;
 
                                 // Fetch next instruction at the same time.
                                 next_state = PreFetch;
@@ -987,7 +985,7 @@ always_comb begin
 
                 ITCSRLd: begin
                     rsa_ld = RgLdDisabled;  // Sustain signal
-                    writeCSR = 1'b1;
+                    write_csr = 1'b1;
 
                     case (funct3)
                         CSRRW: begin
@@ -1018,27 +1016,15 @@ always_comb begin
                 end
 
                 ITMretClr: begin
-                    // 2) Restore: mstatus.MIE <== mstatus.MPIE
-                    // Modify a copy of CSR
-                    csr_data = mstatus;
-                    writeCSR = 1'b1;    // Enable writing to CSR
-
-                    // Restore Global interrupts.
-                    csr_data[`CSR_Mstatus_MIE] = csr_data[`CSR_Mstatus_MPIE];
-                    // Clear copy
-                    csr_data[`CSR_Mstatus_MPIE] = 1'b0;
+                    // A cycle for Mret to complete *before* prefetch occurs.
                     next_state = PreFetch;
                 end
 
-                default: begin
-                    `ifdef SIMULATE
-                        $display("IR: UNKNOWN");
-                    `endif
-                end
+                default:
+                    ;
             endcase
         end
 
-        // PreFetch is checked even in a Trap handler.
         PreFetch: begin
             // Check if an interrupt occurred and if we can honor it.
             //                Global enable            M-mode enable       Pending interrupts
@@ -1046,20 +1032,10 @@ always_comb begin
 
             if (irq_pending & ~interrupt_in_progress) begin
                 // Okay, there is an interrupt pending
-                // $display("<<**Interrupt detected**>>");
-                writeCSR = 1'b1;    // Enable writing to CSR
-
-                // Modify a copy of CSR
-                csr_data = mstatus;
-                // Backup Global bit
-                csr_data[`CSR_Mstatus_MPIE] = csr_data[`CSR_Mstatus_MIE];
-                // Disable Global interrupts
-                csr_data[`CSR_Mstatus_MIE] = 1'b0;
-                // Select CSR address
-
                 next_state = IRQ0;
             end
             else begin
+                // This path is for executing instructions normally including the trap handler.
                 mem_rd = 1'b0;
                 next_state = Fetch;
             end
@@ -1070,7 +1046,7 @@ always_comb begin
             csr_data = pc_i; // PC_prior is not needed
 
             // Select CSR address
-            writeCSR = 1'b1;    // Enable writing to CSR
+            write_csr = 1'b1;    // Enable writing to CSR
 
             next_state = IRQ1;
         end
@@ -1093,6 +1069,7 @@ always_comb begin
 
         Halt: begin
             halt = 1'b1;
+            ready = 1'b0; // Signal the great unknown!
             next_state = Halt;
         end
 
@@ -1106,8 +1083,8 @@ end
 // Sequence control (sync). Move to the next state on the
 // rising edge of the next clock.
 // -------------------------------------------------------------
-// always_ff @(negedge clk_i, negedge irq_i) begin      // NOTE! This is mixing domains **can be tricky**
-always_ff @(negedge clk_i) begin
+// always_ff @(posedge clk_i, negedge irq_i) begin      // NOTE! This is mixing domains **can be tricky**
+always_ff @(posedge clk_i) begin
     // ----------------------------------------------------
     // The core state control logic
     // ----------------------------------------------------
@@ -1129,7 +1106,7 @@ always_ff @(negedge clk_i) begin
     // ----------------------------------------------------
     // CSRs
     // ----------------------------------------------------
-    if (writeCSR) begin
+    if (write_csr) begin
         // Write with side-effects
         case (csr_addr)
             Mstatus:  mstatus <= csr_data;
@@ -1144,69 +1121,90 @@ always_ff @(negedge clk_i) begin
 
     case (state)
         Reset: begin
-            interrupt_in_progress <= 1'b0;  // Default to allowing an interrupt to start.
-            // Enable M-mode interrupts ---------v
-            //mie <= 32'b0000_0000_0000_0000_0000_1000_0000_0000;
-        end
-    
-        Execute: begin
-            case (state)
-                PreFetch: begin
-                    if (irq_pending & ~interrupt_in_progress) begin
-                        // Signal that interrupt is now in play
-                        interrupt_in_progress <= 1'b1;
-                    end
+            case (vector_state)
+                Vector0: begin
+                    irq_reset_trigger <= 0;
+                    interrupt_in_progress <= 1'b0;  // Default to allowing an interrupt to start.
+                    mip[`CSR_Mip_MEIE] <= 1'b0;
+                    mie <= 0;
                 end
 
-                IRQ0: begin
+                Vector1: begin
                     // Reset the trigger flag
                     irq_reset_trigger <= 1;
                 end
 
-                IRQ1: begin
+                Vector2: begin
                     irq_reset_trigger <= 0;
                 end
-
-                default:
-                    begin end
             endcase
+            // Enable M-mode interrupts ---------v
+            //mie <= 32'b0000_0000_0000_0000_0000_1000_0000_0000;
+        end
 
+        Execute: begin
             case (ir_state)
                 ITMretClr: begin
+                    // -------------------------------------------------------
+                    // ************ END of interrupt flow ******************
+                    // -------------------------------------------------------
                     // Allow the interrupt flow to re-start.
                     interrupt_in_progress <= 1'b0;
-                    mip[`CSR_Mip_MEIE] <= 1'b0;
                 end
 
                 default:
-                    begin end
+                    ;
             endcase
         end
 
+        PreFetch: begin
+            // -------------------------------------------------------
+            // ************ START of interrupt flow ******************
+            // -------------------------------------------------------
+            if (irq_pending & ~interrupt_in_progress) begin
+                // Signal that an interrupt is now in progress.
+                interrupt_in_progress <= 1'b1;
+            end
+        end
+
+        IRQ0: begin
+            // Reset the trigger flag
+            irq_reset_trigger <= 1;
+        end
+
+        IRQ1: begin
+            irq_reset_trigger <= 0;
+            // Now that the interrupt has been recognized we clear the pending flag.
+            // It can be set at any time during the interrupt flow but it won't be
+            // recognized until after the flow completes during the ITMretClr.
+            mip[`CSR_Mip_MEIE] <= 1'b0;
+        end
+
         default:
-            begin end
+            ;
     endcase
 
-    if (irq_triggered & ~interrupt_in_progress) begin
+    // Note: adding interrupt_in_progress condition drops the max frequency
+    // from 19.77MHz to 16.6MHz! The current design is right on the edge!
+    // if (irq_triggered & ~interrupt_in_progress) begin
+    if (irq_triggered) begin    // Allow the flag to be set anytime.
         // ----------------------------------------------------
         // Interrupts
         // ----------------------------------------------------
-        // Mip is a "hardware" based register. It has a bit (MEIP)
-        // directly associated to hardware IRQ IO.
-        //                          |``````MEIP
+        // Mip is a "hardware" based register. It has a bit (MEIE)
+        // that is associated via hardware IRQ IO.
+        //                          |``````MEIE
         //                          v
         // 0000_0000_0000_0000_0000_1000_0000_0000
-        // We don't recognize the interrupt if an interrupt is pending or in progress.
         mip[`CSR_Mip_MEIE] <= 1'b1;  // Causes irq_pending to Set
     end
-
 end
 
 // These variables allows the domains to signal each other
 logic irq_triggered = 0;
 logic irq_reset_trigger = 0;
 
-// A seperate domain from the Interrupt signal.
+// A seperate domain for the Interrupt signal.
 always_ff @(negedge irq_i, posedge irq_reset_trigger) begin
     if (irq_reset_trigger) begin
         irq_triggered <= 0;
@@ -1243,6 +1241,21 @@ assign rd_data_o = rd_data;
 `ifdef DEBUG_MODE
 assign ready_o = ready;
 assign halt_o = halt;
+assign state_o = state;
+assign vector_state_o = vector_state;
+assign ir_state_o = ir_state;
+assign take_branch_o = take_branch;
+assign irq_triggered_o = irq_triggered;
+assign interrupt_in_progress_o = interrupt_in_progress;
+assign irq_pending_o = irq_pending;
+assign write_csr_o = write_csr;
+assign mepc_o = mepc;
+assign mip_o = mip;
+assign is_csr_instr_o = is_csr_instr;
+assign irq_reset_trigger_o = irq_reset_trigger;
+assign mstatus_o = mstatus;
+assign mie_o = mie;
+assign csr_data_o = csr_data;
 `endif
 
 endmodule

@@ -69,11 +69,13 @@
 `define CSR_Mtval 6
 `define CSR_Mip 7
 
+// M-mode enable
 `define CSR_Mie_MEIE 11
 
 `define CSR_Mip_MEIE 11
 
 `define CSR_Mcause_MEI 11
 
+// Global enable
 `define CSR_Mstatus_MIE 3
 `define CSR_Mstatus_MPIE 7

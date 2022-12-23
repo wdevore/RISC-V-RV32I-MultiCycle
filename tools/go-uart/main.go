@@ -31,7 +31,7 @@ func main() {
 	mode := &serial.Mode{
 		BaudRate: 115200,
 	}
-	port, err := serial.Open("/dev/ttyUSB0", mode)
+	port, err := serial.Open("/dev/ttyUSB1", mode)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -60,6 +60,11 @@ func main() {
 	previousCommand := ""
 	command := ""
 
+	// ----------------------------------------
+	// How many bytes are transmitter by fpga
+	// ----------------------------------------
+	rxBuffSize := 68 + 1
+
 stdinloop:
 	for {
 		fmt.Printf("Command: ")
@@ -85,7 +90,7 @@ stdinloop:
 				}
 
 				sendCommand("s", port)
-				rxBuf := readPort(rdBuf, 49, port)
+				rxBuf := readPort(rdBuf, rxBuffSize, port)
 				showData(rxBuf)
 
 				previousCommand = command
@@ -153,29 +158,35 @@ func showData(rxBuf []byte) {
 	showWord("  MDROut", 41, rxBuf)
 	showWord("  ALUOut", 45, rxBuf)
 	showByte(" DataOut", 39, rxBuf)
+	showWord("    Mepc", 49, rxBuf)
+	showWord("     Mip", 53, rxBuf)
+	showWord(" Mstatus", 57, rxBuf)
+	showWord("     Mie", 61, rxBuf)
+	showWord(" CSRData", 65, rxBuf)
 	fmt.Println("=============================================================================")
 }
 
 func matrixState(idx int, rxBuf []byte) string {
-	b := fmt.Sprintf("%08b", rxBuf[idx])
-	switch b[0:5] {
-	case "00000":
+	b2 := fmt.Sprintf("%08b", rxBuf[idx])
+	ui, _ := strconv.ParseUint(b2[0:5], 2, 64)
+	switch ui { // b[0:5]
+	case 0:
 		return "Reset"
-	case "00001":
+	case 1:
 		return "Fetch"
-	case "00010":
+	case 2:
 		return "Decode"
-	case "00011":
+	case 3:
 		return "Execute"
-	case "00100":
+	case 4:
 		return "PreFetch"
-	case "00101":
+	case 5:
 		return "IRQ0"
-	case "00110":
+	case 6:
 		return "IRQ1"
-	case "00111":
+	case 7:
 		return "IRQ2"
-	case "01000":
+	case 8:
 		return "Halt"
 	}
 	return "---"
@@ -202,62 +213,69 @@ func vectorState(idx int, rxBuf []byte) string {
 
 func irState(idx int, rxBuf []byte) string {
 	b := fmt.Sprintf("%08b", rxBuf[idx])
-	switch b[2:8] {
-	case "000000":
+	ui, _ := strconv.ParseUint(b[2:8], 2, 64)
+
+	// b := fmt.Sprintf("%d", rxBuf[idx])
+	switch ui { // b[2:8]
+	case 0:
 		return "STStore"
-	case "000001":
+	case 1:
 		return "STMemAcc"
-	case "000010":
+	case 2:
 		return "STMemWrt"
-	case "000011":
+	case 3:
 		return "STMemRrd"
-	case "000100":
+	case 4:
 		return "ITLoad"
-	case "000101":
+	case 5:
 		return "ITLDMemAcc"
-	case "000110":
+	case 6:
 		return "ITLDMemMdr"
-	case "000111":
+	case 7:
 		return "ITLDMemCmpl"
-	case "001000":
+	case 8:
 		return "RType"
-	case "001001":
+	case 9:
 		return "RTCmpl"
-	case "001010":
+	case 10:
 		return "BType"
-	case "001011":
+	case 11:
 		return "BTBranch"
-	case "001100":
+	case 12:
 		return "BTCmpl"
-	case "001101":
+	case 13:
 		return "ITALU"
-	case "001110":
+	case 14:
 		return "ITALUCmpl"
-	case "001111":
+	case 15:
 		return "JTJal"
-	case "010000":
+	case 16:
 		return "JTJalRtr"
-	case "010001":
+	case 17:
 		return "ITJalr"
-	case "010010":
+	case 18:
+		return "ITJalrRtr"
+	case 19:
+		return "UType"
+	case 20:
 		return "UTCmpl"
-	case "010011":
+	case 21:
 		return "UTypeAui"
-	case "010100":
+	case 22:
 		return "UTAuiCmpl"
-	case "010101":
+	case 23:
 		return "ITEbreak"
-	case "010110":
+	case 24:
 		return "ITECall"
-	case "010111":
+	case 25:
 		return "ITCSR"
-	case "011000":
+	case 26:
 		return "ITCSRLd"
-	case "011001":
+	case 27:
 		return "ITMret"
-	case "011010":
+	case 28:
 		return "ITMretClr"
-	case "011011":
+	case 29:
 		return "IRUnknown"
 	}
 	return "---"
@@ -336,22 +354,32 @@ func ALUFlags(idx int, rxBuf []byte) string {
 
 func bits(idx int, idx2 int, idx3 int, rxBuf []byte) {
 	b := fmt.Sprintf("%08b", rxBuf[idx])
-	fmt.Println("            ------------------------------------")
-	fmt.Println("                    |                 A       t ")
-	fmt.Println("                  c |                 L       a ")
-	fmt.Println("                  l |                 U       k ")
-	fmt.Println("                  k |                 F A     e ")
-	fmt.Println("                    |                 l d       ")
-	fmt.Println("                  s |     P M A M   M a d R   b ")
-	fmt.Println("            C R   e | I P C e L d R e g r s I r ")
-	fmt.Println("            l e H l | R C P m U r g m s   a O a ")
-	fmt.Println("            o a a e |                   s     n ")
-	fmt.Println("            c d l c | l l l r l l w w l r l w c ")
-	fmt.Println("            k y t t | d d d d d d r r d c d r h ")
-	fmt.Println("            ------------------------------------")
+	fmt.Println("            -------------------------------------------------")
+	fmt.Println("                    |                 A       t | i i i   i i")
+	fmt.Println("                  c |                 L       a | r n r   s r")
+	fmt.Println("                  l |                 U       k | q t g w c q")
+	fmt.Println("                  k |                 F A     e |   r   r s r")
+	fmt.Println("                    |                 l d       | t   p i r s")
+	fmt.Println("                  s |     P M A M   M a d R   b | r p e t   t")
+	fmt.Println("            C R   e | I P C e L d R e g r s I r | i r n e i  ")
+	fmt.Println("            l e H l | R C P m U r g m s   a O a | g o d   n t")
+	fmt.Println("            o a a e |                   s     n | g g i c s r")
+	fmt.Println("            c d l c | l l l r l l w w l r l w c | r r n s t i")
+	fmt.Println("            k y t t | d d d d d d r r d c d r h | d e g r r g")
+	fmt.Println("            -------------------------------------------------")
 	b2 := fmt.Sprintf("%08b", rxBuf[idx2])
 	b3 := fmt.Sprintf("%08b", rxBuf[idx3])
-	fmt.Printf("            %s %s %s %s | %s %s %s %s %s %s %s %s %s %s %s %s %s\n", string(b[0]), string(b[1]), string(b[2]), string(b3[0]), string(b[3]), string(b[4]), string(b[5]), string(b[6]), string(b[7]), string(b2[0]), string(b2[1]), string(b2[2]), string(b2[3]), string(b2[4]), string(b2[5]), string(b2[6]), string(b2[7]))
+	clk_select := "0"
+	if string(b3[0]) == "0" && string(b3[1]) == "1" {
+		clk_select = "1"
+	} else if string(b3[0]) == "1" && string(b3[1]) == "0" {
+		clk_select = "2"
+	}
+	fmt.Printf("            %s %s %s %s | %s %s %s %s %s %s %s %s %s %s %s %s %s | %s %s %s %s %s %s\n",
+		string(b[0]), string(b[1]), string(b[2]), clk_select, string(b[3]), string(b[4]), string(b[5]),
+		string(b[6]), string(b[7]), string(b2[0]), string(b2[1]), string(b2[2]), string(b2[3]),
+		string(b2[4]), string(b2[5]), string(b2[6]), string(b2[7]),
+		string(b3[2]), string(b3[3]), string(b3[4]), string(b3[5]), string(b3[6]), string(b3[7]))
 }
 
 func showPC(idx int, rxBuf []byte) {

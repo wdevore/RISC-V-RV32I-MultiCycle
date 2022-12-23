@@ -5,6 +5,6 @@
     "RamFile": "code.ram",
     "OutFile": "/media/RAMDisk/code.out",
     "inputPath": "/media/iposthuman/Nihongo/Hardware/RISC-V-RV32I-MultiCycle/assemblies/",
-    "inputFile": "subroutine.asm",
+    "inputFile": "interrupt_counter_18mhz.asm",
     "entryAddr": "0x0"
 }

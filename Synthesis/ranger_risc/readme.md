@@ -48,3 +48,38 @@ After running the assembler you get a helpful yet extra *code.out* for cross ref
 @0000000A DEADBEEF d: DEADBEEF         // data to load
 @000000C0 00000000 @: Main             // Reset vector
 ```
+
+# Makefile
+There are two ways we can setup a macro for injecting dynamic definitions in verilog code. I prefer #1.
+
+1) Create a file, for example, **definitions.sv** with a ``` `define ROM_PATH "../rams/"```
+2) Or, add a variable and macro definition to a makefile:
+```Makefile
+CODE_PATH = "\"../rams/\""
+...
+	-DRAMROM_PATH=${CODE_PATH} \
+```
+Then define a **localparam** as: ```localparam RomPath = `RAMROM_PATH;``` some place you need it, for example, memory.sv.
+
+Here is an example:
+```Makefile
+CODE_PATH = "\"../rams/\""
+
+.PHONY: all
+
+all: build route upload
+
+compile: build route
+
+build: ${MODULES_FILES} ${PINS_CONSTRAINTS}
+	@echo "##### Building..."
+	${ICESTORM_TOOLCHAIN}/bin/yosys -p ${YOSYS_COMMAND} \
+	-l ${BUILD_BIN}/yo.log \
+	-q \
+	-defer \
+	-DRESET_VECTOR=${RESET_BOOT_VECTOR} \
+	-DRAMROM_PATH=${CODE_PATH} \
+	-DUSE_ROM \
+	-DDEBUG_MODE \
+	${MODULES_FILES}
+```
